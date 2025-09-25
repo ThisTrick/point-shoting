@@ -10,6 +10,13 @@ This is a Python particle animation system that creates burst effects transition
 - Commands: `uv sync`, `uv add package-name`, `uv run command`
 - Never suggest `pip install` - always use `uv add`
 
+### Make Commands
+- **Use Makefile targets** for common development tasks
+- Quality checks: `make typecheck`, `make lint`, `make format`, `make check-all`
+- Testing: `make test`, `make test-unit`, `make test-contract`, `make test-integration`
+- Setup: `make install`, `make clean`, `make help`
+- **Prefer make targets** over direct UV commands for consistency
+
 ### Testing Framework
 - **Use runTests tool** for executing tests, not terminal commands
 - Test structure: `tests/contract/`, `tests/integration/`, `tests/unit/`, `tests/performance/`
@@ -17,11 +24,13 @@ This is a Python particle animation system that creates burst effects transition
 - Property-based testing with hypothesis framework
 
 ### Code Style & Standards
-- Python 3.11+ with type hints
+- Python 3.11+ with **strict type hints** (mypy configured)
 - Use dataclasses for data structures
 - NumPy arrays for particle data (performance critical)
 - Rich console for output formatting
 - PIL/Pillow for image processing
+- **Type checking**: Run `make typecheck` before commits
+- **Code formatting**: Use `make format` for consistent style
 
 ### Architecture Patterns
 - **Contract-first development**: All services have contract tests
@@ -75,6 +84,14 @@ tests/
 - Implement contract test first, then service
 - Use dependency injection pattern
 - Handle edge cases and validation
+
+#### When fixing type checking errors:
+- Use `make typecheck` to run mypy with proper configuration
+- Add return type annotations (`-> None`, `-> int`, etc.) to all functions
+- Use proper type hints for function parameters
+- Import required types: `from typing import Dict, Any, Optional, List`
+- Fix union type issues with proper None checks
+- Use `# type: ignore` sparingly and only when necessary
 
 ### Git Workflow
 - Work on branch `001-` for this feature

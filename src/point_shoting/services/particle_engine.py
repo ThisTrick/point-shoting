@@ -13,6 +13,10 @@ from ..models.metrics import Metrics
 from ..services.stage_transition_policy import StageTransitionPolicy
 from ..services.color_mapper import ColorMapper
 from ..services.breathing_oscillator import BreathingOscillator
+from ..lib.math_utils import (
+    clamp_positions_inplace, calculate_distances, calculate_magnitudes,
+    calculate_chaos_energy, calculate_recognition_score
+)
 
 try:
     from PIL import Image
@@ -45,7 +49,7 @@ class StageState:
 class ParticleEngine:
     """Core particle simulation engine"""
     
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize particle engine"""
         self._initialized = False
         self._running = False
@@ -57,8 +61,8 @@ class ParticleEngine:
         self._stage_state = StageState()
         self._physics_params = PhysicsParams()
         
-        # Services
-        self._transition_policy = StageTransitionPolicy()
+        # Services - will be initialized in init()
+        self._transition_policy: Optional[StageTransitionPolicy] = None
         self._color_mapper = ColorMapper()
         self._breathing_oscillator = BreathingOscillator()
         
@@ -71,7 +75,7 @@ class ParticleEngine:
         
         # Target image data
         self._target_image: Optional[Image.Image] = None
-        self._target_positions: Optional[np.ndarray] = None
+        self._particles.target = None
         
         # Performance tracking
         self._step_times = []
@@ -99,12 +103,16 @@ class ParticleEngine:
         # Store settings
         self._settings = settings
         
+        # Initialize transition policy with settings
+        self._transition_policy = StageTransitionPolicy(settings)
+        
         # Allocate particle arrays
         particle_count = settings.get_particle_count()
         self._particles = allocate_particle_arrays(particle_count)
         
         # Generate target positions from image
-        self._target_positions = map_image_to_targets(self._target_image, particle_count)
+        image_array = np.array(self._target_image)
+        map_image_to_targets(self._particles, image_array)
         
         # Initialize color mapping
         self._color_mapper.build_palettes(self._target_image, settings.color_mode)
@@ -123,7 +131,7 @@ class ParticleEngine:
         self._step_times.clear()
         
         # Initialize particles to burst positions
-        initialize_burst_positions(self._particles, self._settings)
+        initialize_burst_positions(self._particles)
         
         self._initialized = True
         self._running = False
@@ -207,7 +215,7 @@ class ParticleEngine:
     
     def _update_stage_physics(self, dt: float) -> None:
         """Update particle physics based on current stage"""
-        if self._particles is None or self._target_positions is None:
+        if self._particles is None or self._particles.target is None:
             return
         
         stage = self._stage_state.current_stage
@@ -230,14 +238,14 @@ class ParticleEngine:
         # Particles are stationary, maybe small breathing effect
         breathing_offset = self._breathing_oscillator.get_batch_oscillation(
             self._stage_state.stage_elapsed, 
-            len(self._particles.positions)
+            len(self._particles.position)
         ) * 0.01  # Very small breathing
         
         # Apply minimal breathing to positions
         center = np.array([0.5, 0.5])
-        for i in range(len(self._particles.positions)):
-            offset_vec = self._particles.positions[i] - center
-            self._particles.positions[i] = center + offset_vec * (1.0 + breathing_offset[i])
+        for i in range(len(self._particles.position)):
+            offset_vec = self._particles.position[i] - center
+            self._particles.position[i] = center + offset_vec * (1.0 + breathing_offset[i])
     
     def _update_burst_physics(self, dt: float) -> None:
         """Update physics for BURST stage"""
@@ -247,53 +255,53 @@ class ParticleEngine:
         # Apply burst force
         burst_strength = 5.0 * (1.0 - self._stage_state.stage_progress)  # Decreases over time
         
-        for i in range(len(self._particles.positions)):
+        for i in range(len(self._particles.position)):
             # Direction from center
-            direction = self._particles.positions[i] - center
+            direction = self._particles.position[i] - center
             distance = np.linalg.norm(direction)
             
             if distance > 0:
                 direction /= distance
                 # Apply burst force
                 force = direction * burst_strength * dt
-                self._particles.velocities[i] += force
+                self._particles.velocity[i] += force
         
         # Apply damping
-        self._particles.velocities *= self._physics_params.damping
+        self._particles.velocity *= self._physics_params.damping
         
         # Update positions
-        self._particles.positions += self._particles.velocities * dt
+        self._particles.position += self._particles.velocity * dt
         
         # Clamp to bounds
-        self._particles.positions = np.clip(self._particles.positions, 0.0, 1.0)
+        clamp_positions_inplace(self._particles.position, 0.0, 1.0)
     
     def _update_chaos_physics(self, dt: float) -> None:
         """Update physics for CHAOS stage"""
         # Random chaotic motion with some attraction to targets
         
         # Add random forces
-        random_forces = np.random.uniform(-1, 1, self._particles.velocities.shape) * self._physics_params.noise_strength
-        self._particles.velocities += random_forces * dt
+        random_forces = np.random.uniform(-1, 1, self._particles.velocity.shape) * self._physics_params.noise_strength
+        self._particles.velocity += random_forces * dt
         
         # Weak attraction to targets
         target_attraction = 0.5  # Weak attraction during chaos
-        for i in range(len(self._particles.positions)):
-            target_dir = self._target_positions[i] - self._particles.positions[i]
+        for i in range(len(self._particles.position)):
+            target_dir = self._particles.target[i] - self._particles.position[i]
             target_distance = np.linalg.norm(target_dir)
             
             if target_distance > 0:
                 target_dir /= target_distance
                 attraction_force = target_dir * target_attraction * dt
-                self._particles.velocities[i] += attraction_force
+                self._particles.velocity[i] += attraction_force
         
         # Apply damping
-        self._particles.velocities *= self._physics_params.damping
+        self._particles.velocity *= self._physics_params.damping
         
         # Update positions
-        self._particles.positions += self._particles.velocities * dt
+        self._particles.position += self._particles.velocity * dt
         
         # Clamp to bounds
-        self._particles.positions = np.clip(self._particles.positions, 0.0, 1.0)
+        clamp_positions_inplace(self._particles.position, 0.0, 1.0)
     
     def _update_converging_physics(self, dt: float) -> None:
         """Update physics for CONVERGING stage"""
@@ -301,25 +309,25 @@ class ParticleEngine:
         
         attraction_strength = self._physics_params.attraction_strength * 2.0  # Stronger attraction
         
-        for i in range(len(self._particles.positions)):
+        for i in range(len(self._particles.position)):
             # Calculate attraction to target
-            target_dir = self._target_positions[i] - self._particles.positions[i]
+            target_dir = self._particles.target[i] - self._particles.position[i]
             target_distance = np.linalg.norm(target_dir)
             
             if target_distance > 0.01:  # Only attract if not very close
                 target_dir /= target_distance
                 # Stronger attraction as we converge
                 attraction_force = target_dir * attraction_strength * dt
-                self._particles.velocities[i] += attraction_force
+                self._particles.velocity[i] += attraction_force
         
         # Apply damping
-        self._particles.velocities *= self._physics_params.damping ** 2  # Stronger damping
+        self._particles.velocity *= self._physics_params.damping ** 2  # Stronger damping
         
         # Update positions
-        self._particles.positions += self._particles.velocities * dt
+        self._particles.position += self._particles.velocity * dt
         
         # Clamp to bounds
-        self._particles.positions = np.clip(self._particles.positions, 0.0, 1.0)
+        clamp_positions_inplace(self._particles.position, 0.0, 1.0)
     
     def _update_formation_physics(self, dt: float) -> None:
         """Update physics for FORMATION stage"""
@@ -327,24 +335,24 @@ class ParticleEngine:
         
         stabilization_strength = 3.0
         
-        for i in range(len(self._particles.positions)):
+        for i in range(len(self._particles.position)):
             # Strong attraction to exact target position
-            target_dir = self._target_positions[i] - self._particles.positions[i]
+            target_dir = self._particles.target[i] - self._particles.position[i]
             target_distance = np.linalg.norm(target_dir)
             
             if target_distance > 0.001:  # Very precise targeting
                 target_dir /= target_distance
                 stabilization_force = target_dir * stabilization_strength * dt
-                self._particles.velocities[i] += stabilization_force
+                self._particles.velocity[i] += stabilization_force
         
         # Heavy damping for stability
-        self._particles.velocities *= self._physics_params.damping ** 3
+        self._particles.velocity *= self._physics_params.damping ** 3
         
         # Update positions
-        self._particles.positions += self._particles.velocities * dt
+        self._particles.position += self._particles.velocity * dt
         
         # Clamp to bounds
-        self._particles.positions = np.clip(self._particles.positions, 0.0, 1.0)
+        clamp_positions_inplace(self._particles.position, 0.0, 1.0)
     
     def _update_breathing_physics(self, dt: float) -> None:
         """Update physics for FINAL_BREATHING stage"""
@@ -356,30 +364,30 @@ class ParticleEngine:
         breathed_positions = self._breathing_oscillator.get_radial_breathing(
             self._stage_state.stage_elapsed,
             center,
-            self._target_positions
+            self._particles.target
         )
         
         # Gently move particles toward breathed positions
         breathing_attraction = 1.0
         
-        for i in range(len(self._particles.positions)):
+        for i in range(len(self._particles.position)):
             # Attract to breathing position
-            breathing_dir = breathed_positions[i] - self._particles.positions[i]
+            breathing_dir = breathed_positions[i] - self._particles.position[i]
             breathing_distance = np.linalg.norm(breathing_dir)
             
             if breathing_distance > 0:
                 breathing_dir /= breathing_distance
                 breathing_force = breathing_dir * breathing_attraction * dt
-                self._particles.velocities[i] += breathing_force
+                self._particles.velocity[i] += breathing_force
         
         # Apply damping
-        self._particles.velocities *= self._physics_params.damping
+        self._particles.velocity *= self._physics_params.damping
         
         # Update positions
-        self._particles.positions += self._particles.velocities * dt
+        self._particles.position += self._particles.velocity * dt
         
         # Clamp to bounds
-        self._particles.positions = np.clip(self._particles.positions, 0.0, 1.0)
+        clamp_positions_inplace(self._particles.position, 0.0, 1.0)
     
     def _check_stage_transitions(self) -> None:
         """Check and handle stage transitions"""
@@ -387,12 +395,26 @@ class ParticleEngine:
             return
         
         # Use transition policy to evaluate stage changes
-        metrics = self.get_metrics()
-        should_transition = self._transition_policy.evaluate(metrics)
+        if self._transition_policy is None:
+            return
         
-        if should_transition:
+        # Get current metrics and evaluate transition
+        current_time = time.time() - self._start_time
+        recognition_score = self._calculate_recognition_score()
+        chaos_energy = self._calculate_chaos_energy()
+        
+        next_stage = self._transition_policy.evaluate(
+            current_time=current_time,
+            recognition_score=recognition_score,
+            chaos_energy=chaos_energy,
+            active_particle_count=self._particles.particle_count,
+            total_particle_count=self._particles.particle_count,
+            burst_waves_emitted=0
+        )
+        
+        if next_stage is not None and next_stage != self._stage_state.current_stage:
             old_stage = self._stage_state.current_stage
-            new_stage = old_stage.next_stage()
+            new_stage = next_stage
             
             if new_stage != old_stage:
                 self._transition_to_stage(new_stage)
@@ -407,7 +429,7 @@ class ParticleEngine:
         # Stage-specific initialization
         if new_stage == Stage.BURST:
             # Reset particles to burst configuration
-            initialize_burst_positions(self._particles, self._settings)
+            initialize_burst_positions(self._particles)
         elif new_stage == Stage.FINAL_BREATHING:
             # Configure breathing for final stage
             self._breathing_oscillator.configure(
@@ -418,17 +440,17 @@ class ParticleEngine:
     
     def _update_particle_colors(self) -> None:
         """Update particle colors based on current positions"""
-        if self._particles is None or self._target_positions is None:
+        if self._particles is None or self._particles.target is None:
             return
         
         # Batch color assignment for performance
         colors = self._color_mapper.batch_color_assignment(
-            self._target_positions,
+            self._particles.target,
             self._settings.color_mode
         )
         
         # Apply colors to particles
-        self._particles.colors = colors
+        self._particles.color_rgba = colors
     
     def get_current_stage(self) -> Stage:
         """Get current animation stage"""
@@ -437,23 +459,30 @@ class ParticleEngine:
     def get_metrics(self) -> Metrics:
         """Get current system metrics"""
         # Calculate FPS
-        fps = sum(self._fps_history) / len(self._fps_history) if self._fps_history else 0.0
+        fps_avg = sum(self._fps_history) / len(self._fps_history) if self._fps_history else 0.0
+        fps_instant = self._fps_history[-1] if self._fps_history else 0.0
         
         # Calculate frame time
         frame_time_ms = (sum(self._step_times) / len(self._step_times)) * 1000 if self._step_times else 0.0
         
         # Particle count
-        particle_count = len(self._particles.positions) if self._particles else 0
+        particle_count = len(self._particles.position) if self._particles else 0
+        
+        # Calculate recognition and chaos
+        recognition = self._calculate_recognition_score()
+        chaos_energy = self._calculate_chaos_energy()
         
         return Metrics(
-            fps=fps,
+            fps_avg=fps_avg,
+            fps_instant=fps_instant,
             frame_time_ms=frame_time_ms,
             particle_count=particle_count,
-            current_stage=self._stage_state.current_stage,
-            stage_progress=self._stage_state.stage_progress,
-            stage_elapsed_sec=self._stage_state.stage_elapsed,
-            total_elapsed_sec=time.time() - self._start_time if self._start_time > 0 else 0.0,
-            memory_usage_mb=0.0,  # TODO: Calculate actual memory usage
+            active_particle_count=particle_count,
+            stage=self._stage_state.current_stage,
+            recognition=recognition,
+            chaos_energy=chaos_energy,
+            stage_elapsed_time=self._stage_state.stage_elapsed,
+            total_elapsed_time=time.time() - self._start_time if self._start_time > 0 else 0.0,
         )
     
     def get_particle_snapshot(self) -> Optional[ParticleArrays]:
@@ -463,11 +492,13 @@ class ParticleEngine:
         
         # Return a copy to avoid modification
         snapshot = ParticleArrays(
-            positions=self._particles.positions.copy(),
-            velocities=self._particles.velocities.copy(),
-            colors=self._particles.colors.copy(),
-            ages=self._particles.ages.copy(),
-            sizes=self._particles.sizes.copy()
+            position=self._particles.position.copy(),
+            velocity=self._particles.velocity.copy(),
+            color_rgba=self._particles.color_rgba.copy(),
+            target=self._particles.target.copy(),
+            active=self._particles.active.copy(),
+            stage_mask=self._particles.stage_mask.copy(),
+            _particle_count=self._particles._particle_count
         )
         
         return snapshot
@@ -490,7 +521,10 @@ class ParticleEngine:
             
             # Reallocate particles
             self._particles = allocate_particle_arrays(new_particle_count)
-            self._target_positions = map_image_to_targets(self._target_image, new_particle_count)
+            # Convert PIL Image to numpy array and map to targets
+            import numpy as np
+            image_array = np.array(self._target_image)
+            map_image_to_targets(self._particles, image_array)
             
             # Restore stage state
             self._stage_state.current_stage = current_stage
@@ -546,7 +580,7 @@ class ParticleEngine:
         self._last_step_time = 0.0
         
         if self._particles is not None:
-            initialize_burst_positions(self._particles, self._settings)
+            initialize_burst_positions(self._particles)
     
     def get_performance_stats(self) -> Dict[str, Any]:
         """Get detailed performance statistics"""
@@ -555,7 +589,7 @@ class ParticleEngine:
             "running": self._running,
             "paused": self._paused,
             "frame_count": self._frame_count,
-            "particle_count": len(self._particles.positions) if self._particles else 0,
+            "particle_count": len(self._particles.position) if self._particles else 0,
         }
         
         if self._fps_history:
@@ -576,3 +610,20 @@ class ParticleEngine:
             }
         
         return stats
+    
+    def _calculate_recognition_score(self) -> float:
+        """Calculate how well particles match target image positions."""
+        if self._particles is None:
+            return 0.0
+        
+        return calculate_recognition_score(
+            self._particles.position, 
+            self._particles.target
+        )
+    
+    def _calculate_chaos_energy(self) -> float:
+        """Calculate particle chaos energy from velocity variance."""
+        if self._particles is None:
+            return 0.0
+        
+        return calculate_chaos_energy(self._particles.velocity)

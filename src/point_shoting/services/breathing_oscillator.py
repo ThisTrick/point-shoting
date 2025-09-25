@@ -4,6 +4,7 @@ import math
 import numpy as np
 from typing import Dict, Any, Optional
 from dataclasses import dataclass
+from ..models.settings import Settings
 
 
 @dataclass
@@ -18,7 +19,7 @@ class BreathingParams:
 class BreathingOscillator:
     """Generates breathing effects with RMS amplitude constraints"""
     
-    def __init__(self):
+    def __init__(self, settings: Settings) -> None:
         """Initialize breathing oscillator"""
         self._params = BreathingParams()
         self._time_offset = 0.0

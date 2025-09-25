@@ -138,7 +138,7 @@ class Metrics:
         progress = min(1.0, self.stage_elapsed_time / expected_duration)
         return progress
     
-    def copy(self, **changes) -> "Metrics":
+    def copy(self, **changes: Any) -> "Metrics":
         """Create a copy with optional field changes"""
         current = self.to_dict()
         

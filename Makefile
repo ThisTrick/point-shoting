@@ -1,4 +1,4 @@
-.PHONY: install lint test test-watch clean dev-install
+.PHONY: install format lint typecheck typecheck-fix check-all test test-unit test-contract test-integration test-performance test-coverage clean run-example profile docs build sync help
 
 # Installation targets
 install:
@@ -18,6 +18,17 @@ format:
 lint-fix:
 	uv run ruff check --fix .
 	uv run ruff format .
+
+# Type checking
+typecheck:
+	uv run mypy src/point_shoting --show-error-codes
+
+typecheck-strict:
+	uv run mypy src/point_shoting --strict --show-error-codes
+
+# All quality checks
+check-all: lint typecheck
+	@echo "All code quality checks passed!"
 
 # Testing targets
 test:
@@ -71,3 +82,35 @@ build:
 # Sync dependencies
 sync:
 	./scripts/uv_sync.sh
+
+# Help
+help:
+	@echo "Available targets:"
+	@echo "  Setup & Dependencies:"
+	@echo "    install         - Install dependencies using UV"
+	@echo "    sync           - Sync dependencies using UV sync script"
+	@echo ""
+	@echo "  Code Quality:"
+	@echo "    format         - Format code with ruff"
+	@echo "    lint           - Lint code with ruff"
+	@echo "    typecheck      - Run mypy type checking"
+	@echo "    typecheck-fix  - Run mypy with suggestions for quick fixes"
+	@echo "    check-all      - Run all quality checks (format, lint, typecheck)"
+	@echo ""
+	@echo "  Testing:"
+	@echo "    test           - Run all tests"
+	@echo "    test-unit      - Run unit tests only"
+	@echo "    test-contract  - Run contract tests only"
+	@echo "    test-integration - Run integration tests only"
+	@echo "    test-performance - Run performance tests only"
+	@echo "    test-coverage  - Run tests with coverage report"
+	@echo ""
+	@echo "  Development:"
+	@echo "    run-example    - Run minimal example"
+	@echo "    profile        - Run performance profiling"
+	@echo ""
+	@echo "  Cleanup:"
+	@echo "    clean          - Remove build artifacts and cache files"
+	@echo ""
+	@echo "  Build & Deploy:"
+	@echo "    build          - Build the package"

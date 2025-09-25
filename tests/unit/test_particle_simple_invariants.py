@@ -81,9 +81,10 @@ class TestParticlePositionSimple:
             if magnitude > max_velocity:
                 velocities[i] = velocities[i] / magnitude * max_velocity
         
-        # Test clamping worked
+        # Test clamping worked - use more tolerant epsilon for float32
         new_magnitudes = np.linalg.norm(velocities, axis=1)
-        assert np.all(new_magnitudes <= max_velocity + 1e-6), \
+        tolerance = max(1e-4, max_velocity * 1e-5)  # Adaptive tolerance based on magnitude
+        assert np.all(new_magnitudes <= max_velocity + tolerance), \
             f"Some velocities exceed max: {np.max(new_magnitudes)} > {max_velocity}"
         
         # Test direction preservation for clamped velocities

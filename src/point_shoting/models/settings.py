@@ -50,7 +50,7 @@ class Settings:
     stable_frames_threshold: int = 60  # frames to consider formation stable
     recognition_computation_interval: int = 5  # compute recognition every N frames
     
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate settings after initialization"""
         self.validate()
     
@@ -136,7 +136,7 @@ class Settings:
         """Create default settings"""
         return cls()
     
-    def copy(self, **changes) -> "Settings":
+    def copy(self, **changes: Any) -> "Settings":
         """Create a copy with optional changes"""
         current_dict = self.to_dict()
         current_dict.update(changes)

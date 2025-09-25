@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 import os
 from pathlib import Path
+from ..models.settings import Settings
 
 try:
     from PIL import Image, ImageDraw, ImageFont
@@ -37,7 +38,7 @@ class WatermarkConfig:
 class WatermarkRenderer:
     """Renders watermarks with PNG validation and flexible positioning"""
     
-    def __init__(self):
+    def __init__(self, settings: Settings) -> None:
         """Initialize watermark renderer"""
         self._config = WatermarkConfig()
         self._watermark_image: Optional[Image.Image] = None

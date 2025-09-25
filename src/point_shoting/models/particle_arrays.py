@@ -22,7 +22,7 @@ class ParticleArrays:
     # Computed/cached values
     _particle_count: int
     
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate array shapes and consistency"""
         self.validate()
     

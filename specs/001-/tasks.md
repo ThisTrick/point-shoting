@@ -4,7 +4,10 @@
 **Spec**: `spec.md`  
 **Plan**: `plan.md`  
 **Research**: `research.md`  
-**Data Model**: `data-model.md`  
+**| T059 | [X] | Update `quickstart.md` to reflect actual API surfaces |
+| T060 | [X] | Add README feature section & usage examples |
+| T061 | [X] | Add CI workflow `.github/workflows/ci.yml` (lint + tests) |
+| T062 | [X] | Refactor duplication (scan & extract common math to `src/lib/math_utils.py`) | Model**: `data-model.md`  
 **Contracts**: `contracts/*.md`  
 **Project Structure Decision**: Single project (`src/`, `tests/` at repo root) per `plan.md`.
 
@@ -31,9 +34,9 @@
   - Property-based tests with hypothesis framework implemented
 
 ### **In Progress:**
-- 🔄 **Phase 3.8** (T057-T066): Performance & Polish - READY TO START
+- 🔄 **Phase 3.8** (T057-T066): Performance & Polish - IN PROGRESS (T057-T063 completed)
 
-### **Tasks Completed:** 56/100 (56% overall completion)
+### **Tasks Completed:** 61/100 (61% overall completion)
 ### **Git Status:** Committed as `945c214` - All core services implemented and tested
 
 ## Generation Inputs
@@ -176,13 +179,13 @@ Dependencies: Core implementations complete.
 ## Phase 3.8: Polish & Performance
 | ID | P | Task |
 |----|---|------|
-| T057 | [P] | Performance test `tests/performance/test_fps_medium_density.py` (≥55 FPS simulated/benchmark harness) |
-| T058 | [P] | Add profiling script `scripts/profile_engine.py` (prints stage timings) |
-| T059 | [P] | Update `quickstart.md` to reflect actual API surfaces |
-| T060 | [P] | Add README feature section & usage examples |
-| T061 | [P] | Add CI workflow `.github/workflows/ci.yml` (lint + tests) |
+| T057 | [X] | Performance test `tests/performance/test_fps_medium_density.py` (≥55 FPS simulated/benchmark harness) |
+| T058 | [X] | Add profiling script `scripts/profile_engine.py` (prints stage timings) |
+| T059 | [X] | Update `quickstart.md` to reflect actual API surfaces |
+| T060 | [X] | Add README feature section & usage examples |
+| T061 | [X] | Add CI workflow `.github/workflows/ci.yml` (lint + tests) |
 | T062 | [P] | Refactor duplication (scan & extract common math to `src/lib/math_utils.py`) |
-| T063 | [P] | Add type checking (mypy or pyright config) + fix annotations |
+| T063 | [X] | Add type checking (mypy or pyright config) + fix annotations |
 | T064 | [P] | Cleanup & finalize docstrings (public modules) |
 | T065 | [P] | Add structured logging & error reporting scaffold `src/lib/obs.py` (JSON logger, opt-in crash handler) (FR-016, NFR-009) |
 | T066 | [P] | Add memory usage benchmark test `tests/performance/test_memory_medium_density.py` (assert ≤300MB RSS) (NFR-008) |

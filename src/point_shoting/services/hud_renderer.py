@@ -48,7 +48,7 @@ class HUDMetrics:
 class HUDRenderer:
     """Renders HUD overlay with performance budget management"""
     
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize HUD renderer"""
         self._console = Console() if RICH_AVAILABLE else None
         self._budget = PerformanceBudget()

@@ -41,14 +41,54 @@ source .venv/bin/activate  # Linux/macOS
 ### Basic Usage
 
 ```bash
-# Run with example image
-point-shoting examples/sample.png
+# Run with default settings
+uv run python -m point_shoting path/to/image.png
 
 # Specify settings
-point-shoting image.png --density medium --speed normal --color-mode stylized
+uv run python -m point_shoting image.png --density medium --speed normal --color-mode stylized
 
 # Enable HUD and loop mode
-point-shoting image.png --hud --loop
+uv run python -m point_shoting image.png --hud --loop
+```
+
+### Programmatic API
+
+```python
+from point_shoting.services.particle_engine import ParticleEngine
+from point_shoting.models.settings import Settings, DensityProfile, ColorMode
+
+# Create engine with custom settings
+settings = Settings(
+    density_profile=DensityProfile.MEDIUM,
+    color_mode=ColorMode.STYLIZED,
+    hud_enabled=True,
+    loop_mode=False
+)
+
+engine = ParticleEngine()
+engine.init(settings, 'path/to/image.png')
+engine.start()
+
+# Run simulation
+while True:
+    engine.step()
+    metrics = engine.get_metrics()
+    
+    if metrics.recognition >= 0.8:  # Recognition achieved
+        break
+```
+
+### Profiling and Performance Analysis
+
+```bash
+# Basic performance profiling
+uv run python scripts/profile_engine.py --particles 8000 --steps 100
+
+# Compare across different particle densities
+uv run python scripts/profile_engine.py --compare-densities
+
+# Profile specific animation stage
+uv run python scripts/profile_engine.py --stage chaos --particles 5000
 ```
 
 ## Development

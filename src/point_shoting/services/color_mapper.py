@@ -5,13 +5,13 @@ import numpy as np
 from PIL import Image, ImageOps
 from enum import Enum
 
-from ..models.settings import ColorMode
+from ..models.settings import ColorMode, Settings
 
 
 class ColorMapper:
     """Maps colors to particles using stylized or precise strategies"""
     
-    def __init__(self):
+    def __init__(self, settings: Settings) -> None:
         """Initialize color mapper"""
         self._stylized_palette: Optional[np.ndarray] = None
         self._precise_image: Optional[np.ndarray] = None
