@@ -82,6 +82,71 @@ class HUDRenderer:
             max_updates_per_sec=max_updates_per_sec
         )
         
+    def render(self, metrics: Dict[str, Any], stage: str = None) -> str:
+        """
+        Contract-compliant render method that returns string output
+        
+        Args:
+            metrics: Dictionary with metrics (fps, recognition, particle_count, etc.)
+            stage: Stage name (optional, can be in metrics dict)
+            
+        Returns:
+            String representation of HUD content
+        """
+        from ..models.stage import Stage
+        from ..models.metrics import Metrics
+        
+        # Convert dict to Metrics object for internal use
+        try:
+            stage_value = stage or metrics.get('stage', 'CHAOS')
+            if isinstance(stage_value, str):
+                current_stage = Stage[stage_value]
+            else:
+                current_stage = stage_value
+                
+            # Handle both 'fps' and 'fps_avg' keys for backwards compatibility
+            fps_value = float(metrics.get('fps', metrics.get('fps_avg', 0.0)))
+            
+            metrics_obj = Metrics(
+                fps_avg=fps_value,
+                fps_instant=fps_value,  # Use same value for both if only one provided
+                frame_time_ms=float(metrics.get('frame_time_ms', 16.7)),
+                particle_count=int(metrics.get('particle_count', 0)),
+                stage=current_stage,
+                recognition=float(metrics.get('recognition', 0.0))
+            )
+            
+            # Use internal render logic but capture output as string
+            if not RICH_AVAILABLE:
+                return self._render_as_text(metrics_obj)
+            
+            if self._level == HUDLevel.MINIMAL:
+                panel = self._render_minimal(metrics_obj)
+            elif self._level == HUDLevel.DETAILED:
+                panel = self._render_detailed(metrics_obj, None)
+            else:
+                panel = self._render_standard(metrics_obj, None)
+            
+            # Capture rich output as string
+            from io import StringIO
+            temp_console = Console(file=StringIO(), width=80, legacy_windows=False)
+            temp_console.print(panel)
+            return temp_console.file.getvalue()
+            
+        except Exception as e:
+            return f"HUD Render Error: {str(e)}"
+    
+    def _render_as_text(self, metrics: Metrics) -> str:
+        """Render HUD as plain text"""
+        lines = [
+            f"=== Point Shooting HUD ===",
+            f"Stage: {metrics.stage.name}",
+            f"FPS: {metrics.fps_avg:.1f}",
+            f"Particles: {metrics.particle_count:,}",
+            f"Recognition: {metrics.recognition:.1%}",
+        ]
+        return "\n".join(lines)
+
     def render_hud(self, metrics: Metrics, additional_info: Optional[Dict[str, Any]] = None) -> bool:
         """
         Render HUD overlay with performance monitoring
@@ -154,8 +219,8 @@ class HUDRenderer:
     def _render_minimal(self, metrics: Metrics) -> Panel:
         """Render minimal HUD (stage + FPS only)"""
         text = Text()
-        text.append(f"Stage: {metrics.current_stage.name}\n", style="bold cyan")
-        text.append(f"FPS: {metrics.fps:.1f}", style="green" if metrics.fps >= 55 else "yellow")
+        text.append(f"Stage: {metrics.stage.name}\n", style="bold cyan")
+        text.append(f"FPS: {metrics.fps_avg:.1f}", style="green" if metrics.fps_avg >= 55 else "yellow")
         
         return Panel(text, title="Status", border_style="blue")
     
@@ -166,14 +231,14 @@ class HUDRenderer:
         table.add_column("Value", style="white")
         
         # Core metrics
-        table.add_row("Stage", f"{metrics.current_stage.name}")
-        table.add_row("FPS", f"{metrics.fps:.1f}")
+        table.add_row("Stage", f"{metrics.stage.name}")
+        table.add_row("FPS", f"{metrics.fps_avg:.1f}")
         table.add_row("Particles", f"{metrics.particle_count:,}")
-        table.add_row("Stage Progress", f"{metrics.stage_progress:.1%}")
+        table.add_row("Recognition", f"{metrics.recognition:.1%}")
         
         # Performance metrics
-        fps_style = "green" if metrics.fps >= 55 else "red" if metrics.fps < 30 else "yellow"
-        table.add_row("Performance", f"[{fps_style}]{metrics.fps:.1f} FPS[/{fps_style}]")
+        fps_style = "green" if metrics.fps_avg >= 55 else "red" if metrics.fps_avg < 30 else "yellow"
+        table.add_row("Performance", f"[{fps_style}]{metrics.fps_avg:.1f} FPS[/{fps_style}]")
         
         if metrics.frame_time_ms > 0:
             frame_style = "green" if metrics.frame_time_ms <= 16.7 else "yellow"
@@ -184,7 +249,7 @@ class HUDRenderer:
             for key, value in additional_info.items():
                 table.add_row(str(key), str(value))
         
-        return Panel(table, title=f"Point Shooting - {metrics.current_stage.name}", border_style="blue")
+        return Panel(table, title=f"Point Shooting - {metrics.stage.name}", border_style="blue")
     
     def _render_detailed(self, metrics: Metrics, additional_info: Optional[Dict[str, Any]]) -> Panel:
         """Render detailed HUD with full diagnostics"""
@@ -197,15 +262,15 @@ class HUDRenderer:
         main_table.add_column("Status", style="white")
         
         # Core metrics with status indicators
-        fps_status = "🟢" if metrics.fps >= 55 else "🟡" if metrics.fps >= 30 else "🔴"
-        main_table.add_row("FPS", f"{metrics.fps:.1f}", fps_status)
+        fps_status = "🟢" if metrics.fps_avg >= 55 else "🟡" if metrics.fps_avg >= 30 else "🔴"
+        main_table.add_row("FPS", f"{metrics.fps_avg:.1f}", fps_status)
         
         main_table.add_row("Frame Time", f"{metrics.frame_time_ms:.1f}ms", 
                           "🟢" if metrics.frame_time_ms <= 16.7 else "🟡")
         
         main_table.add_row("Particles", f"{metrics.particle_count:,}", "")
-        main_table.add_row("Stage", metrics.current_stage.name, "")
-        main_table.add_row("Progress", f"{metrics.stage_progress:.1%}", "")
+        main_table.add_row("Stage", metrics.stage.name, "")
+        main_table.add_row("Recognition", f"{metrics.recognition:.1%}", "")
         
         # HUD performance metrics
         perf_table = Table(title="HUD Performance")
@@ -234,10 +299,10 @@ class HUDRenderer:
         """Fallback text rendering when Rich is not available"""
         lines = [
             f"=== Point Shooting HUD ===",
-            f"Stage: {metrics.current_stage.name}",
-            f"FPS: {metrics.fps:.1f}",
+            f"Stage: {metrics.stage.name}",
+            f"FPS: {metrics.fps_avg:.1f}",
             f"Particles: {metrics.particle_count:,}",
-            f"Progress: {metrics.stage_progress:.1%}",
+            f"Recognition: {metrics.recognition:.1%}",
         ]
         
         if additional_info:

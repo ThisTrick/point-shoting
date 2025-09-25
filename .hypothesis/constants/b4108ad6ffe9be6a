@@ -1,0 +1,4 @@
+# file: /home/den/git/point-shoting/src/point_shoting/models/metrics.py
+# hypothesis_version: 6.140.2
+
+[0.0, 0.8, 1.0, 2.0, 3.0, 55.0, 100, 'Metrics', 'chaos_energy', 'energy', 'fps', 'fps_avg', 'fps_instant', 'frame_time_ms', 'hud_overhead_ms', 'hud_overhead_percent', 'hud_render_time_ms', 'inf', 'particle_count', 'particles', 'recognition', 'stage', 'stage_display', 'stage_elapsed_time', 'time', 'total_elapsed_time']
