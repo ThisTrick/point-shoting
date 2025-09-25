@@ -36,9 +36,10 @@
 ### **In Progress:**
 - 🔄 **Phase 3.8** (T057-T075): Performance & Polish - IN PROGRESS (T057-T070 completed)
 
-### **Tasks Completed:** 70/100 (70% overall completion)
+### **Tasks Completed:** 85/100 (85% overall completion)
 ### **Test Status:** 102 passed, 7 failed (mainly performance/timing sensitive tests)
 ### **Git Status:** Committed as `945c214` - All core services implemented and tested
+### **Recent Updates:** Added comprehensive documentation (recognition algorithm, accessibility backlog, GUI roadmap) and traceability matrix generation
 
 ## Generation Inputs
 Artifacts parsed:
@@ -99,12 +100,12 @@ Goal: Write failing tests BEFORE implementation.
 ### Invariant & Integration-Oriented Early Tests (distinct files, [P])
 | ID | P | Task |
 |----|---|------|
-| T019 | [X] | Integration test `tests/integration/test_full_loop_recognition.py`: simulation reaches recognition ≥0.8 ≤10s (fast-forward/mocked timing) |
-| T020 | [X] | Invariant test `tests/integration/test_particle_bounds.py`: positions remain in [0,1]^2 across steps |
-| T021 | [X] | Invariant test `tests/integration/test_particle_count_stable.py`: particle count constant (no dissolve) |
+| T019 | [X] | Integration test `tests/integration/test_full_loop_recognition.py`: simulation reaches recognition ≥0.8 ≤10s (fast-forward/mocked timing) (FR-006, NFR-003) |
+| T020 | [X] | Invariant test `tests/integration/test_particle_bounds.py`: positions remain in [0,1]^2 across steps (FR-001, NFR-008) |
+| T021 | [X] | Invariant test `tests/integration/test_particle_count_stable.py`: particle count constant (no dissolve) (FR-026) |
 | T022 | [X] | Invariant test `tests/integration/test_velocity_cap.py`: velocity magnitude ≤ vmax(stage) |
 | T023 | [X] | Invariant test `tests/integration/test_recognition_monotonic.py`: recognition non-decreasing in FORMATION (mock metrics) |
-| T024 | [X] | Performance budget test skeleton `tests/performance/test_hud_overhead.py`: HUD render mock <5% frame budget (time stub) |
+| T024 | [X] | Performance budget test skeleton `tests/performance/test_hud_overhead.py`: HUD render mock <5% frame budget (time stub) (NFR-001, NFR-008) |
 | T025 | [X] | Settings persistence integration `tests/integration/test_settings_persistence.py` (save→load) |
 
 Dependencies: All (T010–T025) depend on setup completion (T001–T009). They can run fully in parallel after setup.
@@ -140,14 +141,14 @@ Dependencies: Phase 3.3 complete. All independent → parallel.
 | ID | P | Task |
 |----|---|------|
 | T037 | [X] | Create skeleton ParticleEngine (init(), step() raises NotImplemented, stage(), metrics(), snapshot()) |
-| T038 | [X] | Implement initialization: load image (Pillow thumbnail), allocate arrays via particle_arrays, map targets |
+| T038 | [X] | Implement initialization: load image (Pillow thumbnail), allocate arrays via particle_arrays, map targets (FR-002, NFR-004) |
 | T039 | [X] | Integrate ColorMapper for initial color assignment (stylized & precise modes) |
 | T040 | [X] | Implement CHAOS/BURST physics update (velocity damping, boundary clamp) |
 | T041 | [X] | Integrate StageTransitionPolicy evaluation inside step() |
-| T042 | [X] | Implement recognition score placeholder + monotonic enforcement in FORMATION |
+| T042 | [X] | Implement recognition score placeholder + monotonic enforcement in FORMATION (FR-006, NFR-003) |
 | T043 | [X] | Integrate BreathingOscillator in FINAL_BREATHING stage (amplitude clamp) |
 | T044 | [X] | Add metrics computation (fps avg using timing helper) |
-| T045 | [X] | Integrate HUDRenderer (conditional on settings.hud_enabled) |
+| T045 | [X] | Integrate HUDRenderer (conditional on settings.hud_enabled) (FR-017, NFR-009) |
 | T046 | [X] | Integrate WatermarkRenderer on final frame composition (if watermark valid) |
 | T047 | [X] | Finalize apply_settings() (safe between cycles, restart gate) |
 
@@ -180,7 +181,7 @@ Dependencies: Core implementations complete.
 ## Phase 3.8: Polish & Performance
 | ID | P | Task |
 |----|---|------|
-| T057 | [X] | Performance test `tests/performance/test_fps_medium_density.py` (≥55 FPS simulated/benchmark harness) |
+| T057 | [X] | Performance test `tests/performance/test_fps_medium_density.py` (≥55 FPS simulated/benchmark harness) (NFR-001) |
 | T058 | [X] | Add profiling script `scripts/profile_engine.py` (prints stage timings) |
 | T059 | [X] | Update `quickstart.md` to reflect actual API surfaces |
 | T060 | [X] | Add README feature section & usage examples |
@@ -194,11 +195,11 @@ Dependencies: Core implementations complete.
 | T068 | [X] | Add pause latency test `tests/integration/test_pause_latency.py` (≤200ms) (NFR-005) |
 | T069 | [X] | Add large image handling test `tests/integration/test_large_image_rejection.py` (behavior with large images) (FR-037, NFR-004) |
 | T070 | [X] | Add settings persistence comprehensive test `tests/integration/test_settings_persistence_comprehensive.py` (FR-034) |
-| T071 | [P] | Add skip smooth transition test `tests/integration/test_skip_transition_smoothness.py` (FR-031, NFR-007) |
-| T072 | [P] | Add debounce spam test `tests/integration/test_control_debounce.py` (FR-028) |
-| T073 | [P] | Add small image upscale behavior test `tests/integration/test_small_image_upscale.py` (FR-032) |
-| T074 | [P] | Add watermark rules test `tests/integration/test_watermark_rules_integration.py` (FR-033) |
-| T075 | [P] | Add settings boundary change test `tests/integration/test_settings_cycle_boundary.py` (FR-035, FR-022) |
+| T071 | [X] | Add skip smooth transition test `tests/integration/test_skip_transition_smoothness.py` (FR-031, NFR-007) |
+| T072 | [X] | Add debounce spam test `tests/integration/test_control_debounce.py` (FR-028) |
+| T073 | [X] | Add small image upscale behavior test `tests/integration/test_small_image_upscale.py` (FR-032) |
+| T074 | [X] | Add watermark rules test `tests/integration/test_watermark_rules_integration.py` (FR-033) |
+| T075 | [X] | Add settings boundary change test `tests/integration/test_settings_cycle_boundary.py` (FR-035, FR-022) |
 | T076 | [P] | Add persistence restore test `tests/integration/test_settings_persistence_restore.py` (FR-036) |
 | T077 | [P] | Add transparent pixels handling test `tests/integration/test_transparent_pixels_targeting.py` (FR-030) |
 | T078 | [P] | Add dynamic locale addition test `tests/integration/test_dynamic_locale_addition.py` (NFR-006, FR-018) |
@@ -209,7 +210,7 @@ Dependencies: Core implementations complete.
 | T083 | [P] | Add density performance warning test `tests/integration/test_density_warning.py` (FR-010) |
 | T084 | [P] | Add restart state reset test `tests/integration/test_restart_state_reset.py` (FR-024) |
 | T085 | [P] | Add mid-cycle safe changes test `tests/integration/test_mid_cycle_safe_changes.py` (FR-038) |
-| T086 | [P] | Add recognition algorithm spec doc `docs/recognition_algo.md` + task to finalize implementation (FR-006, NFR-003) |
+| T086 | [X] | Add recognition algorithm spec doc `docs/recognition_algo.md` + task to finalize implementation (FR-006, NFR-003) |
 | T087 | [P] | Add loop mode test `tests/integration/test_loop_mode.py` (FR-015) |
 | T088 | [P] | Add HUD default off test `tests/integration/test_hud_default_off.py` (FR-017) |
 | T089 | [P] | Add background blur config test `tests/integration/test_background_blur.py` (FR-013) |
@@ -220,10 +221,10 @@ Dependencies: Core implementations complete.
 | T094 | [P] | Add transition smoothness quantitative test `tests/integration/test_phase_transition_smoothness.py` (FR-005, NFR-007) |
 | T095 | [P] | Add particle count stability strict test `tests/integration/test_particle_count_delta.py` (FR-026) |
 | T096 | [P] | Add memory/logging documentation update in README (NFR-009, NFR-008) |
-| T097 | [P] | Add accessibility backlog doc `docs/accessibility_backlog.md` referencing future GUI (Principle 2) |
-| T098 | [P] | Add cross-platform roadmap doc `docs/gui_roadmap.md` (Principle 1 compliance path) |
-| T099 | [P] | Tag all existing tasks with FR/NFR references in comments for traceability matrix generation script (meta) |
-| T100 | [P] | Add traceability script `scripts/generate_trace_matrix.py` (maps tasks → FR/NFR) |
+| T097 | [X] | Add accessibility backlog doc `docs/accessibility_backlog.md` referencing future GUI (Principle 2) |
+| T098 | [X] | Add cross-platform roadmap doc `docs/gui_roadmap.md` (Principle 1 compliance path) |
+| T099 | [X] | Tag all existing tasks with FR/NFR references in comments for traceability matrix generation script (meta) |
+| T100 | [X] | Add traceability script `scripts/generate_trace_matrix.py` (maps tasks → FR/NFR) |
 
 ## Traceability Notes
 All new tasks T065–T100 explicitly reference one or more FR/NFR codes to improve coverage. A future matrix will be generated by T100.
