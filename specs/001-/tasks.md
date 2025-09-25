@@ -34,16 +34,16 @@ Artifacts parsed:
 ## Phase 3.1: Setup
 | ID | P | Task |
 |----|---|------|
-| T001 |  | Create base project structure: `src/{models,services,cli,lib}` and `tests/{contract,integration,unit,performance}` |
-| T002 |  | Add `pyproject.toml` (Python 3.11, dependencies), generate `uv.lock` via `uv lock`, export `requirements.txt` for tooling (numpy, pillow, rich(optional), pytest, hypothesis(optional), ruff) |
-| T003 | [P] | Add lint/format config: `.ruff.toml`, enable line length & import sort |
-| T004 | [P] | Add `pytest.ini` (testpaths, markers: contract,integration,performance) |
-| T005 | [P] | Add `.editorconfig` & basic `.gitignore` (venv, __pycache__, build artifacts) |
-| T006 |  | Add `src/__init__.py` and package namespace `src/point_shoting/__init__.py` |
-| T007 | [P] | Add logging setup module `src/lib/logging_config.py` (structured logger, DEBUG toggle) |
-| T008 | [P] | Add performance timing helper `src/lib/timing.py` (context timer, rolling avg) |
-| T009 | [P] | Add `Makefile` targets: install, lint, test, test-watch |
-| T009a | [P] | Add `scripts/uv_sync.sh` (wrapper: uv sync + export requirements) & document in README |
+| T001 | [X] | Create base project structure: `src/{models,services,cli,lib}` and `tests/{contract,integration,unit,performance}` |
+| T002 | [X] | Add `pyproject.toml` (Python 3.11, dependencies), generate `uv.lock` via `uv lock`, export `requirements.txt` for tooling (numpy, pillow, rich(optional), pytest, hypothesis(optional), ruff) |
+| T003 | [X] | Add lint/format config: `.ruff.toml`, enable line length & import sort |
+| T004 | [X] | Add `pytest.ini` (testpaths, markers: contract,integration,performance) |
+| T005 | [X] | Add `.editorconfig` & basic `.gitignore` (venv, __pycache__, build artifacts) |
+| T006 | [X] | Add `src/__init__.py` and package namespace `src/point_shoting/__init__.py` |
+| T007 | [X] | Add logging setup module `src/lib/logging_config.py` (structured logger, DEBUG toggle) |
+| T008 | [X] | Add performance timing helper `src/lib/timing.py` (context timer, rolling avg) |
+| T009 | [X] | Add `Makefile` targets: install, lint, test, test-watch |
+| T009a | [X] | Add `scripts/uv_sync.sh` (wrapper: uv sync + export requirements) & document in README |
 
 Dependencies: T001 before others; T002 before tasks adding config referencing deps; remaining setup [P] after T001.
 
@@ -54,26 +54,26 @@ Goal: Write failing tests BEFORE implementation.
 ### Contract Tests (1:1 with contracts) – all [P]
 | ID | P | Task |
 |----|---|------|
-| T010 | [P] | Create contract test `tests/contract/test_particle_engine.py` (methods exist, invariants placeholders, step() pre-init error) |
-| T011 | [P] | Create contract test `tests/contract/test_color_mapper.py` (stylized ≤32 colors, precise ΔE median placeholder) |
-| T012 | [P] | Create contract test `tests/contract/test_control_interface.py` (idempotent pause/resume, restart debounce) |
-| T013 | [P] | Create contract test `tests/contract/test_hud_renderer.py` (render output type, performance budget mocked) |
-| T014 | [P] | Create contract test `tests/contract/test_localization_provider.py` (missing key fallback) |
-| T015 | [P] | Create contract test `tests/contract/test_settings_store.py` (corrupted file → defaults, round-trip) |
-| T016 | [P] | Create contract test `tests/contract/test_stage_transition_policy.py` (CHAOS→CONVERGING energy threshold, CONVERGING→FORMATION recognition ≥0.8 OR fallback) |
-| T017 | [P] | Create contract test `tests/contract/test_breathing_oscillator.py` (RMS displacement ≤ amplitude*0.7, bounds clamp) |
-| T018 | [P] | Create contract test `tests/contract/test_watermark_renderer.py` (reject non-PNG, min size rule, positioning) |
+| T010 | [X] | Create contract test `tests/contract/test_particle_engine.py` (methods exist, invariants placeholders, step() pre-init error) |
+| T011 | [X] | Create contract test `tests/contract/test_color_mapper.py` (stylized ≤32 colors, precise ΔE median placeholder) |
+| T012 | [X] | Create contract test `tests/contract/test_control_interface.py` (idempotent pause/resume, restart debounce) |
+| T013 | [X] | Create contract test `tests/contract/test_hud_renderer.py` (render output type, performance budget mocked) |
+| T014 | [X] | Create contract test `tests/contract/test_localization_provider.py` (missing key fallback) |
+| T015 | [X] | Create contract test `tests/contract/test_settings_store.py` (corrupted file → defaults, round-trip) |
+| T016 | [X] | Create contract test `tests/contract/test_stage_transition_policy.py` (CHAOS→CONVERGING energy threshold, CONVERGING→FORMATION recognition ≥0.8 OR fallback) |
+| T017 | [X] | Create contract test `tests/contract/test_breathing_oscillator.py` (RMS displacement ≤ amplitude*0.7, bounds clamp) |
+| T018 | [X] | Create contract test `tests/contract/test_watermark_renderer.py` (reject non-PNG, min size rule, positioning) |
 
 ### Invariant & Integration-Oriented Early Tests (distinct files, [P])
 | ID | P | Task |
 |----|---|------|
-| T019 | [P] | Integration test `tests/integration/test_full_loop_recognition.py`: simulation reaches recognition ≥0.8 ≤10s (fast-forward/mocked timing) |
-| T020 | [P] | Invariant test `tests/integration/test_particle_bounds.py`: positions remain in [0,1]^2 across steps |
-| T021 | [P] | Invariant test `tests/integration/test_particle_count_stable.py`: particle count constant (no dissolve) |
-| T022 | [P] | Invariant test `tests/integration/test_velocity_cap.py`: velocity magnitude ≤ vmax(stage) |
-| T023 | [P] | Invariant test `tests/integration/test_recognition_monotonic.py`: recognition non-decreasing in FORMATION (mock metrics) |
-| T024 | [P] | Performance budget test skeleton `tests/performance/test_hud_overhead.py`: HUD render mock <5% frame budget (time stub) |
-| T025 | [P] | Settings persistence integration `tests/integration/test_settings_persistence.py` (save→load) |
+| T019 | [X] | Integration test `tests/integration/test_full_loop_recognition.py`: simulation reaches recognition ≥0.8 ≤10s (fast-forward/mocked timing) |
+| T020 | [X] | Invariant test `tests/integration/test_particle_bounds.py`: positions remain in [0,1]^2 across steps |
+| T021 | [X] | Invariant test `tests/integration/test_particle_count_stable.py`: particle count constant (no dissolve) |
+| T022 | [X] | Invariant test `tests/integration/test_velocity_cap.py`: velocity magnitude ≤ vmax(stage) |
+| T023 | [X] | Invariant test `tests/integration/test_recognition_monotonic.py`: recognition non-decreasing in FORMATION (mock metrics) |
+| T024 | [X] | Performance budget test skeleton `tests/performance/test_hud_overhead.py`: HUD render mock <5% frame budget (time stub) |
+| T025 | [X] | Settings persistence integration `tests/integration/test_settings_persistence.py` (save→load) |
 
 Dependencies: All (T010–T025) depend on setup completion (T001–T009). They can run fully in parallel after setup.
 
@@ -81,10 +81,10 @@ Dependencies: All (T010–T025) depend on setup completion (T001–T009). They c
 ## Phase 3.3: Core Models & Data Structures (implement AFTER tests exist)
 | ID | P | Task |
 |----|---|------|
-| T026 | [P] | Implement Stage enum `src/models/stage.py` (PRE_START,BURST,CHAOS,CONVERGING,FORMATION,FINAL_BREATHING) |
-| T027 | [P] | Implement Settings dataclass `src/models/settings.py` (fields per data-model + validation) |
-| T028 | [P] | Implement particle arrays module `src/models/particle_arrays.py` (allocate structured NumPy arrays) |
-| T029 | [P] | Implement metrics DTO `src/models/metrics.py` (fps_avg,fps_instant,particle_count,stage,recognition) |
+| T026 | [X] | Implement Stage enum `src/models/stage.py` (PRE_START,BURST,CHAOS,CONVERGING,FORMATION,FINAL_BREATHING) |
+| T027 | [X] | Implement Settings dataclass `src/models/settings.py` (fields per data-model + validation) |
+| T028 | [X] | Implement particle arrays module `src/models/particle_arrays.py` (allocate structured NumPy arrays) |
+| T029 | [X] | Implement metrics DTO `src/models/metrics.py` (fps_avg,fps_instant,particle_count,stage,recognition) |
 
 Dependencies: All depend on tests existing (Phase 3.2) & setup; can be parallel.
 

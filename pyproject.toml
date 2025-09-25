@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "point-shoting"
+version = "0.1.0"
+description = "Particle burst animation transitioning to recognizable image formation"
+authors = [
+    {name = "Author", email = "author@example.com"},
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.24.0",
+    "pillow>=10.0.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "hypothesis>=6.0.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+point-shoting = "point_shoting.cli.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/point_shoting"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/point_shoting" = "point_shoting"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]

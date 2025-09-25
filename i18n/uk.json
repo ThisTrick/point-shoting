@@ -1,0 +1,65 @@
+{
+  "app": {
+    "name": "Point Shoting",
+    "description": "Анімація вибуху частинок до формування зображення"
+  },
+  "stages": {
+    "pre_start": "Готовий",
+    "burst": "Вибух",
+    "chaos": "Хаос",
+    "converging": "Збіжність",
+    "formation": "Формування",
+    "final_breathing": "Дихання"
+  },
+  "controls": {
+    "start": "Старт",
+    "pause": "Пауза",
+    "resume": "Продовжити",
+    "restart": "Перезапуск",
+    "skip_final": "До кінця"
+  },
+  "settings": {
+    "density": "Щільність",
+    "speed": "Швидкість",
+    "color_mode": "Режим кольору",
+    "loop_mode": "Циклічний режим",
+    "hud": "Показати HUD",
+    "watermark": "Водяний знак",
+    "locale": "Мова"
+  },
+  "density_profiles": {
+    "low": "Низька (~3К частинок)",
+    "medium": "Середня (~9К частинок)",
+    "high": "Висока (~15К частинок)"
+  },
+  "speed_profiles": {
+    "slow": "Повільно",
+    "normal": "Нормально",
+    "fast": "Швидко"
+  },
+  "color_modes": {
+    "stylized": "Стилізований",
+    "precise": "Точний"
+  },
+  "hud": {
+    "fps": "FPS",
+    "particles": "Частинки",
+    "stage": "Етап",
+    "recognition": "Розпізнавання",
+    "time": "Час",
+    "energy": "Енергія"
+  },
+  "errors": {
+    "file_not_found": "Файл не знайдено: {path}",
+    "invalid_image": "Недійсний файл зображення: {path}",
+    "image_too_large": "Зображення завелике (макс 4096px): {width}x{height}",
+    "engine_not_initialized": "Двигун не ініціалізовано",
+    "settings_corrupted": "Файл налаштувань пошкоджений, використовуються стандартні"
+  },
+  "messages": {
+    "loading": "Завантаження...",
+    "processing": "Обробка зображення...",
+    "recognition_target_met": "Ціль розпізнавання досягнута!",
+    "animation_complete": "Анімація завершена"
+  }
+}

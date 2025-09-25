@@ -1,0 +1,65 @@
+{
+  "app": {
+    "name": "Point Shoting",
+    "description": "Particle burst animation to image formation"
+  },
+  "stages": {
+    "pre_start": "Ready",
+    "burst": "Burst",
+    "chaos": "Chaos",
+    "converging": "Converging", 
+    "formation": "Formation",
+    "final_breathing": "Breathing"
+  },
+  "controls": {
+    "start": "Start",
+    "pause": "Pause",
+    "resume": "Resume",
+    "restart": "Restart",
+    "skip_final": "Skip to End"
+  },
+  "settings": {
+    "density": "Density",
+    "speed": "Speed", 
+    "color_mode": "Color Mode",
+    "loop_mode": "Loop Mode",
+    "hud": "Show HUD",
+    "watermark": "Watermark",
+    "locale": "Language"
+  },
+  "density_profiles": {
+    "low": "Low (~3K particles)",
+    "medium": "Medium (~9K particles)",
+    "high": "High (~15K particles)"
+  },
+  "speed_profiles": {
+    "slow": "Slow",
+    "normal": "Normal", 
+    "fast": "Fast"
+  },
+  "color_modes": {
+    "stylized": "Stylized",
+    "precise": "Precise"
+  },
+  "hud": {
+    "fps": "FPS",
+    "particles": "Particles",
+    "stage": "Stage",
+    "recognition": "Recognition",
+    "time": "Time",
+    "energy": "Energy"
+  },
+  "errors": {
+    "file_not_found": "File not found: {path}",
+    "invalid_image": "Invalid image file: {path}",
+    "image_too_large": "Image too large (max 4096px): {width}x{height}",
+    "engine_not_initialized": "Engine not initialized",
+    "settings_corrupted": "Settings file corrupted, using defaults"
+  },
+  "messages": {
+    "loading": "Loading...",
+    "processing": "Processing image...",
+    "recognition_target_met": "Recognition target achieved!",
+    "animation_complete": "Animation complete"
+  }
+}
