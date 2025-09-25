@@ -1,50 +1,75 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+Version change: Template (no prior version) → 1.0.0
+Modified principles: Added/defined 6 principles tailored for a cross-platform desktop app
+Added sections: "Обмеження та технічні вимоги"; "Робочий процес розробки та ворота якості"
+Removed sections: none
+Templates requiring updates:
+  - .specify/templates/plan-template.md: ✅ updated to reference v1.0.0
+  - .specify/templates/spec-template.md: ⚠ pending review (verify "Constitution Check" alignment)
+  - .specify/templates/tasks-template.md: ⚠ pending review (task categories alignment)
+  - .specify/templates/agent-file-template.md: ⚠ pending review (agent guidance alignment)
+Follow-up TODOs:
+  - TODO(RATIFICATION_DATE): confirm original project ratification historical date if different from 2025-09-25
+  - Verify all templates that include textual guidance or examples do not assume agent-specific names (CLAUDE, etc.) and align with new principles.
+Assumptions:
+  - Project name inferred from repository folder: "Point-Shoting". If incorrect, replace project title and update references.
+-->
+
+# Point-Shoting Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### 1. Кросплатформна сумісність (Cross-Platform Compatibility)
+ДОКЛАДНО: Програма МАЄ демонструвати послідовну функціональність та UX на Windows, macOS та Linux. Рішення по стеку (наприклад, Tauri, Flutter, Qt, Electron) ВИБИРАЮТЬСЯ за критеріями: розмір пакета, продуктивність, нативна поведінка, безпека та зручність оновлення.
+Rationale: Користувачі очікують однакового досвіду на різних ОС; тестування та CI повинні включати матрицю ОС.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### 2. Доступність та інтернаціоналізація (Accessibility & Internationalization)
+ДОКЛАДНО: Інтерфейс МАЄ підтримувати локалізацію (не менше: українська та англійська) та базові вимоги доступності (keyboard navigation, screen-reader labels, контрастні теми). Строки інтерфейсу повинні зберігатися в ресурсах для перекладу.
+Rationale: Доступність та локалізація розширюють аудиторію і знижують ризики юридичних та етичних проблем.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### 3. Приватність і безпека за дизайном (Privacy & Security by Design)
+ДОКЛАДНО: Мінімізація збору даних; персональні дані МАЮТЬ зберігатися локально за замовчуванням або шифруватися; будь-яка телеметрія є за замовчуванням вимкненою та вмикається тільки з явною згодою користувача. Критичні канали зв'язку МАЮТЬ використовувати TLS, ключі й секрети не повинні бути в репозиторії.
+Rationale: Desktop-застосунки оперують локальними файлами й часто мають доступ до конфіденційних ресурсів — це вимагає високих стандартів безпеки.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### 4. Тестування першочергово, з автоматизацією (Test-First Quality)
+ДОКЛАДНО: Для кожного компоненту МАЮТЬ існувати автоматичні юніт-тести; для поверхневих функцій — інтеграційні тести; для UI — регресійні скриншот/візуальні тести або автоматизовані сценарії. CI МАЄ не пропускати який-небудь PR без проходження тестів, або чітко позначати відхилення з обґрунтуванням.
+Rationale: Desktop-проекти часто складно покривати вручну — автоматизація скорочує ризик регресій.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### 5. Спостережуваність і дружнє повідомлення про помилки (Observability & Error Reporting)
+ДОКЛАДНО: Застосунок МАЄ забезпечувати структуроване логування та засоби діагностики. Краші і критичні помилки МАЮТЬ збиратися з дозволу користувача у вигляді анонімної телеметрії або звітів про помилки з опцією відправлення (opt-in).
+Rationale: Швидка локалізація та відтворення багів прискорює виправлення і підвищує якість релізів.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### 6. Мінімальний слід та продуктивність (Minimal Footprint & Performance)
+ДОКЛАДНО: Релізи МАЮТЬ прагнути до мінімального розміру інсталятора/пакета й розумного використання пам'яті. Встановлюються цілі: час старту (наприклад, <3s на сучасному обладнанні) і цільові межі використання пам'яті для основних сценаріїв. Працездатність в офлайн-режимі МАЄ бути доступною для ключових сценаріїв.
+Rationale: Desktop-користувачі чутливі до розміру й швидкодії; офлайн-функціональність покращує надійність.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+## Обмеження та технічні вимоги
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+1. Рішення по стеку: проект МАЄ мати обґрунтування вибору (Tauri/Flutter/Qt/Electron). Критерії: безпека, розмір, підтримка нативних можливостей (файлова система, нотифікації), CI-підтримка, і доступність інструментів для підписування і пакування.
+2. Підписування та дистрибуція: релізи для macOS повинні бути підписані і, за можливості, notarized; Windows — підписані; Linux — пакети DEB/RPM і/або AppImage/Flatpak за вимогою.
+3. Конфігурація конфіденційності: будь-яка збірка телеметрії МАЄ бути документована, з opt-in, і можливістю повністю її відключити.
+4. Зовнішні залежності: сторонні компоненти МАЮТЬ проходити перевірку ліцензій; залежності з відкритим кодом мають бути зафіксовані у lock-файлі.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Робочий процес розробки та ворота якості
+
+1. Code review: усі зміни через PR; мінімум один рев'ювер з правами мейнтейнера для production-змін.
+2. CI: кожен PR МАЄ запускати юніт/інтеграційні тести + статичний аналіз. Збої тестів блокують мердж, окрім екстрених виправлень з поясненням (hotfix policy).
+3. Релізи: версіювання за семантичною схемою MAJOR.MINOR.PATCH; реліз notes мають містити список змін та інструкції з оновлення.
+4. Безпека релізів: перед мейджор-релізом МАЄ виконуватись скан вразливостей залежностей і перевірка підписів.
+5. Пакування: автоматизована збірка та тестовий інсталер для кожної цільової ОС в CI.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+1. Конституція має пріоритет над внутрішніми практиками і є обов'язковою для всіх contributors та maintainer-ів проекту.
+2. Процедура внесення змін:
+   - Пропозиція змін (PR) з чітким описом та мотивацією.
+   - Огляд: мінімум двоє рецензентів, один має бути maintainer. Для MAJOR- змін — додаткове обговорення в issue.
+   - Впровадження: якщо зміни впливають на поведінку користувача або безпеку — підготувати план міграції і тестовий набір.
+3. Політика версіювання конституції:
+   - MAJOR: видалення або радикальна зміна принципів/процедур, що порушує зворотну сумісність.
+   - MINOR: додавання нових принципів або значне розширення існуючих.
+   - PATCH: формулювання, правки стилю, дрібні уточнення без зміни змісту.
+4. Перевірки відповідності: перед мержем релізних змін автоматизовані перевірки (Constitution Check) повинні оцінювати відповідність PR основним принципам; якщо перевірка не проходить — вимагається явне обґрунтування в PR.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2025-09-25 | **Last Amended**: 2025-09-25
