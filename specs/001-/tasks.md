@@ -35,7 +35,7 @@ Artifacts parsed:
 | ID | P | Task |
 |----|---|------|
 | T001 |  | Create base project structure: `src/{models,services,cli,lib}` and `tests/{contract,integration,unit,performance}` |
-| T002 |  | Add `pyproject.toml` (set Python 3.11, dependencies placeholders) and `requirements.txt` with numpy, pillow, rich(optional), pytest, hypothesis(optional), ruff |
+| T002 |  | Add `pyproject.toml` (Python 3.11, dependencies), generate `uv.lock` via `uv lock`, export `requirements.txt` for tooling (numpy, pillow, rich(optional), pytest, hypothesis(optional), ruff) |
 | T003 | [P] | Add lint/format config: `.ruff.toml`, enable line length & import sort |
 | T004 | [P] | Add `pytest.ini` (testpaths, markers: contract,integration,performance) |
 | T005 | [P] | Add `.editorconfig` & basic `.gitignore` (venv, __pycache__, build artifacts) |
@@ -43,6 +43,7 @@ Artifacts parsed:
 | T007 | [P] | Add logging setup module `src/lib/logging_config.py` (structured logger, DEBUG toggle) |
 | T008 | [P] | Add performance timing helper `src/lib/timing.py` (context timer, rolling avg) |
 | T009 | [P] | Add `Makefile` targets: install, lint, test, test-watch |
+| T009a | [P] | Add `scripts/uv_sync.sh` (wrapper: uv sync + export requirements) & document in README |
 
 Dependencies: T001 before others; T002 before tasks adding config referencing deps; remaining setup [P] after T001.
 

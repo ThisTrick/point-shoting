@@ -38,10 +38,11 @@
 **Primary Dependencies**: NumPy (обчислення масивів), Pillow (завантаження/семплінг зображення), Rich (опціонально HUD/лог), dataclasses, pytest.  
 **Storage**: In-memory (опціонально кеш координат у JSON).  
 **Testing**: pytest (unit/integration), hypothesis (опціонально для property-based інваріантів).  
+**Dependency / Packaging Tool**: uv (швидке керування залежностями та lock; використовується замість стандартного pip + venv для відтворюваності).
 **Target Platform**: Linux/macOS/Windows (CLI прототип).  
 **Project Type**: single (Option 1).  
 **Performance Goals**: 60 FPS target; ≥55 середньо при ~8–10k частинок (середній профіль).  
-**Constraints**: CPU-only, без GPU/OpenGL; старт ≤2 c; Pause/Play latency ≤200 ms; пам'ять <300MB @10k частинок.  
+**Constraints**: CPU-only, без GPU/OpenGL; старт ≤2 c; Pause/Play latency ≤200 ms; пам'ять <300MB @10k частинок; lock-файл залежностей формується через `uv lock`.
 **Observability**: структуроване логування JSON + опціональний crash handler (каркас у задачі T065).  
 **Accessibility Roadmap**: кінцева графічна оболонка отримає keyboard navigation & i18n (backlog doc tasks T097, T098).  
 **Scale/Scope**: Particle counts: low≈3k / medium≈9k / high≈15k.  
