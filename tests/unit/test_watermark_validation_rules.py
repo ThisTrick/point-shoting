@@ -10,6 +10,7 @@ from src.point_shoting.services.watermark_renderer import (
     WatermarkPosition, 
     WatermarkConfig
 )
+from src.point_shoting.models.settings import Settings
 
 try:
     from PIL import Image
@@ -22,9 +23,14 @@ except ImportError:
 class TestWatermarkValidationRules:
     """Test watermark validation rules with PIL available"""
     
+    def _create_renderer(self):
+        """Helper method to create renderer with default settings"""
+        settings = Settings()
+        return WatermarkRenderer(settings)
+    
     def test_png_format_validation_success(self):
         """Test successful PNG format validation"""
-        renderer = WatermarkRenderer()
+        renderer = self._create_renderer()
         
         # Create a temporary PNG file
         with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
@@ -48,7 +54,7 @@ class TestWatermarkValidationRules:
     
     def test_png_format_validation_non_png_file(self):
         """Test PNG validation fails for non-PNG files"""
-        renderer = WatermarkRenderer()
+        renderer = self._create_renderer()
         
         # Create a temporary JPEG file
         with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
@@ -70,7 +76,7 @@ class TestWatermarkValidationRules:
     
     def test_png_format_validation_missing_file(self):
         """Test PNG validation fails for missing files"""
-        renderer = WatermarkRenderer()
+        renderer = self._create_renderer()
         
         non_existent_path = "/tmp/non_existent_file.png"
         validation_result = renderer.validate_png(non_existent_path)
@@ -81,7 +87,7 @@ class TestWatermarkValidationRules:
     
     def test_png_size_constraints_zero_dimensions(self):
         """Test PNG validation fails for zero-dimension images"""
-        renderer = WatermarkRenderer()
+        renderer = self._create_renderer()
         
         # Create a temporary PNG with zero dimensions (if possible)
         # We'll simulate this by mocking PIL behavior
@@ -104,7 +110,7 @@ class TestWatermarkValidationRules:
     
     def test_png_file_size_warning(self):
         """Test PNG validation warns about large file sizes"""
-        renderer = WatermarkRenderer()
+        renderer = self._create_renderer()
         
         with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
             # Create a test PNG
@@ -128,7 +134,7 @@ class TestWatermarkValidationRules:
     
     def test_png_transparency_mode_warnings(self):
         """Test PNG validation warns about modes without transparency"""
-        renderer = WatermarkRenderer()
+        renderer = self._create_renderer()
         
         with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
             # Create RGB PNG (no transparency)
@@ -149,7 +155,7 @@ class TestWatermarkValidationRules:
     
     def test_load_png_watermark_success(self):
         """Test successful PNG watermark loading"""
-        renderer = WatermarkRenderer()
+        renderer = self._create_renderer()
         
         with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as tmp:
             test_image = Image.new('RGBA', (80, 40), (255, 0, 255, 200))
@@ -172,7 +178,7 @@ class TestWatermarkValidationRules:
     
     def test_load_png_watermark_invalid_extension(self):
         """Test PNG loading fails for invalid extensions"""
-        renderer = WatermarkRenderer()
+        renderer = self._create_renderer()
         
         with tempfile.NamedTemporaryFile(suffix='.txt', delete=False) as tmp:
             tmp.write(b"not an image")
@@ -192,7 +198,7 @@ class TestWatermarkValidationRules:
     
     def test_text_watermark_validation_empty_text(self):
         """Test text watermark validation fails for empty text"""
-        renderer = WatermarkRenderer()
+        renderer = self._create_renderer()
         
         # Test empty string
         success = renderer.set_text_watermark("")
@@ -209,7 +215,7 @@ class TestWatermarkValidationRules:
     
     def test_watermark_config_parameter_clamping(self):
         """Test watermark configuration parameter clamping"""
-        renderer = WatermarkRenderer()
+        renderer = self._create_renderer()
         
         # Test opacity clamping
         renderer.configure(opacity=-0.5)  # Below 0
@@ -239,7 +245,7 @@ class TestWatermarkValidationRules:
     
     def test_watermark_position_calculation(self):
         """Test watermark position calculations"""
-        renderer = WatermarkRenderer()
+        renderer = self._create_renderer()
         target_size = (400, 300)
         watermark_size = (80, 60)
         margin = 20
@@ -277,7 +283,7 @@ class TestWatermarkValidationRules:
     
     def test_watermark_clear_functionality(self):
         """Test watermark clearing functionality"""
-        renderer = WatermarkRenderer()
+        renderer = self._create_renderer()
         
         # Set text watermark
         renderer.set_text_watermark("Test Text")
@@ -298,7 +304,7 @@ class TestWatermarkValidationWithoutPIL:
     
     def test_png_validation_without_pil(self):
         """Test PNG validation fails gracefully without PIL"""
-        renderer = WatermarkRenderer()
+        renderer = self._create_renderer()
         
         validation_result = renderer.validate_png("test.png")
         
@@ -308,7 +314,7 @@ class TestWatermarkValidationWithoutPIL:
     
     def test_png_loading_without_pil(self):
         """Test PNG loading fails gracefully without PIL"""
-        renderer = WatermarkRenderer()
+        renderer = self._create_renderer()
         
         success = renderer.load_png_watermark("test.png")
         

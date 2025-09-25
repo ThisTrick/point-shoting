@@ -63,8 +63,8 @@ class ParticleEngine:
         
         # Services - will be initialized in init()
         self._transition_policy: Optional[StageTransitionPolicy] = None
-        self._color_mapper = ColorMapper()
-        self._breathing_oscillator = BreathingOscillator()
+        self._color_mapper: Optional[ColorMapper] = None
+        self._breathing_oscillator: Optional[BreathingOscillator] = None
         
         # Timing
         self._start_time = 0.0
@@ -75,7 +75,6 @@ class ParticleEngine:
         
         # Target image data
         self._target_image: Optional[Image.Image] = None
-        self._particles.target = None
         
         # Performance tracking
         self._step_times = []
@@ -103,8 +102,10 @@ class ParticleEngine:
         # Store settings
         self._settings = settings
         
-        # Initialize transition policy with settings
+        # Initialize services with settings
         self._transition_policy = StageTransitionPolicy(settings)
+        self._color_mapper = ColorMapper(settings)
+        self._breathing_oscillator = BreathingOscillator(settings)
         
         # Allocate particle arrays
         particle_count = settings.get_particle_count()

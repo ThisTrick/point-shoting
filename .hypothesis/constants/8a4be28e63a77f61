@@ -1,0 +1,4 @@
+# file: /home/den/git/point-shoting/src/point_shoting/services/breathing_oscillator.py
+# hypothesis_version: 6.140.2
+
+[-0.1, 0.0, 0.05, 0.1, 0.5, 1.0, 2.0, 'BreathingOscillator', 'amplitude', 'decay', 'frequency', 'phase_offset', 'rms_amplitude', 'rms_constraint_ok', 'rms_window_size', 'time_offset']

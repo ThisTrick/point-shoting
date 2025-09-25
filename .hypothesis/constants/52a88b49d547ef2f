@@ -1,0 +1,4 @@
+# file: /home/den/git/point-shoting/src/point_shoting/services/watermark_renderer.py
+# hypothesis_version: 6.140.2
+
+[0.0, 0.1, 0.7, 1.0, 5.0, 255, 1024, '.png', 'LA', 'P', 'PNG', 'RGBA', 'bottom_left', 'bottom_right', 'center', 'config', 'custom', 'errors', 'file_size_bytes', 'font_path', 'font_size', 'format', 'has_watermark', 'info', 'margin_px', 'mode', 'opacity', 'pil_available', 'png', 'png_info', 'position', 'scale', 'size', 'text', 'text_info', 'top_left', 'top_right', 'type', 'valid', 'validation_errors', 'warnings', 'watermark_type']

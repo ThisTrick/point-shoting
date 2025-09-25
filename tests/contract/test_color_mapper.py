@@ -5,8 +5,10 @@ import pytest
 # Import will fail until implementation exists - that's expected for TDD
 try:
     from point_shoting.services.color_mapper import ColorMapper
+    from point_shoting.models.settings import Settings
 except ImportError:
     ColorMapper = None
+    Settings = None
 
 
 @pytest.mark.contract
@@ -19,12 +21,14 @@ class TestColorMapperContract:
 
     def test_build_palettes_method_exists(self):
         """build_palettes method should exist"""
-        mapper = ColorMapper()
+        settings = Settings()
+        mapper = ColorMapper(settings)
         assert hasattr(mapper, 'build_palettes')
 
     def test_color_for_method_exists(self):
         """color_for method should exist and return RGBA color"""
-        mapper = ColorMapper()
+        settings = Settings()
+        mapper = ColorMapper(settings)
         assert hasattr(mapper, 'color_for')
 
     def test_stylized_palette_max_32_colors(self):
@@ -45,7 +49,8 @@ class TestColorMapperContract:
                 pixels.append((r, g, b))
         test_image.putdata(pixels)
         
-        mapper = ColorMapper()
+        settings = Settings()
+        mapper = ColorMapper(settings)
         mapper.build_palettes(test_image, ColorMode.STYLIZED)
         palette = mapper.get_stylized_palette()
         
@@ -55,7 +60,8 @@ class TestColorMapperContract:
     def test_precise_mode_delta_e_median_placeholder(self):
         """Precise mode should consider ΔE color difference (placeholder test)"""
         # Test that the placeholder ΔE method exists and works
-        mapper = ColorMapper()
+        settings = Settings()
+        mapper = ColorMapper(settings)
         import numpy as np
         
         color1 = np.array([255, 0, 0])  # Red
@@ -78,7 +84,8 @@ class TestColorMapperContract:
         # Create a simple test image
         test_image = Image.new('RGB', (10, 10), color=(255, 0, 0))
         
-        mapper = ColorMapper()
+        settings = Settings()
+        mapper = ColorMapper(settings)
         
         # Test stylized mode
         mapper.build_palettes(test_image, ColorMode.STYLIZED)

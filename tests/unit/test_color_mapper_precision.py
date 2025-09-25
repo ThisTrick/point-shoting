@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 from PIL import Image
 from point_shoting.services.color_mapper import ColorMapper
-from point_shoting.models.settings import ColorMode
+from point_shoting.models.settings import ColorMode, Settings
 
 
 class TestColorMapperPrecision:
@@ -12,7 +12,8 @@ class TestColorMapperPrecision:
     
     def setup_method(self):
         """Setup for each test"""
-        self.mapper = ColorMapper()
+        settings = Settings()
+        self.mapper = ColorMapper(settings)
     
     def test_delta_e_calculation_basic(self):
         """Test basic ΔE calculation between similar colors"""

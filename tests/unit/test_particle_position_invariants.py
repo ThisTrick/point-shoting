@@ -12,6 +12,7 @@ except ImportError as e:
 
 try:
     from src.point_shoting.services.breathing_oscillator import BreathingOscillator
+    from src.point_shoting.lib.math_utils import calculate_magnitudes, calculate_distances
 except ImportError as e:
     pytest.skip(f"Cannot import breathing_oscillator: {e}")
 
@@ -158,7 +159,9 @@ class TestParticlePositionInvariants:
         assume(len(time_values) >= 3)
         
         # Create oscillator with reasonable parameters
-        oscillator = BreathingOscillator()
+        from src.point_shoting.models.settings import Settings
+        settings = Settings()
+        oscillator = BreathingOscillator(settings)
         oscillator.configure(
             amplitude=0.1,  # 10% amplitude
             frequency=2.0,
@@ -182,7 +185,7 @@ class TestParticlePositionInvariants:
             assert np.all(positions <= 1.0), f"Breathing effect pushed positions above 1 at time {time_val}"
             
             # Check that positions are reasonable (not too far from original)
-            max_displacement = np.max(np.linalg.norm(positions - initial_positions, axis=1))
+            max_displacement = np.max(calculate_distances(positions, initial_positions))
             assert max_displacement <= 0.5, f"Breathing effect displacement too large: {max_displacement}"
     
     @pytest.mark.skip("Complex test with PIL dependencies - skipping for now")
@@ -303,7 +306,7 @@ class TestParticlePositionInvariants:
                 f"Velocities exceed max at step {step}: {np.max(velocities_magnitude)} > {max_velocity}"
             
             # 3. Reasonable position changes (no teleportation) 
-            max_position_change = np.max(np.linalg.norm(particles.position - pre_positions, axis=1))
+            max_position_change = np.max(calculate_distances(particles.position, pre_positions))
             reasonable_change_limit = max_velocity * dt * 5  # More generous factor for safety
             assert max_position_change <= reasonable_change_limit, \
                 f"Unreasonable position change at step {step}: {max_position_change} > {reasonable_change_limit}"

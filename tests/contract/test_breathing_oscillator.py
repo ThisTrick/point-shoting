@@ -6,8 +6,10 @@ import numpy as np
 # Import will fail until implementation exists - that's expected for TDD
 try:
     from point_shoting.services.breathing_oscillator import BreathingOscillator
+    from point_shoting.models.settings import Settings
 except ImportError:
     BreathingOscillator = None
+    Settings = None
 
 
 @pytest.mark.contract
@@ -20,7 +22,8 @@ class TestBreathingOscillatorContract:
 
     def test_apply_method_exists(self):
         """apply method should exist and modify positions in-place"""
-        oscillator = BreathingOscillator()
+        settings = Settings()
+        oscillator = BreathingOscillator(settings)
         assert hasattr(oscillator, 'apply')
 
     @pytest.mark.skip(reason="Implementation not ready - TDD placeholder")
@@ -39,7 +42,8 @@ class TestBreathingOscillatorContract:
 
     def test_bounds_clamping(self):
         """Applied oscillation should clamp to [0,1]^2 bounds"""
-        oscillator = BreathingOscillator()
+        settings = Settings()
+        oscillator = BreathingOscillator(settings)
         oscillator.configure(amplitude=0.03)
         
         # Test with positions near boundaries
@@ -52,7 +56,8 @@ class TestBreathingOscillatorContract:
 
     def test_amplitude_parameter(self):
         """Oscillator should accept amplitude parameter ≤0.03"""
-        oscillator = BreathingOscillator()
+        settings = Settings()
+        oscillator = BreathingOscillator(settings)
         
         # Test that amplitude is configurable 
         oscillator.configure(amplitude=0.02)

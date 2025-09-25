@@ -1,0 +1,4 @@
+# file: /home/den/git/point-shoting/src/point_shoting/services/hud_renderer.py
+# hypothesis_version: 6.140.2
+
+[0.0, 1.0, 5.0, 10.0, 16.7, 100, 1000, 'Avg Render Time', 'Budget Violations', 'CHAOS', 'Detail Level', 'Detailed Diagnostics', 'FPS', 'Frame Time', 'HUD Performance', 'Label', 'Max Render Time', 'Metric', 'Particles', 'Performance', 'Progress', 'Recognition', 'Stage', 'Status', 'System Metrics', 'Update Count', 'Value', 'avg_render_time_ms', 'blue', 'bold cyan', 'budget', 'budget_violations', 'cyan', 'detailed', 'enabled', 'fps', 'fps_avg', 'frame_time_ms', 'green', 'level', 'main', 'max_memory_mb', 'max_render_time_ms', 'max_updates_per_sec', 'metrics', 'min_render_time_ms', 'minimal', 'particle_count', 'perf', 'recognition', 'red', 'rich_available', 'stage', 'standard', 'update_count', 'white', 'yellow', '🔴', '🟡', '🟢']

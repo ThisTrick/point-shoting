@@ -1,8 +1,10 @@
-"""Simple property-based tests for particle positions"""
+"""Unit tests for particle physics and position invariants - simple cases"""
 
 import pytest
 import numpy as np
-from hypothesis import given, strategies as st, settings
+from hypothesis import given, strategies as st, assume, settings
+from src.point_shoting.models.particle_arrays import allocate_particle_arrays
+from src.point_shoting.lib.math_utils import calculate_magnitudes
 
 
 class TestParticlePositionSimple:
@@ -73,7 +75,7 @@ class TestParticlePositionSimple:
         velocities = np.array(velocity_data, dtype=np.float32)
         
         # Calculate original magnitudes
-        original_magnitudes = np.linalg.norm(velocities, axis=1)
+        original_magnitudes = calculate_magnitudes(velocities)
         
         # Clamp velocities to max magnitude
         for i in range(len(velocities)):
@@ -82,7 +84,7 @@ class TestParticlePositionSimple:
                 velocities[i] = velocities[i] / magnitude * max_velocity
         
         # Test clamping worked - use more tolerant epsilon for float32
-        new_magnitudes = np.linalg.norm(velocities, axis=1)
+        new_magnitudes = calculate_magnitudes(velocities)
         tolerance = max(1e-4, max_velocity * 1e-5)  # Adaptive tolerance based on magnitude
         assert np.all(new_magnitudes <= max_velocity + tolerance), \
             f"Some velocities exceed max: {np.max(new_magnitudes)} > {max_velocity}"
@@ -106,11 +108,11 @@ class TestParticlePositionSimple:
         # Create random velocities
         velocities = np.random.uniform(-10.0, 10.0, size=(array_size, 2)).astype(np.float32)
         original = velocities.copy()
-        original_magnitudes = np.linalg.norm(original, axis=1)
+        original_magnitudes = calculate_magnitudes(original)
         
         # Apply damping
         velocities *= damping_factor
-        new_magnitudes = np.linalg.norm(velocities, axis=1)
+        new_magnitudes = calculate_magnitudes(velocities)
         
         # Test magnitude scaling
         expected_magnitudes = original_magnitudes * damping_factor

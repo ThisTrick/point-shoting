@@ -1,0 +1,4 @@
+# file: /home/den/git/point-shoting/src/point_shoting/models/settings.py
+# hypothesis_version: 6.140.2
+
+[0.0, 0.02, 0.03, 0.7, 1.0, 1.4, 2.0, 10.0, 3000, 9000, 15000, 'Settings', 'breathing_amplitude', 'burst_intensity', 'chaos_min_duration', 'color_mode', 'density_profile', 'en', 'fast', 'high', 'hud_enabled', 'locale', 'loop_mode', 'low', 'medium', 'normal', 'precise', 'slow', 'speed_profile', 'stylized', 'uk', 'watermark_path']

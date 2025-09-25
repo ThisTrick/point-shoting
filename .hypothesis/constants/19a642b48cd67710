@@ -1,0 +1,4 @@
+# file: /home/den/git/point-shoting/src/point_shoting/lib/logging_config.py
+# hypothesis_version: 6.140.2
+
+['INFO', 'args', 'created', 'exc_info', 'exc_text', 'exception', 'filename', 'funcName', 'level', 'levelname', 'levelno', 'lineno', 'logger', 'message', 'module', 'msecs', 'msg', 'name', 'pathname', 'point_shoting', 'process', 'processName', 'relativeCreated', 'stack_info', 'thread', 'threadName', 'timestamp']

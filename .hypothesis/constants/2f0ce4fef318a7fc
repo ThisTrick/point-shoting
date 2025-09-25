@@ -1,0 +1,4 @@
+# file: /home/den/git/point-shoting/src/point_shoting/services/settings_store.py
+# hypothesis_version: 6.140.2
+
+['%Y%m%d_%H%M%S', '.tmp', 'breathing_amplitude', 'burst_intensity', 'chaos_min_duration', 'color_mode', 'density_profile', 'hud_enabled', 'locale', 'loop_mode', 'r', 'rb', 'speed_profile', 'utf-8', 'w', 'watermark_path', 'wb']

@@ -1,0 +1,4 @@
+# file: /home/den/git/point-shoting/src/point_shoting/services/color_mapper.py
+# hypothesis_version: 6.140.2
+
+[255, 'RGB', 'has_precise_mapping', 'image_dimensions', 'palette_colors', 'palette_size']

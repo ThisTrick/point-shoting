@@ -4,6 +4,7 @@ import pytest
 import math
 import numpy as np
 from src.point_shoting.services.breathing_oscillator import BreathingOscillator
+from src.point_shoting.models.settings import Settings
 
 
 class TestBreathingOscillatorSignal:
@@ -11,7 +12,8 @@ class TestBreathingOscillatorSignal:
     
     def test_oscillation_amplitude_bounds(self):
         """Test that oscillation stays within amplitude bounds"""
-        oscillator = BreathingOscillator()
+        settings = Settings()
+        oscillator = BreathingOscillator(settings)
         oscillator.configure(amplitude=0.2, frequency=1.0)
         
         # Test multiple time points over one period
@@ -29,7 +31,8 @@ class TestBreathingOscillatorSignal:
     
     def test_oscillation_frequency_accuracy(self):
         """Test that oscillation frequency matches configuration"""
-        oscillator = BreathingOscillator()
+        settings = Settings()
+        oscillator = BreathingOscillator(settings)
         frequency = 2.0
         oscillator.configure(amplitude=0.1, frequency=frequency)
         
@@ -55,7 +58,8 @@ class TestBreathingOscillatorSignal:
     
     def test_waveform_continuity(self):
         """Test that oscillation waveform is continuous"""
-        oscillator = BreathingOscillator()
+        settings = Settings()
+        oscillator = BreathingOscillator(settings)
         oscillator.configure(amplitude=0.15, frequency=1.5)
         
         # Test continuity at closely spaced time points
@@ -81,8 +85,9 @@ class TestBreathingOscillatorSignal:
     
     def test_phase_offset_behavior(self):
         """Test that phase offset shifts the waveform correctly"""
-        oscillator1 = BreathingOscillator()
-        oscillator2 = BreathingOscillator()
+        settings = Settings()
+        oscillator1 = BreathingOscillator(settings)
+        oscillator2 = BreathingOscillator(settings)
         
         # Configure with π/2 phase difference (quarter period)
         frequency = 2.0
@@ -106,7 +111,8 @@ class TestBreathingOscillatorSignal:
     
     def test_decay_behavior(self):
         """Test exponential decay functionality"""
-        oscillator = BreathingOscillator()
+        settings = Settings()
+        oscillator = BreathingOscillator(settings)
         decay_rate = 1.0  # Decay constant
         oscillator.configure(amplitude=0.2, frequency=1.0, decay=decay_rate)
         
@@ -134,7 +140,8 @@ class TestBreathingOscillatorSignal:
     
     def test_batch_oscillation_consistency(self):
         """Test that batch oscillation is consistent with single oscillation"""
-        oscillator = BreathingOscillator()
+        settings = Settings()
+        oscillator = BreathingOscillator(settings)
         oscillator.configure(amplitude=0.1, frequency=2.0)
         
         time_point = 0.7
@@ -160,7 +167,8 @@ class TestBreathingOscillatorSignal:
     
     def test_rms_calculation_accuracy(self):
         """Test RMS amplitude calculation"""
-        oscillator = BreathingOscillator()
+        settings = Settings()
+        oscillator = BreathingOscillator(settings)
         amplitude = 0.1
         oscillator.configure(amplitude=amplitude, frequency=1.0)
         
@@ -180,7 +188,8 @@ class TestBreathingOscillatorSignal:
     
     def test_auto_amplitude_adjustment(self):
         """Test automatic amplitude adjustment for RMS control"""
-        oscillator = BreathingOscillator()
+        settings = Settings()
+        oscillator = BreathingOscillator(settings)
         initial_amplitude = 0.2
         oscillator.configure(amplitude=initial_amplitude, frequency=1.0)
         
