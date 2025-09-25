@@ -53,6 +53,11 @@ tests/
 
 ### Common Patterns
 
+#### When researching libraries:
+- Use Context7 tools to get current documentation instead of assuming API details
+- Always resolve library ID first, then get documentation
+- Focus searches on specific topics (e.g., "array operations", "image processing", "test fixtures")
+
 #### When creating tests:
 - Use `runTests(files=["/absolute/path/to/test.py"])` to execute
 - Include proper pytest markers: `@pytest.mark.unit`, `@pytest.mark.contract`
@@ -89,6 +94,21 @@ tests/
 - **rich**: Console output formatting
 - **pytest**: Testing framework
 - **hypothesis**: Property-based testing
+
+### Documentation & Research Tools
+
+#### Context7 Library Documentation
+- **Use Context7 tools** for up-to-date library documentation and examples
+- Available tools:
+  - `mcp_context7_resolve-library-id`: Find library IDs for documentation lookup
+  - `mcp_context7_get-library-docs`: Get comprehensive documentation for libraries
+- **Usage pattern**:
+  ```
+  1. First resolve library ID: mcp_context7_resolve-library-id(libraryName="numpy")
+  2. Then get docs: mcp_context7_get-library-docs(context7CompatibleLibraryID="/numpy/numpy")
+  ```
+- **When to use**: When you need current API documentation, usage examples, or best practices for external libraries
+- **Examples**: NumPy array operations, PIL/Pillow image processing, pytest fixtures, hypothesis strategies
 
 ### Error Handling Patterns
 - Use descriptive error messages with context
