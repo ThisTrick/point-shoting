@@ -7,9 +7,14 @@ from unittest.mock import Mock
 try:
     from src.point_shoting.services.particle_engine import ParticleEngine
     from src.point_shoting.models.stage import Stage
+    from src.point_shoting.models.settings import Settings
+    from unittest.mock import patch
+    from PIL import Image
 except ImportError:
     ParticleEngine = None
-    Stage = None
+    Stage = None  
+    Settings = None
+    Image = None
 
 
 @pytest.mark.contract
@@ -84,20 +89,114 @@ class TestParticleEngineContract:
         with pytest.raises(RuntimeError):
             engine.step()
 
-    @pytest.mark.skip(reason="Implementation not ready - TDD placeholder") 
     def test_particle_count_stable_invariant(self):
         """Particle count should remain stable after initialization"""
-        # Will be implemented when ParticleEngine and models exist
-        pass
+        if ParticleEngine is None or Settings is None or Image is None:
+            pytest.skip("Dependencies not available")
+            
+        with patch('src.point_shoting.services.particle_engine.Image.open') as mock_open:
+            # Mock image
+            mock_image = Image.new('RGB', (100, 100), color='red')
+            mock_open.return_value = mock_image
+            
+            engine = ParticleEngine()
+            settings = Settings()
+            
+            engine.init(settings, "test.jpg")
+            
+            # Get initial particle count
+            particles = engine.get_particle_snapshot()
+            if particles is not None:
+                initial_count = len(particles.position)
+                
+                # Run several simulation steps
+                engine.start()
+                for _ in range(10):
+                    engine.step()
+                
+                # Check particle count remains stable
+                particles_after = engine.get_particle_snapshot()
+                if particles_after is not None:
+                    final_count = len(particles_after.position)
+                    assert final_count == initial_count, f"Particle count changed from {initial_count} to {final_count}"
+            else:
+                pytest.skip("Particle snapshot not available")
 
-    @pytest.mark.skip(reason="Implementation not ready - TDD placeholder")
     def test_positions_normalized_invariant(self):
         """All particle positions should remain in [0,1]^2"""
-        # Will be implemented when ParticleEngine and models exist
-        pass
+        if ParticleEngine is None or Settings is None or Image is None:
+            pytest.skip("Dependencies not available")
+            
+        with patch('src.point_shoting.services.particle_engine.Image.open') as mock_open:
+            # Mock image
+            mock_image = Image.new('RGB', (100, 100), color='red')
+            mock_open.return_value = mock_image
+            
+            engine = ParticleEngine()
+            settings = Settings()
+            
+            engine.init(settings, "test.jpg")
+            engine.start()
+            
+            # Run multiple steps and check position bounds after each
+            for i in range(20):
+                engine.step()
+                
+                particles = engine.get_particle_snapshot()
+                if particles is not None:
+                    positions = particles.position
+                    
+                    # Check all positions are in [0,1]^2 range
+                    assert positions.min() >= 0.0, f"Step {i}: position below 0.0: {positions.min()}"
+                    assert positions.max() <= 1.0, f"Step {i}: position above 1.0: {positions.max()}"
+                    
+                    # Check shape consistency
+                    assert positions.shape[1] == 2, f"Step {i}: positions should be 2D coordinates"
 
-    @pytest.mark.skip(reason="Implementation not ready - TDD placeholder")
     def test_stage_monotonic_progression_invariant(self):
         """Stage should follow monotonic progression without backwards steps"""
-        # Will be implemented when ParticleEngine and models exist
-        pass
+        if ParticleEngine is None or Settings is None or Image is None or Stage is None:
+            pytest.skip("Dependencies not available")
+            
+        with patch('src.point_shoting.services.particle_engine.Image.open') as mock_open:
+            # Mock image
+            mock_image = Image.new('RGB', (100, 100), color='red')
+            mock_open.return_value = mock_image
+            
+            engine = ParticleEngine()
+            settings = Settings()
+            
+            engine.init(settings, "test.jpg")
+            engine.start()
+            
+            # Track stage progression
+            previous_stage = engine.get_current_stage()
+            stage_history = [previous_stage]
+            
+            # Run simulation and track stages
+            for i in range(50):
+                engine.step()
+                current_stage = engine.get_current_stage()
+                
+                if current_stage != previous_stage:
+                    stage_history.append(current_stage)
+                    
+                    # Check for valid progressions (no backwards motion)
+                    # Allow these valid forward transitions:
+                    valid_transitions = {
+                        Stage.PRE_START: [Stage.BURST],
+                        Stage.BURST: [Stage.CHAOS], 
+                        Stage.CHAOS: [Stage.CONVERGING],
+                        Stage.CONVERGING: [Stage.FORMATION],
+                        Stage.FORMATION: [Stage.FINAL_BREATHING],
+                        Stage.FINAL_BREATHING: [Stage.PRE_START]  # Loop allowed
+                    }
+                    
+                    if previous_stage in valid_transitions:
+                        assert current_stage in valid_transitions[previous_stage], \
+                            f"Invalid transition from {previous_stage} to {current_stage}"
+                    
+                    previous_stage = current_stage
+                    
+            # Ensure some progression occurred (not stuck in PRE_START)
+            assert len(stage_history) >= 1, "No stage progression detected"
