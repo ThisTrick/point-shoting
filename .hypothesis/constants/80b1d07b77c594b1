@@ -1,0 +1,4 @@
+# file: /home/den/git/point-shoting/src/point_shoting/services/stage_transition_policy.py
+# hypothesis_version: 6.140.2
+
+[0.0, 0.5, 0.8, 1.0, 2.0, 3.0, 'burst_waves_emitted', 'chaos_energy', 'current_stage', 'inf', 'recognition_score', 'stable_frames_count', 'stage_start_time', 'total_frames']

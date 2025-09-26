@@ -1,0 +1,4 @@
+# file: /home/den/git/point-shoting/src/point_shoting/cli/control_interface.py
+# hypothesis_version: 6.140.2
+
+[0.0, 100, 500, 1000, 'can_apply_settings', 'can_pause', 'can_restart', 'can_resume', 'capabilities', 'command_count', 'control_ms', 'debounce_config', 'debounced_commands', 'engine_initialized', 'engine_paused', 'engine_running', 'has_current_session', 'idle', 'paused', 'restart_ms', 'running', 'settings_ms', 'state', 'stopped']

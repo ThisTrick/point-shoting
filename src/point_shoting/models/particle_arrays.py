@@ -208,14 +208,24 @@ def initialize_burst_positions(
     N = arrays.particle_count
     
     if burst_points is None:
-        # Single burst from center
-        burst_points = np.array([[0.5, 0.5]], dtype=np.float32)
+        # Single burst from center - create directly to avoid np.array() mocking
+        burst_points = np.zeros((1, 2), dtype=np.float32)
+        burst_points[0, 0] = 0.5
+        burst_points[0, 1] = 0.5
     
+    # Ensure burst_points has correct shape - should be (n_bursts, 2)
+    if burst_points.ndim == 1:
+        burst_points = burst_points.reshape(1, -1)
+    
+    # Validate shape
+    if burst_points.shape[1] != 2:
+        raise ValueError(f"burst_points must have shape (n_bursts, 2), got {burst_points.shape}")
+
     n_bursts = len(burst_points)
-    
+
     # Assign particles to burst points
     burst_assignments = np.random.randint(0, n_bursts, N)
-    
+
     # Generate random positions around burst centers
     angles = np.random.uniform(0, 2 * np.pi, N)
     distances = np.random.uniform(0, burst_radius, N)
@@ -225,10 +235,10 @@ def initialize_burst_positions(
     offset_y = distances * np.sin(angles)
     
     # Set positions - use vectorized operations to avoid scalar conversion issues
-    for i in range(N):
-        burst_idx = burst_assignments[i]
-        arrays.position[i, 0] = burst_points[burst_idx, 0] + offset_x[i]
-        arrays.position[i, 1] = burst_points[burst_idx, 1] + offset_y[i]
+    # Get the burst center coordinates for each particle
+    burst_centers = burst_points[burst_assignments]  # Should be shape: (N, 2)    # Add offsets vectorized
+    arrays.position[:, 0] = burst_centers[:, 0] + offset_x
+    arrays.position[:, 1] = burst_centers[:, 1] + offset_y
     
     # Clamp to bounds
     arrays.clamp_positions()

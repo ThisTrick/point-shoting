@@ -7,9 +7,11 @@ from PIL import Image
 
 # Import will fail until implementation exists - that's expected for TDD
 try:
-    from point_shoting.services.watermark_renderer import WatermarkRenderer
+    from src.point_shoting.services.watermark_renderer import WatermarkRenderer
+    from src.point_shoting.models.settings import Settings
 except ImportError:
     WatermarkRenderer = None
+    Settings = None
 
 
 @pytest.mark.contract
@@ -20,11 +22,14 @@ class TestWatermarkRendererContract:
         """WatermarkRenderer class should be importable"""
         assert WatermarkRenderer is not None, "WatermarkRenderer class not implemented yet"
 
-    @pytest.mark.skip(reason="Implementation not ready - TDD placeholder")
     def test_render_method_exists(self):
-        """render method should exist"""
-        renderer = WatermarkRenderer()
-        assert hasattr(renderer, 'render')
+        """render methods should exist"""
+        if WatermarkRenderer is None or Settings is None:
+            pytest.skip("WatermarkRenderer/Settings not implemented yet")
+        settings = Settings()
+        renderer = WatermarkRenderer(settings)
+        assert hasattr(renderer, 'load_png_watermark')
+        assert hasattr(renderer, 'render_on_image')
 
     @pytest.mark.skip(reason="Implementation not ready - TDD placeholder")
     def test_reject_non_png_format(self):

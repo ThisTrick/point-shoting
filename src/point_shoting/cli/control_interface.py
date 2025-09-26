@@ -81,7 +81,7 @@ class ControlInterface:
                 # Debounce check
                 if not self._check_control_debounce():
                     return False
-                
+
                 # Initialize engine
                 self._engine.init(settings, image_path)
                 self._engine.start()
@@ -222,6 +222,10 @@ class ControlInterface:
                 # Can only skip if running or paused
                 if self._state not in (ControlState.RUNNING, ControlState.PAUSED):
                     return False
+                
+                # Check if already in final stage - if so, skip operation
+                if self._engine.get_current_stage() == Stage.FINAL_BREATHING:
+                    return True  # Already in final stage, operation is idempotent
                 
                 # Force transition to final stage
                 # This is a bit of a hack - we'll reset and configure to final stage

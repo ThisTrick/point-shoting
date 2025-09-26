@@ -57,11 +57,11 @@ class TestSettingsCycleBoundary:
             )
             
             # Should be able to apply safe changes
-            original_count = len(engine.get_particle_snapshot().positions)
+            original_count = len(engine.get_particle_snapshot().position)
             control.apply_settings(safe_settings)
             
             # Particle count should remain stable
-            assert len(engine.get_particle_snapshot().positions) == original_count
+            assert len(engine.get_particle_snapshot().position) == original_count
             
             # Stage should continue normally
             assert engine.get_current_stage() == Stage.CHAOS
@@ -85,7 +85,7 @@ class TestSettingsCycleBoundary:
                 if engine.get_current_stage() != Stage.PRE_START:
                     break
             
-            original_count = len(engine.get_particle_snapshot().positions)
+            original_count = len(engine.get_particle_snapshot().position)
             
             # Try to change density mid-cycle
             new_settings = Settings(
@@ -99,7 +99,7 @@ class TestSettingsCycleBoundary:
             control.apply_settings(new_settings)
             
             # Particle count should remain unchanged if density change is rejected
-            current_count = len(engine.get_particle_snapshot().positions)
+            current_count = len(engine.get_particle_snapshot().position)
             # The test expects the density change to be rejected, keeping the original count
             assert current_count == original_count or current_count > 0
             
@@ -138,7 +138,7 @@ class TestSettingsCycleBoundary:
             control.restart()
             
             # Should have updated to HIGH density (more particles)
-            new_count = len(engine.get_particle_snapshot().positions)
+            new_count = len(engine.get_particle_snapshot().position)
             assert new_count > 10000, f"HIGH density should have more particles: got {new_count}"
     
     def test_pre_start_allows_all_changes(self):
@@ -168,7 +168,7 @@ class TestSettingsCycleBoundary:
             control.apply_settings(new_settings)
             
             # Should have applied the new HIGH density
-            new_count = len(engine.get_particle_snapshot().positions)
+            new_count = len(engine.get_particle_snapshot().position)
             assert new_count > 10000, f"HIGH density should have more particles: got {new_count}"
             
             # Should still be in PRE_START
@@ -187,23 +187,26 @@ class TestSettingsCycleBoundary:
             
             engine.init(self.initial_settings, "test.jpg")
             
-            # Force to FINAL_BREATHING stage
-            # Stage mocking removed - use proper mocks
-            original_count = len(engine.get_particle_snapshot().positions)
-            
-            # Try to change settings during final breathing
-            new_settings = Settings(
-                density_profile=DensityProfile.LOW,   # Should be restricted
-                speed_profile=SpeedProfile.FAST,      # Might be allowed
-                color_mode=ColorMode.PRECISE,
-                hud_enabled=True,
-                locale="uk"
-            )
-            
-            control.apply_settings(new_settings)
-            
-            # Particle count should remain stable during final breathing
-            assert len(engine.get_particle_snapshot().positions) == original_count
+            # Force engine to FINAL_BREATHING stage by mocking stage state
+            from unittest.mock import PropertyMock
+            with patch.object(type(engine._stage_state), 'current_stage', new_callable=PropertyMock) as mock_stage:
+                mock_stage.return_value = Stage.FINAL_BREATHING
+                
+                original_count = len(engine.get_particle_snapshot().position)
+                
+                # Try to change settings during final breathing
+                new_settings = Settings(
+                    density_profile=DensityProfile.LOW,   # Should be restricted
+                    speed_profile=SpeedProfile.FAST,      # Might be allowed
+                    color_mode=ColorMode.PRECISE,
+                    hud_enabled=True,
+                    locale="uk"
+                )
+                
+                control.apply_settings(new_settings)
+                
+                # Particle count should remain stable during final breathing
+                assert len(engine.get_particle_snapshot().position) == original_count
     
     def test_rapid_setting_changes_stability(self):
         """Test system stability with rapid setting changes."""
@@ -217,7 +220,7 @@ class TestSettingsCycleBoundary:
             mock_open.return_value = mock_img
             
             engine.init(self.initial_settings, "test.jpg")
-            original_count = len(engine.get_particle_snapshot().positions)
+            original_count = len(engine.get_particle_snapshot().position)
             
             # Rapid fire setting changes
             for i in range(10):
@@ -232,7 +235,7 @@ class TestSettingsCycleBoundary:
                 engine.step()
             
             # System should remain stable
-            assert len(engine.get_particle_snapshot().positions) == original_count
+            assert len(engine.get_particle_snapshot().position) == original_count
             assert engine.get_particle_snapshot() is not None
             assert engine.get_current_stage() in [s for s in Stage]
     

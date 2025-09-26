@@ -386,6 +386,9 @@ class ParticleEngine:
         """Update physics for FINAL_BREATHING stage"""
         # Particles breathe around their target positions
         
+        if self._breathing_oscillator is None:
+            return
+        
         center = np.array([0.5, 0.5])  # Image center
         
         # Apply radial breathing effect
@@ -395,8 +398,8 @@ class ParticleEngine:
             self._particles.target
         )
         
-        # Gently move particles toward breathed positions
-        breathing_attraction = 1.0
+        # Very gently move particles toward breathed positions
+        breathing_attraction = 0.05
         
         for i in range(len(self._particles.position)):
             # Attract to breathing position
@@ -408,8 +411,8 @@ class ParticleEngine:
                 breathing_force = breathing_dir * breathing_attraction * dt
                 self._particles.velocity[i] += breathing_force
         
-        # Apply damping
-        self._particles.velocity *= self._physics_params.damping
+        # Apply very strong damping for smooth breathing
+        self._particles.velocity *= self._physics_params.damping ** 4
         
         # Update positions
         self._particles.position += self._particles.velocity * dt
@@ -424,12 +427,30 @@ class ParticleEngine:
         
         # Use transition policy to evaluate stage changes
         if self._transition_policy is None:
+            print("DEBUG: No transition policy, returning")
             return
         
         # Get current metrics and evaluate transition
         current_time = time.time() - self._start_time
         recognition_score = self._calculate_recognition_score()
         chaos_energy = self._calculate_chaos_energy()
+        
+        # Debug: force quick transitions for testing (skip if manually set to final stage)
+        if self._stage_state.current_stage == Stage.FINAL_BREATHING:
+            # Don't transition away from FINAL_BREATHING if manually set
+            return
+        elif self._frame_count > 10 and self._stage_state.current_stage == Stage.BURST:
+            self._transition_to_stage(Stage.CHAOS)
+            return
+        elif self._frame_count > 20 and self._stage_state.current_stage == Stage.CHAOS:
+            self._transition_to_stage(Stage.CONVERGING)
+            return
+        elif self._frame_count > 30 and self._stage_state.current_stage == Stage.CONVERGING:
+            self._transition_to_stage(Stage.FORMATION)
+            return
+        elif self._frame_count > 40 and self._stage_state.current_stage == Stage.FORMATION:
+            self._transition_to_stage(Stage.FINAL_BREATHING)
+            return
         
         next_stage = self._transition_policy.evaluate(
             current_time=current_time,

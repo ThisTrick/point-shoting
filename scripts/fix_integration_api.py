@@ -45,6 +45,21 @@ def fix_file(filepath):
         changed = True
         content = new_content
     
+    # Fix .positions -> .position (ParticleArrays field name)
+    new_content = re.sub(r'\.positions\b', '.position', content)
+    if new_content != content:
+        changed = True
+        content = new_content
+    
+    # Fix WatermarkRenderer.render() -> load_png_watermark() + render_on_image()
+    # This is a more complex transformation that needs context
+    new_content = re.sub(r'renderer\.render\([^,)]+,\s*[^,)]+,\s*[^)]+\)', 
+                        'renderer.load_png_watermark(watermark_path) if renderer.load_png_watermark(watermark_path) else renderer.render_on_image(frame, position)', 
+                        content)
+    if new_content != content:
+        changed = True  
+        content = new_content
+    
     # Fix skip_final_breathing -> skip_to_final
     new_content = re.sub(r'skip_final_breathing', 'skip_to_final', content)
     if new_content != content:

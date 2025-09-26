@@ -4,9 +4,11 @@ import pytest
 
 # Import will fail until implementation exists - that's expected for TDD
 try:
-    from point_shoting.cli.control_interface import ControlInterface
+    from src.point_shoting.cli.control_interface import ControlInterface
+    from src.point_shoting.services.particle_engine import ParticleEngine
 except ImportError:
     ControlInterface = None
+    ParticleEngine = None
 
 
 @pytest.mark.contract
@@ -17,40 +19,52 @@ class TestControlInterfaceContract:
         """ControlInterface class should be importable"""
         assert ControlInterface is not None, "ControlInterface class not implemented yet"
 
-    @pytest.mark.skip(reason="Implementation not ready - TDD placeholder")
     def test_start_method_exists(self):
         """start method should exist"""
-        controller = ControlInterface()
+        if ControlInterface is None or ParticleEngine is None:
+            pytest.skip("ControlInterface/ParticleEngine not implemented yet")
+        engine = ParticleEngine()
+        controller = ControlInterface(engine)
         assert hasattr(controller, 'start')
 
-    @pytest.mark.skip(reason="Implementation not ready - TDD placeholder")
     def test_pause_method_exists(self):
         """pause method should exist"""
-        controller = ControlInterface()  
+        if ControlInterface is None or ParticleEngine is None:
+            pytest.skip("ControlInterface/ParticleEngine not implemented yet")
+        engine = ParticleEngine()
+        controller = ControlInterface(engine)
         assert hasattr(controller, 'pause')
 
-    @pytest.mark.skip(reason="Implementation not ready - TDD placeholder")
     def test_resume_method_exists(self):
         """resume method should exist"""
-        controller = ControlInterface()
+        if ControlInterface is None or ParticleEngine is None:
+            pytest.skip("ControlInterface/ParticleEngine not implemented yet")
+        engine = ParticleEngine()
+        controller = ControlInterface(engine)
         assert hasattr(controller, 'resume')
 
-    @pytest.mark.skip(reason="Implementation not ready - TDD placeholder")
     def test_restart_method_exists(self):
         """restart method should exist"""
-        controller = ControlInterface()
+        if ControlInterface is None or ParticleEngine is None:
+            pytest.skip("ControlInterface/ParticleEngine not implemented yet")
+        engine = ParticleEngine()
+        controller = ControlInterface(engine)
         assert hasattr(controller, 'restart')
 
-    @pytest.mark.skip(reason="Implementation not ready - TDD placeholder")
     def test_skip_final_method_exists(self):
-        """skip_final method should exist"""
-        controller = ControlInterface()
-        assert hasattr(controller, 'skip_final')
+        """skip_to_final method should exist"""
+        if ControlInterface is None or ParticleEngine is None:
+            pytest.skip("ControlInterface/ParticleEngine not implemented yet")
+        engine = ParticleEngine()
+        controller = ControlInterface(engine)
+        assert hasattr(controller, 'skip_to_final')
 
-    @pytest.mark.skip(reason="Implementation not ready - TDD placeholder")
     def test_apply_settings_method_exists(self):
         """apply_settings method should exist with debounce"""
-        controller = ControlInterface()
+        if ControlInterface is None or ParticleEngine is None:
+            pytest.skip("ControlInterface/ParticleEngine not implemented yet")
+        engine = ParticleEngine()
+        controller = ControlInterface(engine)
         assert hasattr(controller, 'apply_settings')
 
     @pytest.mark.skip(reason="Implementation not ready - TDD placeholder")
