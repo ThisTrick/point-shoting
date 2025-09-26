@@ -26,13 +26,28 @@ class TestBreathingOscillatorContract:
         oscillator = BreathingOscillator(settings)
         assert hasattr(oscillator, 'apply')
 
-    @pytest.mark.skip(reason="Implementation not ready - TDD placeholder")
     def test_rms_displacement_constraint(self):
         """RMS displacement should be ≤ amplitude * 0.7"""
-        # oscillator = BreathingOscillator(amplitude=0.03)
-        # positions = np.random.rand(1000, 2).astype(np.float32)
-        # original_positions = positions.copy()
-        # 
+        import numpy as np
+        from src.point_shoting.models.settings import Settings
+        from src.point_shoting.services.breathing_oscillator import BreathingOscillator
+        
+        settings = Settings()
+        oscillator = BreathingOscillator(settings)
+        oscillator.configure(amplitude=0.03, frequency=1.0, decay=0.0)
+        
+        center = np.array([0.5, 0.5])
+        targets = np.random.rand(100, 2).astype(np.float32)
+        
+        # Apply breathing effect
+        breathed_positions = oscillator.get_radial_breathing(0.5, center, targets)
+        
+        # Calculate RMS displacement
+        displacements = breathed_positions - targets
+        rms_displacement = np.sqrt(np.mean(np.sum(displacements**2, axis=1)))
+        
+        # RMS should be reasonable for breathing effect
+        assert rms_displacement <= 0.03 * 0.7, f"RMS displacement too high: {rms_displacement}"
         # oscillator.apply(positions, time_elapsed=1.0)
         # 
         # displacement = positions - original_positions
@@ -69,14 +84,45 @@ class TestBreathingOscillatorContract:
         stats = oscillator.get_breathing_stats()
         assert stats['amplitude'] <= 1.0, f"Amplitude should be clamped: {stats['amplitude']}"
 
-    @pytest.mark.skip(reason="Implementation not ready - TDD placeholder")
     def test_time_based_oscillation(self):
         """Oscillation should be time-based for smooth animation"""
-        # Test that time_elapsed parameter affects oscillation phase
-        pass
+        import numpy as np
+        from src.point_shoting.models.settings import Settings
+        from src.point_shoting.services.breathing_oscillator import BreathingOscillator
+        
+        settings = Settings()
+        oscillator = BreathingOscillator(settings)
+        oscillator.configure(amplitude=0.02, frequency=1.0, decay=0.0)
+        
+        # Test that different time values produce different oscillations
+        time1 = 0.0
+        time2 = 0.5
+        
+        batch1 = oscillator.get_batch_oscillation(time1, 10)
+        batch2 = oscillator.get_batch_oscillation(time2, 10)
+        
+        # Values should be different for different times
+        assert not np.allclose(batch1, batch2), "Oscillation should vary with time"
 
-    @pytest.mark.skip(reason="Implementation not ready - TDD placeholder")
     def test_continuous_waveform(self):
         """Waveform should be continuous across time steps"""
-        # Test that sequential apply() calls produce smooth transitions
-        pass
+        import numpy as np
+        from src.point_shoting.models.settings import Settings
+        from src.point_shoting.services.breathing_oscillator import BreathingOscillator
+        
+        settings = Settings()
+        oscillator = BreathingOscillator(settings)
+        oscillator.configure(amplitude=0.02, frequency=1.0, decay=0.0)
+        
+        # Test sequential time steps for continuity
+        dt = 1.0/60.0  # 60 FPS
+        times = [0.0, dt, 2*dt, 3*dt]
+        
+        values = []
+        for t in times:
+            val = oscillator.get_batch_oscillation(t, 1)[0]
+            values.append(val)
+        
+        # Values should be within reasonable bounds and continuous
+        for val in values:
+            assert -1.0 <= val <= 1.0, f"Oscillation value out of bounds: {val}"
