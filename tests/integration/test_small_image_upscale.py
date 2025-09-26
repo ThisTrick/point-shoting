@@ -35,14 +35,15 @@ class TestSmallImageUpscale:
             # Mock the resize operation to track calls
             mock_resized = Mock()
             mock_resized.size = (64, 64)  # Should be upscaled
-            mock_img.convert.return_value.resize.return_value = mock_resized
+            mock_img.resize.return_value = mock_resized
+            mock_img.convert.return_value = mock_img  # Return self for chaining
             mock_open.return_value = mock_img
             
             # Initialize with tiny image
-            engine.initialize("tiny.jpg", self.settings)
+            engine.init(self.settings, "tiny.jpg")
             
             # Verify resize was called with upscaling
-            mock_img.convert.return_value.resize.assert_called_once()
+            mock_img.resize.assert_called_once()
             resize_args = mock_img.convert.return_value.resize.call_args[0]
             new_width, new_height = resize_args[0]
             
@@ -64,7 +65,7 @@ class TestSmallImageUpscale:
             mock_img.convert.return_value.resize.return_value = mock_resized
             mock_open.return_value = mock_img
             
-            engine.initialize("small_rect.jpg", self.settings)
+            engine.init(self.settings, "small_rect.jpg")
             
             # Check that resize maintains aspect ratio
             mock_img.convert.return_value.resize.assert_called_once()
@@ -91,7 +92,7 @@ class TestSmallImageUpscale:
             mock_img.convert.return_value.resize.return_value = mock_resized
             mock_open.return_value = mock_img
             
-            engine.initialize("micro.jpg", self.settings)
+            engine.init(self.settings, "micro.jpg")
             
             # Should be upscaled to at least minimum size
             mock_img.convert.return_value.resize.assert_called_once()
@@ -119,16 +120,16 @@ class TestSmallImageUpscale:
             mock_img.convert.return_value.resize.return_value = mock_resized
             mock_open.return_value = mock_img
             
-            engine.initialize("small.jpg", self.settings)
+            engine.init(self.settings, "small.jpg")
             
             # Should have allocated proper number of particles based on density profile
             # MEDIUM profile is around 9000 particles
-            particle_count = len(engine.particle_arrays.positions)
+            particle_count = len(engine.get_particle_snapshot().positions)
             assert particle_count > 0, "Should have allocated particles"
             assert particle_count < 20000, "Particle count seems too high"
             
             # Particles should be distributed across the image space
-            positions = engine.particle_arrays.positions
+            positions = engine.get_particle_snapshot().positions
             assert (positions >= 0.0).all(), "Positions below bounds"
             assert (positions <= 1.0).all(), "Positions above bounds"
             
@@ -152,7 +153,7 @@ class TestSmallImageUpscale:
             mock_img.convert.return_value.resize.return_value = mock_resized
             mock_open.return_value = mock_img
             
-            engine.initialize("pixelated.jpg", self.settings)
+            engine.init(self.settings, "pixelated.jpg")
             
             # Check that resize was called with appropriate resampling
             mock_img.convert.return_value.resize.assert_called_once()
@@ -183,10 +184,10 @@ class TestSmallImageUpscale:
             mock_open.return_value = mock_img
             
             # Should not crash on single pixel
-            engine.initialize("pixel.jpg", self.settings)
+            engine.init(self.settings, "pixel.jpg")
             
             # Should still create particles
-            particle_count = len(engine.particle_arrays.positions)
+            particle_count = len(engine.get_particle_snapshot().positions)
             assert particle_count > 0, "Should have allocated particles"
             
             # All particles should target similar area since it's uniform

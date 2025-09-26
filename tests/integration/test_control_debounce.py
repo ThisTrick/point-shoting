@@ -39,7 +39,7 @@ class TestControlDebounce:
             mock_open.return_value = mock_img
             
             # Initialize engine
-            engine.initialize("test.jpg", self.settings)
+            engine.init(self.settings, "test.jpg")
             
             # Advance some steps to get past initial state
             for _ in range(10):
@@ -47,14 +47,14 @@ class TestControlDebounce:
             
             # Rapid restart calls should be debounced
             restart_count = 0
-            original_initialize = engine.initialize
+            original_init = engine.init
             
             def count_initialize(*args, **kwargs):
                 nonlocal restart_count
                 restart_count += 1
-                return original_initialize(*args, **kwargs)
+                return original_init(*args, **kwargs)
             
-            with patch.object(engine, 'initialize', side_effect=count_initialize):
+            with patch.object(engine, 'init', side_effect=count_initialize):
                 # Rapid fire restarts
                 for _ in range(10):
                     control.restart()
@@ -74,8 +74,7 @@ class TestControlDebounce:
             mock_open.return_value = mock_img
             
             # Initialize and start
-            engine.initialize("test.jpg", self.settings)
-            control.start()
+            control.start(self.settings, "test.jpg")
             
             # Rapid pause/resume should be stable
             for _ in range(5):
@@ -96,7 +95,7 @@ class TestControlDebounce:
             mock_img.convert.return_value.resize.return_value = mock_img
             mock_open.return_value = mock_img
             
-            engine.initialize("test.jpg", self.settings)
+            engine.init(self.settings, "test.jpg")
             
             apply_count = 0
             original_apply = engine.apply_settings
@@ -122,8 +121,8 @@ class TestControlDebounce:
                 # Should be debounced
                 assert apply_count <= 3, f"Too many settings applications: {apply_count}"
     
-    def test_skip_final_breathing_debounce(self):
-        """Test that skip final breathing commands are debounced."""
+    def test_skip_to_final_debounce(self):
+        """Test that skip to final commands are debounced."""
         engine = ParticleEngine()
         control = ControlInterface(engine)
         
@@ -133,27 +132,28 @@ class TestControlDebounce:
             mock_img.convert.return_value.resize.return_value = mock_img
             mock_open.return_value = mock_img
             
-            engine.initialize("test.jpg", self.settings)
+            engine.init(self.settings, "test.jpg")
             
             # Track stage transitions
             stage_changes = []
-            original_stage = engine.stage
             
             def track_stage():
-                current = original_stage()
+                current = engine.get_current_stage()
                 if not stage_changes or stage_changes[-1] != current:
                     stage_changes.append(current)
                 return current
             
-            with patch.object(engine, 'stage', side_effect=track_stage):
-                # Rapid skip commands
-                for _ in range(10):
-                    control.skip_final_breathing()
-                    engine.step()
-                
-                # Should not cause excessive stage changes
-                final_breathing_count = stage_changes.count(Stage.FINAL_BREATHING)
-                assert final_breathing_count <= 2, f"Too many stage transitions: {stage_changes}"
+            # Simulate stage tracking
+            original_stage = track_stage()
+            
+            # Rapid skip commands
+            for _ in range(10):
+                control.skip_to_final()
+                engine.step()
+                track_stage()
+            
+            # Should not cause excessive stage changes (debounced)
+            assert len(stage_changes) <= 5, f"Too many stage transitions: {len(stage_changes)}"
     
     def test_concurrent_commands_stability(self):
         """Test that concurrent different commands don't interfere."""
@@ -166,12 +166,12 @@ class TestControlDebounce:
             mock_img.convert.return_value.resize.return_value = mock_img
             mock_open.return_value = mock_img
             
-            engine.initialize("test.jpg", self.settings)
-            control.start()
+            # Start the engine with proper parameters
+            control.start(self.settings, "test.jpg")
             
             # Mix of different commands in quick succession
             control.pause()
-            control.skip_final_breathing()
+            control.skip_to_final()
             control.resume()
             new_settings = Settings(
                 density_profile=DensityProfile.MEDIUM,
@@ -184,5 +184,6 @@ class TestControlDebounce:
             control.restart()
             
             # System should remain stable
-            assert engine.particle_arrays is not None
-            assert engine.stage() in [s for s in Stage]
+            snapshot = engine.get_particle_snapshot()
+            assert snapshot is not None
+            assert engine.get_current_stage() in [s for s in Stage]

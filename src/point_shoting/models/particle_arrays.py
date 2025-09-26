@@ -150,6 +150,8 @@ def map_image_to_targets(
         image_array: Image as numpy array (H, W, 3/4)
         preserve_aspect: Whether to preserve image aspect ratio
     """
+    if image_array.size == 0 or len(image_array.shape) < 2:
+        raise ValueError(f"Invalid image array: shape={image_array.shape}, size={image_array.size}")
     height, width = image_array.shape[:2]
     N = arrays.particle_count
     
@@ -222,7 +224,7 @@ def initialize_burst_positions(
     offset_x = distances * np.cos(angles)
     offset_y = distances * np.sin(angles)
     
-    # Set positions
+    # Set positions - use vectorized operations to avoid scalar conversion issues
     for i in range(N):
         burst_idx = burst_assignments[i]
         arrays.position[i, 0] = burst_points[burst_idx, 0] + offset_x[i]

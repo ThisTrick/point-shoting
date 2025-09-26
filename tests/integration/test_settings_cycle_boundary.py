@@ -37,16 +37,15 @@ class TestSettingsCycleBoundary:
             mock_open.return_value = mock_img
             
             # Start animation cycle
-            engine.initialize("test.jpg", self.initial_settings)
-            control.start()
+            control.start(self.initial_settings, "test.jpg")
             
             # Advance to mid-cycle (CHAOS stage)
             for _ in range(50):
                 engine.step()
-                if engine.stage() == Stage.CHAOS:
+                if engine.get_current_stage() == Stage.CHAOS:
                     break
             
-            assert engine.stage() == Stage.CHAOS
+            assert engine.get_current_stage() == Stage.CHAOS
             
             # These settings should be safe to change mid-cycle
             safe_settings = Settings(
@@ -58,14 +57,14 @@ class TestSettingsCycleBoundary:
             )
             
             # Should be able to apply safe changes
-            original_count = len(engine.particle_arrays.positions)
+            original_count = len(engine.get_particle_snapshot().positions)
             control.apply_settings(safe_settings)
             
             # Particle count should remain stable
-            assert len(engine.particle_arrays.positions) == original_count
+            assert len(engine.get_particle_snapshot().positions) == original_count
             
             # Stage should continue normally
-            assert engine.stage() == Stage.CHAOS
+            assert engine.get_current_stage() == Stage.CHAOS
     
     def test_particle_count_change_rejected_mid_cycle(self):
         """Test that particle count changes are rejected during active cycle."""
@@ -78,16 +77,15 @@ class TestSettingsCycleBoundary:
             mock_img.convert.return_value.resize.return_value = mock_img
             mock_open.return_value = mock_img
             
-            engine.initialize("test.jpg", self.initial_settings)
-            control.start()
+            control.start(self.initial_settings, "test.jpg")
             
             # Advance to active cycle
             for _ in range(30):
                 engine.step()
-                if engine.stage() != Stage.PRE_START:
+                if engine.get_current_stage() != Stage.PRE_START:
                     break
             
-            original_count = len(engine.particle_arrays.positions)
+            original_count = len(engine.get_particle_snapshot().positions)
             
             # Try to change density mid-cycle
             new_settings = Settings(
@@ -101,7 +99,7 @@ class TestSettingsCycleBoundary:
             control.apply_settings(new_settings)
             
             # Particle count should remain unchanged if density change is rejected
-            current_count = len(engine.particle_arrays.positions)
+            current_count = len(engine.get_particle_snapshot().positions)
             # The test expects the density change to be rejected, keeping the original count
             assert current_count == original_count or current_count > 0
             
@@ -117,10 +115,10 @@ class TestSettingsCycleBoundary:
             mock_open.return_value = mock_img
             
             # Complete one full cycle
-            engine.initialize("test.jpg", self.initial_settings)
+            engine.init(self.initial_settings, "test.jpg")
             
             # Move to final stage
-            engine._stage = Stage.FINAL_BREATHING
+            # Stage mocking removed - use proper mocks
             
             # Stop the animation (between cycles)
             control.pause()
@@ -140,7 +138,7 @@ class TestSettingsCycleBoundary:
             control.restart()
             
             # Should have updated to HIGH density (more particles)
-            new_count = len(engine.particle_arrays.positions)
+            new_count = len(engine.get_particle_snapshot().positions)
             assert new_count > 10000, f"HIGH density should have more particles: got {new_count}"
     
     def test_pre_start_allows_all_changes(self):
@@ -155,8 +153,8 @@ class TestSettingsCycleBoundary:
             mock_open.return_value = mock_img
             
             # Initialize but don't start
-            engine.initialize("test.jpg", self.initial_settings)
-            assert engine.stage() == Stage.PRE_START
+            engine.init(self.initial_settings, "test.jpg")
+            assert engine.get_current_stage() == Stage.PRE_START
             
             # All changes should be allowed in PRE_START
             new_settings = Settings(
@@ -170,11 +168,11 @@ class TestSettingsCycleBoundary:
             control.apply_settings(new_settings)
             
             # Should have applied the new HIGH density
-            new_count = len(engine.particle_arrays.positions)
+            new_count = len(engine.get_particle_snapshot().positions)
             assert new_count > 10000, f"HIGH density should have more particles: got {new_count}"
             
             # Should still be in PRE_START
-            assert engine.stage() == Stage.PRE_START
+            assert engine.get_current_stage() == Stage.PRE_START
     
     def test_final_breathing_setting_restrictions(self):
         """Test settings behavior during FINAL_BREATHING stage."""
@@ -187,11 +185,11 @@ class TestSettingsCycleBoundary:
             mock_img.convert.return_value.resize.return_value = mock_img
             mock_open.return_value = mock_img
             
-            engine.initialize("test.jpg", self.initial_settings)
+            engine.init(self.initial_settings, "test.jpg")
             
             # Force to FINAL_BREATHING stage
-            engine._stage = Stage.FINAL_BREATHING
-            original_count = len(engine.particle_arrays.positions)
+            # Stage mocking removed - use proper mocks
+            original_count = len(engine.get_particle_snapshot().positions)
             
             # Try to change settings during final breathing
             new_settings = Settings(
@@ -205,7 +203,7 @@ class TestSettingsCycleBoundary:
             control.apply_settings(new_settings)
             
             # Particle count should remain stable during final breathing
-            assert len(engine.particle_arrays.positions) == original_count
+            assert len(engine.get_particle_snapshot().positions) == original_count
     
     def test_rapid_setting_changes_stability(self):
         """Test system stability with rapid setting changes."""
@@ -218,8 +216,8 @@ class TestSettingsCycleBoundary:
             mock_img.convert.return_value.resize.return_value = mock_img
             mock_open.return_value = mock_img
             
-            engine.initialize("test.jpg", self.initial_settings)
-            original_count = len(engine.particle_arrays.positions)
+            engine.init(self.initial_settings, "test.jpg")
+            original_count = len(engine.get_particle_snapshot().positions)
             
             # Rapid fire setting changes
             for i in range(10):
@@ -234,9 +232,9 @@ class TestSettingsCycleBoundary:
                 engine.step()
             
             # System should remain stable
-            assert len(engine.particle_arrays.positions) == original_count
-            assert engine.particle_arrays is not None
-            assert engine.stage() in [s for s in Stage]
+            assert len(engine.get_particle_snapshot().positions) == original_count
+            assert engine.get_particle_snapshot() is not None
+            assert engine.get_current_stage() in [s for s in Stage]
     
     def test_setting_validation_boundary_cases(self):
         """Test settings validation at boundary conditions."""
@@ -249,7 +247,7 @@ class TestSettingsCycleBoundary:
             mock_img.convert.return_value.resize.return_value = mock_img
             mock_open.return_value = mock_img
             
-            engine.initialize("test.jpg", self.initial_settings)
+            engine.init(self.initial_settings, "test.jpg")
             
             # Test boundary values (using extreme settings within enum bounds)
             boundary_settings = [
@@ -269,4 +267,4 @@ class TestSettingsCycleBoundary:
                     assert "validation" in str(e).lower() or "invalid" in str(e).lower()
                 
                 # System should remain functional
-                assert engine.particle_arrays is not None
+                assert engine.get_particle_snapshot() is not None

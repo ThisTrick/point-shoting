@@ -40,7 +40,7 @@ class TestVelocityCap:
         # for step in range(600):  # 10 seconds @ 60 FPS
         #     engine.step(1.0 / 60.0)
         #     
-        #     current_stage = engine.stage()
+        #     current_stage = engine.get_current_stage()
         #     snapshot = engine.snapshot()
         #     velocities = snapshot.get('velocities')
         #     

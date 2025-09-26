@@ -26,7 +26,7 @@ class TestSkipTransitionSmoothness:
             locale="en"
         )
         
-    def test_skip_final_breathing_smooth_transition(self):
+    def test_skip_to_final_smooth_transition(self):
         """Test that skip to final breathing maintains position continuity."""
         engine = ParticleEngine()
         control = ControlInterface(engine)
@@ -62,7 +62,7 @@ class TestSkipTransitionSmoothness:
             before_positions = snapshot.position.copy()
             
             # Skip to final breathing
-            control.skip_final_breathing()
+            control.skip_to_final()
             
             # Verify smooth transition
             assert engine.get_current_stage() == Stage.FINAL_BREATHING
@@ -90,7 +90,7 @@ class TestSkipTransitionSmoothness:
             initial_count = len(engine.get_particle_snapshot().position)
             
             # Skip to final breathing
-            control.skip_final_breathing()
+            control.skip_to_final()
             
             # Particle count should remain stable
             final_count = len(engine.get_particle_snapshot().position)
@@ -114,7 +114,7 @@ class TestSkipTransitionSmoothness:
                 engine.step()
             
             # Skip to final breathing
-            control.skip_final_breathing()
+            control.skip_to_final()
             engine.step()  # One step to apply transition
             
             # Velocities should be reasonable for breathing stage
@@ -141,7 +141,7 @@ class TestSkipTransitionSmoothness:
             
             # Multiple skip attempts should be idempotent
             for _ in range(5):
-                control.skip_final_breathing()
+                control.skip_to_final()
                 engine.step()
                 
                 assert engine.get_current_stage() == Stage.FINAL_BREATHING
