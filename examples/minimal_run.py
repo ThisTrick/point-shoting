@@ -7,7 +7,7 @@ from pathlib import Path
 # Add src to path for development
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from point_shoting.models.settings import Settings, Density, Speed, ColorMode
+from point_shoting.models.settings import Settings, DensityProfile, SpeedProfile, ColorMode
 from point_shoting.services.particle_engine import ParticleEngine
 from point_shoting.cli.control_interface import ControlInterface
 import time
@@ -58,8 +58,8 @@ def minimal_run():
     
     # Create settings
     settings = Settings(
-        density=Density.MEDIUM,     # ~9k particles
-        speed=Speed.NORMAL,         # Normal animation speed
+        density_profile=DensityProfile.MEDIUM,     # ~9k particles
+        speed_profile=SpeedProfile.NORMAL,         # Normal animation speed
         color_mode=ColorMode.STYLIZED,  # Stylized colors
         hud_enabled=True            # Show HUD
     )
@@ -99,9 +99,9 @@ def minimal_run():
                     metrics = control.get_metrics()
                     if metrics:
                         print(f"Frame {frame_count}: "
-                              f"Stage={metrics.current_stage.name}, "
-                              f"Progress={metrics.stage_progress:.1%}, "
-                              f"FPS={metrics.fps:.1f}")
+                              f"Stage={metrics.stage.name}, "
+                              f"Progress={metrics.get_stage_progress_estimate():.1%}, "
+                              f"FPS={metrics.fps_avg:.1f}")
             
             # Check if we've been running long enough
             runtime = time.time() - start_time
