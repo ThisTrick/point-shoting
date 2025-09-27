@@ -1,0 +1,562 @@
+/**
+ * HelpTooltip Component Styles
+ * 
+ * Rich tooltip styling system with:
+ * - Multiple theme variants (dark, light, primary, error, etc.)
+ * - Smart positioning with arrow indicators
+ * - Smooth animations and transitions
+ * - Interactive content support
+ * - Responsive design for mobile devices
+ * - Accessibility enhancements
+ * - Portal rendering management
+ * - High contrast and dark mode support
+ */
+
+/* ===== PORTAL CONTAINER ===== */
+
+.tooltip-portal {
+  position: relative;
+  z-index: 10001;
+}
+
+/* ===== BASE TOOLTIP STYLES ===== */
+
+.help-tooltip {
+  position: absolute;
+  z-index: 10001;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  max-width: 300px;
+  word-wrap: break-word;
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  pointer-events: none;
+  user-select: none;
+}
+
+.help-tooltip.tooltip-interactive {
+  pointer-events: auto;
+  user-select: text;
+}
+
+/* ===== TOOLTIP CONTENT ===== */
+
+.tooltip-content {
+  position: relative;
+  z-index: 1;
+}
+
+.tooltip-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.tooltip-description {
+  font-size: 13px;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+.tooltip-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tooltip-actions button {
+  padding: 4px 8px;
+  font-size: 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: rgba(255, 255, 255, 0.15);
+  color: inherit;
+  font-weight: 500;
+}
+
+.tooltip-actions button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.tooltip-actions button:active {
+  transform: translateY(0);
+}
+
+/* ===== THEME VARIANTS ===== */
+
+.tooltip-theme-dark {
+  background-color: #374151;
+  color: #f9fafb;
+  border: 1px solid #4b5563;
+}
+
+.tooltip-theme-light {
+  background-color: #ffffff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.tooltip-theme-primary {
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: 1px solid #2563eb;
+}
+
+.tooltip-theme-error {
+  background-color: #ef4444;
+  color: #ffffff;
+  border: 1px solid #dc2626;
+}
+
+.tooltip-theme-warning {
+  background-color: #f59e0b;
+  color: #ffffff;
+  border: 1px solid #d97706;
+}
+
+.tooltip-theme-success {
+  background-color: #10b981;
+  color: #ffffff;
+  border: 1px solid #059669;
+}
+
+/* ===== ARROW STYLES ===== */
+
+.tooltip-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Top arrow (tooltip below trigger) */
+.tooltip-arrow-top {
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+}
+
+.tooltip-theme-dark .tooltip-arrow-top {
+  border-bottom: 8px solid #374151;
+}
+
+.tooltip-theme-light .tooltip-arrow-top {
+  border-bottom: 8px solid #ffffff;
+}
+
+.tooltip-theme-primary .tooltip-arrow-top {
+  border-bottom: 8px solid #3b82f6;
+}
+
+.tooltip-theme-error .tooltip-arrow-top {
+  border-bottom: 8px solid #ef4444;
+}
+
+.tooltip-theme-warning .tooltip-arrow-top {
+  border-bottom: 8px solid #f59e0b;
+}
+
+.tooltip-theme-success .tooltip-arrow-top {
+  border-bottom: 8px solid #10b981;
+}
+
+/* Bottom arrow (tooltip above trigger) */
+.tooltip-arrow-bottom {
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+}
+
+.tooltip-theme-dark .tooltip-arrow-bottom {
+  border-top: 8px solid #374151;
+}
+
+.tooltip-theme-light .tooltip-arrow-bottom {
+  border-top: 8px solid #ffffff;
+}
+
+.tooltip-theme-primary .tooltip-arrow-bottom {
+  border-top: 8px solid #3b82f6;
+}
+
+.tooltip-theme-error .tooltip-arrow-bottom {
+  border-top: 8px solid #ef4444;
+}
+
+.tooltip-theme-warning .tooltip-arrow-bottom {
+  border-top: 8px solid #f59e0b;
+}
+
+.tooltip-theme-success .tooltip-arrow-bottom {
+  border-top: 8px solid #10b981;
+}
+
+/* Left arrow (tooltip to the right) */
+.tooltip-arrow-left {
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+}
+
+.tooltip-theme-dark .tooltip-arrow-left {
+  border-right: 8px solid #374151;
+}
+
+.tooltip-theme-light .tooltip-arrow-left {
+  border-right: 8px solid #ffffff;
+}
+
+.tooltip-theme-primary .tooltip-arrow-left {
+  border-right: 8px solid #3b82f6;
+}
+
+.tooltip-theme-error .tooltip-arrow-left {
+  border-right: 8px solid #ef4444;
+}
+
+.tooltip-theme-warning .tooltip-arrow-left {
+  border-right: 8px solid #f59e0b;
+}
+
+.tooltip-theme-success .tooltip-arrow-left {
+  border-right: 8px solid #10b981;
+}
+
+/* Right arrow (tooltip to the left) */
+.tooltip-arrow-right {
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+}
+
+.tooltip-theme-dark .tooltip-arrow-right {
+  border-left: 8px solid #374151;
+}
+
+.tooltip-theme-light .tooltip-arrow-right {
+  border-left: 8px solid #ffffff;
+}
+
+.tooltip-theme-primary .tooltip-arrow-right {
+  border-left: 8px solid #3b82f6;
+}
+
+.tooltip-theme-error .tooltip-arrow-right {
+  border-left: 8px solid #ef4444;
+}
+
+.tooltip-theme-warning .tooltip-arrow-right {
+  border-left: 8px solid #f59e0b;
+}
+
+.tooltip-theme-success .tooltip-arrow-right {
+  border-left: 8px solid #10b981;
+}
+
+/* ===== ANIMATION VARIANTS ===== */
+
+/* Fade animation */
+.tooltip-animation-fade {
+  animation: tooltipFadeIn 0.2s ease-out;
+}
+
+.tooltip-animation-fade.tooltip-hiding {
+  animation: tooltipFadeOut 0.15s ease-out;
+}
+
+/* Slide animation */
+.tooltip-animation-slide.tooltip-position-top {
+  animation: tooltipSlideFromBottom 0.2s ease-out;
+}
+
+.tooltip-animation-slide.tooltip-position-bottom {
+  animation: tooltipSlideFromTop 0.2s ease-out;
+}
+
+.tooltip-animation-slide.tooltip-position-left {
+  animation: tooltipSlideFromRight 0.2s ease-out;
+}
+
+.tooltip-animation-slide.tooltip-position-right {
+  animation: tooltipSlideFromLeft 0.2s ease-out;
+}
+
+/* Scale animation */
+.tooltip-animation-scale {
+  animation: tooltipScaleIn 0.2s ease-out;
+  transform-origin: center bottom;
+}
+
+.tooltip-animation-scale.tooltip-position-top {
+  transform-origin: center top;
+}
+
+.tooltip-animation-scale.tooltip-position-left {
+  transform-origin: right center;
+}
+
+.tooltip-animation-scale.tooltip-position-right {
+  transform-origin: left center;
+}
+
+/* No animation */
+.tooltip-animation-none {
+  animation: none;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 768px) {
+  .help-tooltip {
+    max-width: calc(100vw - 32px);
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+  
+  .tooltip-title {
+    font-size: 13px;
+  }
+  
+  .tooltip-description {
+    font-size: 12px;
+  }
+  
+  .tooltip-actions {
+    margin-top: 6px;
+    gap: 4px;
+  }
+  
+  .tooltip-actions button {
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .help-tooltip {
+    max-width: calc(100vw - 24px);
+    padding: 6px 8px;
+  }
+}
+
+/* ===== TOUCH DEVICES ===== */
+
+@media (hover: none) and (pointer: coarse) {
+  .help-tooltip {
+    padding: 8px 12px;
+    font-size: 14px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .tooltip-content {
+    width: 100%;
+  }
+}
+
+/* ===== ACCESSIBILITY ===== */
+
+.help-tooltip:focus-within {
+  outline: 2px solid var(--color-primary, #3b82f6);
+  outline-offset: 2px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .help-tooltip {
+    border-width: 2px;
+    box-shadow: none;
+  }
+  
+  .tooltip-theme-dark {
+    background-color: #000000;
+    color: #ffffff;
+    border-color: #ffffff;
+  }
+  
+  .tooltip-theme-light {
+    background-color: #ffffff;
+    color: #000000;
+    border-color: #000000;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .help-tooltip,
+  .tooltip-actions button {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+  .tooltip-theme-light {
+    background-color: #374151;
+    color: #f9fafb;
+    border-color: #4b5563;
+  }
+  
+  .tooltip-theme-light .tooltip-arrow-top {
+    border-bottom-color: #374151;
+  }
+  
+  .tooltip-theme-light .tooltip-arrow-bottom {
+    border-top-color: #374151;
+  }
+  
+  .tooltip-theme-light .tooltip-arrow-left {
+    border-right-color: #374151;
+  }
+  
+  .tooltip-theme-light .tooltip-arrow-right {
+    border-left-color: #374151;
+  }
+}
+
+/* ===== KEYFRAME ANIMATIONS ===== */
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes tooltipFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes tooltipSlideFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tooltipSlideFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tooltipSlideFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes tooltipSlideFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes tooltipScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ===== UTILITY CLASSES ===== */
+
+.tooltip-nowrap {
+  white-space: nowrap;
+}
+
+.tooltip-multiline {
+  white-space: pre-wrap;
+}
+
+.tooltip-center {
+  text-align: center;
+}
+
+.tooltip-compact {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.tooltip-large {
+  padding: 12px 16px;
+  font-size: 16px;
+  max-width: 400px;
+}
+
+/* ===== SPECIAL CONTENT TYPES ===== */
+
+.tooltip-content code {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+.tooltip-content kbd {
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  padding: 2px 4px;
+  font-family: inherit;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.tooltip-content a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.5);
+}
+
+.tooltip-content a:hover {
+  text-decoration-color: currentColor;
+}
+
+.tooltip-content ul,
+.tooltip-content ol {
+  margin: 4px 0;
+  padding-left: 16px;
+}
+
+.tooltip-content li {
+  margin: 2px 0;
+}

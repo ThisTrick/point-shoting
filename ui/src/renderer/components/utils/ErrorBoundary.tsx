@@ -18,7 +18,7 @@ import React, { Component, ReactNode, ErrorInfo } from 'react';
 import type { ErrorReport, ErrorSeverity } from '../../types/errors';
 import './ErrorBoundary.css';
 
-interface ErrorBoundaryProps {
+export interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo, report: ErrorReport) => void;

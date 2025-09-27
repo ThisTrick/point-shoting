@@ -21,7 +21,7 @@ export type SpinnerType = 'spin' | 'pulse' | 'dots' | 'bars' | 'rings' | 'wave' 
 export type SpinnerSize = 'small' | 'medium' | 'large' | 'extra-large';
 export type SpinnerColor = 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info' | 'custom';
 
-interface LoadingSpinnerProps {
+export interface LoadingSpinnerProps {
   /** Type of spinner animation */
   type?: SpinnerType;
   /** Size of the spinner */
