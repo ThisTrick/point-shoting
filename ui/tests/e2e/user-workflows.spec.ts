@@ -1,0 +1,675 @@
+/**
+ * End-to-End Tests for Particle Animation UI
+ * 
+ * Tests complete user workflows including:
+ * - Image loading and validation
+ * - Animation control and playback
+ * - Settings management and persistence
+ * - File operations and dialogs
+ * - Error recovery and user feedback
+ */
+
+import { test, expect, ElectronApplication, Page } from '@playwright/test'
+import { _electron as electron } from 'playwright'
+import path from 'path'
+
+describe('Particle Animation UI E2E Tests', () => {
+  let electronApp: ElectronApplication
+  let page: Page
+
+  test.beforeAll(async () => {
+    // Launch Electron application
+    electronApp = await electron.launch({
+      args: [path.join(__dirname, '../../src/main/main.ts')]
+    })
+    
+    // Wait for the first window
+    page = await electronApp.firstWindow()
+    
+    // Wait for app to be ready
+    await page.waitForLoadState('domcontentloaded')
+  })
+
+  test.afterAll(async () => {
+    await electronApp.close()
+  })
+
+  test.describe('Application Startup & Initialization', () => {
+    
+    test('should launch successfully and show main window', async () => {
+      // Verify window is visible
+      expect(await page.isVisible('body')).toBe(true)
+      
+      // Verify title
+      expect(await page.title()).toContain('Particle Animation')
+      
+      // Verify main UI elements are present
+      await expect(page.locator('[data-testid="main-container"]')).toBeVisible()
+      await expect(page.locator('[data-testid="control-panel"]')).toBeVisible()
+      await expect(page.locator('[data-testid="status-bar"]')).toBeVisible()
+    })
+
+    test('should load default settings on first run', async () => {
+      // Open settings dialog
+      await page.click('[data-testid="settings-button"]')
+      await expect(page.locator('[data-testid="settings-dialog"]')).toBeVisible()
+      
+      // Verify default values
+      const themeSelect = page.locator('[data-testid="theme-select"]')
+      expect(await themeSelect.inputValue()).toBe('dark')
+      
+      const particleCount = page.locator('[data-testid="particle-count-input"]')
+      expect(await particleCount.inputValue()).toBe('1000')
+      
+      const language = page.locator('[data-testid="language-select"]')  
+      expect(await language.inputValue()).toBe('en')
+      
+      // Close dialog
+      await page.click('[data-testid="settings-close"]')
+    })
+
+    test('should show Python engine status on startup', async () => {
+      const statusIndicator = page.locator('[data-testid="engine-status"]')
+      await expect(statusIndicator).toBeVisible()
+      
+      // Engine should start automatically or show disconnected status
+      const statusText = await statusIndicator.textContent()
+      expect(['Starting...', 'Connected', 'Disconnected']).toContain(statusText)
+    })
+  })
+
+  test.describe('Image Loading Workflow', () => {
+    
+    test('should open file dialog when clicking load image button', async () => {
+      // Mock file dialog
+      await page.evaluate(() => {
+        // Mock electron dialog
+        window.electronAPI = {
+          selectImageFile: () => Promise.resolve({
+            path: '/mock/test-image.png',
+            filename: 'test-image.png',
+            metadata: {
+              width: 1920,
+              height: 1080,
+              size: 2048000,
+              format: 'PNG'
+            }
+          })
+        }
+      })
+      
+      // Click load image button
+      await page.click('[data-testid="load-image-button"]')
+      
+      // Verify loading state
+      await expect(page.locator('[data-testid="loading-overlay"]')).toBeVisible()
+      
+      // Wait for image to load
+      await page.waitForSelector('[data-testid="image-preview"]', { timeout: 5000 })
+      
+      // Verify image information is displayed
+      const imageInfo = page.locator('[data-testid="image-info"]')
+      await expect(imageInfo).toContainText('1920 × 1080')
+      await expect(imageInfo).toContainText('PNG')
+    })
+
+    test('should validate image format and show errors for unsupported files', async () => {
+      // Mock unsupported file selection
+      await page.evaluate(() => {
+        window.electronAPI = {
+          selectImageFile: () => Promise.resolve({
+            path: '/mock/unsupported.bmp',
+            filename: 'unsupported.bmp',
+            validationResult: {
+              isValid: false,
+              errors: [{ field: 'format', message: 'BMP format not supported' }]
+            }
+          })
+        }
+      })
+      
+      await page.click('[data-testid="load-image-button"]')
+      
+      // Verify error message appears
+      const errorMessage = page.locator('[data-testid="error-message"]')
+      await expect(errorMessage).toBeVisible()
+      await expect(errorMessage).toContainText('BMP format not supported')
+      
+      // Verify image is not loaded
+      await expect(page.locator('[data-testid="image-preview"]')).not.toBeVisible()
+    })
+
+    test('should handle large image files with warning', async () => {
+      // Mock large image file
+      await page.evaluate(() => {
+        window.electronAPI = {
+          selectImageFile: () => Promise.resolve({
+            path: '/mock/large-image.png',
+            filename: 'large-image.png',
+            metadata: {
+              width: 8000,
+              height: 6000,
+              size: 50 * 1024 * 1024, // 50MB
+              format: 'PNG'
+            },
+            validationResult: {
+              isValid: true,
+              warnings: [{ field: 'size', message: 'Large image may affect performance' }]
+            }
+          })
+        }
+      })
+      
+      await page.click('[data-testid="load-image-button"]')
+      
+      // Verify warning appears
+      const warningMessage = page.locator('[data-testid="warning-message"]')
+      await expect(warningMessage).toBeVisible()
+      await expect(warningMessage).toContainText('Large image may affect performance')
+      
+      // Verify image still loads
+      await expect(page.locator('[data-testid="image-preview"]')).toBeVisible()
+    })
+
+    test('should display recent images list', async () => {
+      // Mock recent images
+      await page.evaluate(() => {
+        window.electronAPI = {
+          getRecentImages: () => Promise.resolve([
+            {
+              path: '/mock/recent1.png',
+              filename: 'recent1.png',
+              lastAccessed: new Date('2024-01-15')
+            },
+            {
+              path: '/mock/recent2.jpg',
+              filename: 'recent2.jpg', 
+              lastAccessed: new Date('2024-01-14')
+            }
+          ])
+        }
+      })
+      
+      // Open recent images dropdown
+      await page.click('[data-testid="recent-images-dropdown"]')
+      
+      // Verify recent images are listed
+      const recentList = page.locator('[data-testid="recent-images-list"]')
+      await expect(recentList).toBeVisible()
+      
+      await expect(page.locator('[data-testid="recent-item-recent1.png"]')).toBeVisible()
+      await expect(page.locator('[data-testid="recent-item-recent2.jpg"]')).toBeVisible()
+    })
+  })
+
+  test.describe('Animation Control Workflow', () => {
+    
+    test.beforeEach(async () => {
+      // Load a test image before each animation test
+      await page.evaluate(() => {
+        window.electronAPI = {
+          selectImageFile: () => Promise.resolve({
+            path: '/mock/test.png',
+            filename: 'test.png',
+            metadata: { width: 800, height: 600, format: 'PNG' }
+          })
+        }
+      })
+      await page.click('[data-testid="load-image-button"]')
+      await page.waitForSelector('[data-testid="image-preview"]')
+    })
+
+    test('should start animation when clicking play button', async () => {
+      // Mock engine response
+      await page.evaluate(() => {
+        window.electronAPI = {
+          startAnimation: () => Promise.resolve({ success: true })
+        }
+      })
+      
+      // Click play button
+      await page.click('[data-testid="play-button"]')
+      
+      // Verify animation controls update
+      await expect(page.locator('[data-testid="pause-button"]')).toBeVisible()
+      await expect(page.locator('[data-testid="stop-button"]')).toBeVisible()
+      await expect(page.locator('[data-testid="skip-button"]')).toBeVisible()
+      
+      // Verify status shows animation running
+      const status = page.locator('[data-testid="animation-status"]')
+      await expect(status).toContainText('Running')
+    })
+
+    test('should pause and resume animation', async () => {
+      // Start animation first
+      await page.evaluate(() => {
+        window.electronAPI = {
+          startAnimation: () => Promise.resolve({ success: true }),
+          pauseAnimation: () => Promise.resolve(),
+          resumeAnimation: () => Promise.resolve()
+        }
+      })
+      
+      await page.click('[data-testid="play-button"]')
+      await expect(page.locator('[data-testid="pause-button"]')).toBeVisible()
+      
+      // Pause animation
+      await page.click('[data-testid="pause-button"]')
+      
+      // Verify paused state
+      await expect(page.locator('[data-testid="resume-button"]')).toBeVisible()
+      const status = page.locator('[data-testid="animation-status"]')
+      await expect(status).toContainText('Paused')
+      
+      // Resume animation
+      await page.click('[data-testid="resume-button"]')
+      await expect(page.locator('[data-testid="pause-button"]')).toBeVisible()
+      await expect(status).toContainText('Running')
+    })
+
+    test('should stop animation and reset to initial state', async () => {
+      // Start animation first
+      await page.evaluate(() => {
+        window.electronAPI = {
+          startAnimation: () => Promise.resolve({ success: true }),
+          stopAnimation: () => Promise.resolve()
+        }
+      })
+      
+      await page.click('[data-testid="play-button"]')
+      await expect(page.locator('[data-testid="pause-button"]')).toBeVisible()
+      
+      // Stop animation
+      await page.click('[data-testid="stop-button"]')
+      
+      // Verify controls reset
+      await expect(page.locator('[data-testid="play-button"]')).toBeVisible()
+      await expect(page.locator('[data-testid="pause-button"]')).not.toBeVisible()
+      
+      const status = page.locator('[data-testid="animation-status"]')
+      await expect(status).toContainText('Stopped')
+    })
+
+    test('should skip to final formation when requested', async () => {
+      // Start animation and skip to end
+      await page.evaluate(() => {
+        window.electronAPI = {
+          startAnimation: () => Promise.resolve({ success: true }),
+          skipToFinal: () => Promise.resolve()
+        }
+      })
+      
+      await page.click('[data-testid="play-button"]')
+      await page.click('[data-testid="skip-button"]')
+      
+      // Verify skip action
+      const status = page.locator('[data-testid="animation-status"]')
+      await expect(status).toContainText('Complete')
+    })
+
+    test('should display animation progress and stage information', async () => {
+      // Mock animation progress updates
+      await page.evaluate(() => {
+        window.electronAPI = {
+          startAnimation: () => Promise.resolve({ success: true }),
+          onStatusUpdate: (callback) => {
+            // Simulate progress updates
+            setTimeout(() => callback({
+              stage: 'burst',
+              progress: 0.3,
+              particleCount: 1000
+            }), 100)
+            
+            setTimeout(() => callback({
+              stage: 'transition', 
+              progress: 0.7,
+              particleCount: 1000
+            }), 200)
+          }
+        }
+      })
+      
+      await page.click('[data-testid="play-button"]')
+      
+      // Verify progress information updates
+      const progressBar = page.locator('[data-testid="progress-bar"]')
+      const stageDisplay = page.locator('[data-testid="current-stage"]')
+      
+      await expect(progressBar).toBeVisible()
+      await expect(stageDisplay).toContainText('burst')
+      
+      // Wait for stage transition
+      await page.waitForTimeout(300)
+      await expect(stageDisplay).toContainText('transition')
+    })
+  })
+
+  test.describe('Settings Management Workflow', () => {
+    
+    test('should save and persist settings changes', async () => {
+      // Open settings
+      await page.click('[data-testid="settings-button"]')
+      await expect(page.locator('[data-testid="settings-dialog"]')).toBeVisible()
+      
+      // Change settings
+      await page.selectOption('[data-testid="theme-select"]', 'light')
+      await page.fill('[data-testid="particle-count-input"]', '1500')
+      await page.selectOption('[data-testid="language-select"]', 'uk')
+      
+      // Mock save settings
+      await page.evaluate(() => {
+        window.electronAPI = {
+          saveSettings: (settings) => Promise.resolve({ success: true })
+        }
+      })
+      
+      // Save settings
+      await page.click('[data-testid="settings-save"]')
+      
+      // Verify dialog closes
+      await expect(page.locator('[data-testid="settings-dialog"]')).not.toBeVisible()
+      
+      // Verify settings applied (theme change visible)
+      await expect(page.locator('body')).toHaveClass(/light-theme/)
+    })
+
+    test('should validate settings input and show errors', async () => {
+      await page.click('[data-testid="settings-button"]')
+      
+      // Enter invalid particle count
+      await page.fill('[data-testid="particle-count-input"]', '-100')
+      
+      // Try to save
+      await page.click('[data-testid="settings-save"]')
+      
+      // Verify validation error
+      const errorMessage = page.locator('[data-testid="validation-error"]')
+      await expect(errorMessage).toBeVisible()
+      await expect(errorMessage).toContainText('Particle count must be positive')
+      
+      // Dialog should remain open
+      await expect(page.locator('[data-testid="settings-dialog"]')).toBeVisible()
+    })
+
+    test('should reset settings to defaults', async () => {
+      await page.click('[data-testid="settings-button"]')
+      
+      // Change some settings
+      await page.selectOption('[data-testid="theme-select"]', 'light')
+      await page.fill('[data-testid="particle-count-input"]', '2000')
+      
+      // Reset to defaults
+      await page.click('[data-testid="settings-reset"]')
+      
+      // Verify confirmation dialog
+      const confirmDialog = page.locator('[data-testid="confirm-reset-dialog"]')
+      await expect(confirmDialog).toBeVisible()
+      
+      await page.click('[data-testid="confirm-reset-yes"]')
+      
+      // Verify settings reset
+      expect(await page.inputValue('[data-testid="theme-select"]')).toBe('dark')
+      expect(await page.inputValue('[data-testid="particle-count-input"]')).toBe('1000')
+    })
+
+    test('should save and load preset configurations', async () => {
+      await page.click('[data-testid="settings-button"]')
+      
+      // Create custom settings
+      await page.selectOption('[data-testid="theme-select"]', 'light')
+      await page.fill('[data-testid="particle-count-input"]', '1500')
+      
+      // Save as preset
+      await page.click('[data-testid="save-preset-button"]')
+      await page.fill('[data-testid="preset-name-input"]', 'High Performance')
+      await page.fill('[data-testid="preset-description-input"]', 'Settings for high performance')
+      
+      await page.evaluate(() => {
+        window.electronAPI = {
+          savePreset: (name, description) => Promise.resolve({ success: true })
+        }
+      })
+      
+      await page.click('[data-testid="save-preset-confirm"]')
+      
+      // Verify preset appears in list
+      const presetList = page.locator('[data-testid="presets-list"]')
+      await expect(presetList).toContainText('High Performance')
+      
+      // Load the preset
+      await page.click('[data-testid="preset-high-performance"]')
+      
+      // Verify settings loaded
+      expect(await page.inputValue('[data-testid="theme-select"]')).toBe('light')
+      expect(await page.inputValue('[data-testid="particle-count-input"]')).toBe('1500')
+    })
+  })
+
+  test.describe('Error Handling & Recovery', () => {
+    
+    test('should handle Python engine connection failure gracefully', async () => {
+      // Mock engine connection failure
+      await page.evaluate(() => {
+        window.electronAPI = {
+          startEngine: () => Promise.resolve({ 
+            success: false, 
+            error: 'Failed to start Python engine'
+          })
+        }
+      })
+      
+      // Try to start animation without engine
+      await page.click('[data-testid="play-button"]')
+      
+      // Verify error notification
+      const errorNotification = page.locator('[data-testid="error-notification"]')
+      await expect(errorNotification).toBeVisible()
+      await expect(errorNotification).toContainText('Failed to start Python engine')
+      
+      // Verify retry option available
+      await expect(page.locator('[data-testid="retry-engine-button"]')).toBeVisible()
+    })
+
+    test('should show appropriate error for missing image', async () => {
+      // Try to start animation without loading image
+      await page.click('[data-testid="play-button"]')
+      
+      // Verify error message
+      const errorMessage = page.locator('[data-testid="error-message"]')
+      await expect(errorMessage).toBeVisible()
+      await expect(errorMessage).toContainText('Please load an image first')
+    })
+
+    test('should handle file operation errors gracefully', async () => {
+      // Mock file operation failure
+      await page.evaluate(() => {
+        window.electronAPI = {
+          selectImageFile: () => Promise.reject(new Error('File access denied'))
+        }
+      })
+      
+      await page.click('[data-testid="load-image-button"]')
+      
+      // Verify error handling
+      const errorNotification = page.locator('[data-testid="error-notification"]')
+      await expect(errorNotification).toBeVisible()
+      await expect(errorNotification).toContainText('File access denied')
+    })
+
+    test('should recover from network connectivity issues', async () => {
+      // Mock network failure and recovery
+      let failCount = 0
+      await page.evaluate(() => {
+        window.electronAPI = {
+          startEngine: () => {
+            failCount++
+            if (failCount < 3) {
+              return Promise.reject(new Error('Network timeout'))
+            }
+            return Promise.resolve({ success: true })
+          }
+        }
+      })
+      
+      // First attempt fails
+      await page.click('[data-testid="play-button"]')
+      await expect(page.locator('[data-testid="error-notification"]')).toBeVisible()
+      
+      // Retry and succeed
+      await page.click('[data-testid="retry-engine-button"]')
+      await expect(page.locator('[data-testid="animation-status"]')).toContainText('Running')
+    })
+  })
+
+  test.describe('Performance & Responsiveness', () => {
+    
+    test('should remain responsive during animation playback', async () => {
+      // Load image and start animation
+      await page.evaluate(() => {
+        window.electronAPI = {
+          selectImageFile: () => Promise.resolve({
+            path: '/mock/test.png',
+            metadata: { width: 1920, height: 1080 }
+          }),
+          startAnimation: () => Promise.resolve({ success: true })
+        }
+      })
+      
+      await page.click('[data-testid="load-image-button"]')
+      await page.click('[data-testid="play-button"]')
+      
+      // Test UI responsiveness during animation
+      const startTime = Date.now()
+      
+      // Click settings button - should respond quickly
+      await page.click('[data-testid="settings-button"]')
+      const responseTime = Date.now() - startTime
+      
+      expect(responseTime).toBeLessThan(500) // Should respond within 500ms
+      await expect(page.locator('[data-testid="settings-dialog"]')).toBeVisible()
+    })
+
+    test('should handle large image files without blocking UI', async () => {
+      // Mock large image loading
+      await page.evaluate(() => {
+        let loadingProgress = 0
+        window.electronAPI = {
+          selectImageFile: () => {
+            return new Promise((resolve) => {
+              const interval = setInterval(() => {
+                loadingProgress += 10
+                if (loadingProgress >= 100) {
+                  clearInterval(interval)
+                  resolve({
+                    path: '/mock/large.png',
+                    metadata: { width: 8000, height: 6000, size: 50000000 }
+                  })
+                }
+              }, 100)
+            })
+          }
+        }
+      })
+      
+      await page.click('[data-testid="load-image-button"]')
+      
+      // Verify loading indicator appears immediately
+      await expect(page.locator('[data-testid="loading-overlay"]')).toBeVisible()
+      
+      // Verify UI remains responsive during loading
+      await page.click('[data-testid="settings-button"]')
+      await expect(page.locator('[data-testid="settings-dialog"]')).toBeVisible()
+      await page.click('[data-testid="settings-close"]')
+    })
+
+    test('should maintain smooth animation at target framerate', async () => {
+      // Mock animation with FPS monitoring
+      let frameCount = 0
+      const startTime = Date.now()
+      
+      await page.evaluate(() => {
+        window.electronAPI = {
+          startAnimation: () => Promise.resolve({ success: true }),
+          onStatusUpdate: (callback) => {
+            const interval = setInterval(() => {
+              frameCount++
+              callback({
+                stage: 'transition',
+                progress: (frameCount % 100) / 100,
+                fps: frameCount / ((Date.now() - startTime) / 1000)
+              })
+            }, 16) // ~60 FPS target
+          }
+        }
+      })
+      
+      await page.click('[data-testid="play-button"]')
+      
+      // Monitor FPS display
+      const fpsDisplay = page.locator('[data-testid="fps-counter"]')
+      await expect(fpsDisplay).toBeVisible()
+      
+      // Wait and check FPS is reasonable
+      await page.waitForTimeout(2000)
+      const fpsText = await fpsDisplay.textContent()
+      const fps = parseFloat(fpsText?.match(/(\d+\.?\d*)/)?.[1] || '0')
+      
+      expect(fps).toBeGreaterThan(30) // Should maintain at least 30 FPS
+    })
+  })
+
+  test.describe('Accessibility & Usability', () => {
+    
+    test('should support keyboard navigation', async () => {
+      // Test tab navigation
+      await page.keyboard.press('Tab')
+      await expect(page.locator('[data-testid="load-image-button"]')).toBeFocused()
+      
+      await page.keyboard.press('Tab')
+      await expect(page.locator('[data-testid="play-button"]')).toBeFocused()
+      
+      await page.keyboard.press('Tab')
+      await expect(page.locator('[data-testid="settings-button"]')).toBeFocused()
+    })
+
+    test('should provide proper ARIA labels and roles', async () => {
+      // Check main controls have proper accessibility attributes
+      const playButton = page.locator('[data-testid="play-button"]')
+      await expect(playButton).toHaveAttribute('aria-label', 'Start animation')
+      await expect(playButton).toHaveAttribute('role', 'button')
+      
+      const progressBar = page.locator('[data-testid="progress-bar"]')
+      await expect(progressBar).toHaveAttribute('role', 'progressbar')
+      await expect(progressBar).toHaveAttribute('aria-label', 'Animation progress')
+    })
+
+    test('should support screen reader announcements for state changes', async () => {
+      // Mock screen reader announcements
+      const announcements: string[] = []
+      await page.evaluate(() => {
+        // Mock aria-live region updates
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'childList' || mutation.type === 'characterData') {
+              const target = mutation.target as Element
+              if (target.getAttribute('aria-live')) {
+                announcements.push(target.textContent || '')
+              }
+            }
+          })
+        })
+        
+        document.querySelectorAll('[aria-live]').forEach(element => {
+          observer.observe(element, { childList: true, characterData: true })
+        })
+      })
+      
+      // Perform actions that should trigger announcements
+      await page.click('[data-testid="play-button"]')
+      
+      // Verify announcement region updated
+      const statusAnnouncement = page.locator('[data-testid="status-announcement"][aria-live]')
+      await expect(statusAnnouncement).toContainText('Animation started')
+    })
+  })
+})
