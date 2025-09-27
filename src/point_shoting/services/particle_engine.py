@@ -17,6 +17,11 @@ from ..lib.math_utils import (
     clamp_positions_inplace, calculate_distances, calculate_magnitudes,
     calculate_chaos_energy, calculate_recognition_score
 )
+from ..lib.performance_optimizations import (
+    vectorized_burst_physics, vectorized_chaos_physics, vectorized_converging_physics,
+    vectorized_formation_physics, vectorized_breathing_physics,
+    optimized_recognition_score, optimized_chaos_energy
+)
 
 try:
     from PIL import Image
@@ -194,11 +199,12 @@ class ParticleEngine:
         # Update physics based on current stage
         self._update_stage_physics(dt)
         
-        # Check for stage transitions
+        # Check for stage transitions (every frame)
         self._check_stage_transitions()
         
-        # Update particle colors
-        self._update_particle_colors()
+        # Update particle colors less frequently (every 5 frames for performance)
+        if self._frame_count % 5 == 0:
+            self._update_particle_colors()
         
         # Performance tracking
         step_time = time.perf_counter() - step_start
@@ -276,149 +282,32 @@ class ParticleEngine:
             self._particles.position[i] = center + offset_vec * (1.0 + breathing_offset[i])
     
     def _update_burst_physics(self, dt: float) -> None:
-        """Update physics for BURST stage"""
-        # Explosive outward motion from center
-        center = np.array([0.5, 0.5])
-        
-        # Apply burst force
-        burst_strength = 5.0 * (1.0 - self._stage_state.stage_progress)  # Decreases over time
-        
-        for i in range(len(self._particles.position)):
-            # Direction from center
-            direction = self._particles.position[i] - center
-            distance = np.linalg.norm(direction)
-            
-            if distance > 0:
-                direction /= distance
-                # Apply burst force
-                force = direction * burst_strength * dt
-                self._particles.velocity[i] += force
-        
-        # Apply damping
-        self._particles.velocity *= self._physics_params.damping
-        
-        # Update positions
-        self._particles.position += self._particles.velocity * dt
-        
-        # Clamp to bounds
-        clamp_positions_inplace(self._particles.position, 0.0, 1.0)
+        """Update physics for BURST stage (optimized vectorized version)"""
+        vectorized_burst_physics(
+            self._particles, dt, self._stage_state.stage_progress, self._physics_params
+        )
     
     def _update_chaos_physics(self, dt: float) -> None:
-        """Update physics for CHAOS stage"""
-        # Random chaotic motion with some attraction to targets
-        
-        # Add random forces
-        random_forces = np.random.uniform(-1, 1, self._particles.velocity.shape) * self._physics_params.noise_strength
-        self._particles.velocity += random_forces * dt
-        
-        # Weak attraction to targets
-        target_attraction = 0.5  # Weak attraction during chaos
-        for i in range(len(self._particles.position)):
-            target_dir = self._particles.target[i] - self._particles.position[i]
-            target_distance = np.linalg.norm(target_dir)
-            
-            if target_distance > 0:
-                target_dir /= target_distance
-                attraction_force = target_dir * target_attraction * dt
-                self._particles.velocity[i] += attraction_force
-        
-        # Apply damping
-        self._particles.velocity *= self._physics_params.damping
-        
-        # Update positions
-        self._particles.position += self._particles.velocity * dt
-        
-        # Clamp to bounds
-        clamp_positions_inplace(self._particles.position, 0.0, 1.0)
+        """Update physics for CHAOS stage (optimized vectorized version)"""
+        vectorized_chaos_physics(self._particles, dt, self._physics_params)
     
     def _update_converging_physics(self, dt: float) -> None:
-        """Update physics for CONVERGING stage"""
-        # Particles converge toward their target positions
-        
-        attraction_strength = self._physics_params.attraction_strength * 2.0  # Stronger attraction
-        
-        for i in range(len(self._particles.position)):
-            # Calculate attraction to target
-            target_dir = self._particles.target[i] - self._particles.position[i]
-            target_distance = np.linalg.norm(target_dir)
-            
-            if target_distance > 0.01:  # Only attract if not very close
-                target_dir /= target_distance
-                # Stronger attraction as we converge
-                attraction_force = target_dir * attraction_strength * dt
-                self._particles.velocity[i] += attraction_force
-        
-        # Apply damping
-        self._particles.velocity *= self._physics_params.damping ** 2  # Stronger damping
-        
-        # Update positions
-        self._particles.position += self._particles.velocity * dt
-        
-        # Clamp to bounds
-        clamp_positions_inplace(self._particles.position, 0.0, 1.0)
+        """Update physics for CONVERGING stage (optimized vectorized version)"""
+        vectorized_converging_physics(self._particles, dt, self._physics_params)
     
     def _update_formation_physics(self, dt: float) -> None:
-        """Update physics for FORMATION stage"""
-        # Particles settle into final positions with stabilization
-        
-        stabilization_strength = 3.0
-        
-        for i in range(len(self._particles.position)):
-            # Strong attraction to exact target position
-            target_dir = self._particles.target[i] - self._particles.position[i]
-            target_distance = np.linalg.norm(target_dir)
-            
-            if target_distance > 0.001:  # Very precise targeting
-                target_dir /= target_distance
-                stabilization_force = target_dir * stabilization_strength * dt
-                self._particles.velocity[i] += stabilization_force
-        
-        # Heavy damping for stability
-        self._particles.velocity *= self._physics_params.damping ** 3
-        
-        # Update positions
-        self._particles.position += self._particles.velocity * dt
-        
-        # Clamp to bounds
-        clamp_positions_inplace(self._particles.position, 0.0, 1.0)
+        """Update physics for FORMATION stage (optimized vectorized version)"""
+        vectorized_formation_physics(self._particles, dt, self._physics_params)
     
     def _update_breathing_physics(self, dt: float) -> None:
-        """Update physics for FINAL_BREATHING stage"""
-        # Particles breathe around their target positions
-        
+        """Update physics for FINAL_BREATHING stage (optimized vectorized version)"""
         if self._breathing_oscillator is None:
             return
         
-        center = np.array([0.5, 0.5])  # Image center
-        
-        # Apply radial breathing effect
-        breathed_positions = self._breathing_oscillator.get_radial_breathing(
-            self._stage_state.stage_elapsed,
-            center,
-            self._particles.target
+        vectorized_breathing_physics(
+            self._particles, dt, self._physics_params, 
+            self._breathing_oscillator, self._stage_state.stage_elapsed
         )
-        
-        # Very gently move particles toward breathed positions
-        breathing_attraction = 0.05
-        
-        for i in range(len(self._particles.position)):
-            # Attract to breathing position
-            breathing_dir = breathed_positions[i] - self._particles.position[i]
-            breathing_distance = np.linalg.norm(breathing_dir)
-            
-            if breathing_distance > 0:
-                breathing_dir /= breathing_distance
-                breathing_force = breathing_dir * breathing_attraction * dt
-                self._particles.velocity[i] += breathing_force
-        
-        # Apply very strong damping for smooth breathing
-        self._particles.velocity *= self._physics_params.damping ** 4
-        
-        # Update positions
-        self._particles.position += self._particles.velocity * dt
-        
-        # Clamp to bounds
-        clamp_positions_inplace(self._particles.position, 0.0, 1.0)
     
     def _check_stage_transitions(self) -> None:
         """Check and handle stage transitions"""
@@ -539,12 +428,12 @@ class ParticleEngine:
         if self._particles is None:
             return None
         
-        # Return a copy to avoid modification
+        # Return a copy to avoid modification, preserving original dtypes
         snapshot = ParticleArrays(
-            position=self._particles.position.copy(),
-            velocity=self._particles.velocity.copy(),
+            position=self._particles.position.copy().astype(np.float32),
+            velocity=self._particles.velocity.copy().astype(np.float32),
             color_rgba=self._particles.color_rgba.copy(),
-            target=self._particles.target.copy(),
+            target=self._particles.target.copy().astype(np.float32),
             active=self._particles.active.copy(),
             stage_mask=self._particles.stage_mask.copy(),
             _particle_count=self._particles._particle_count
@@ -665,18 +554,18 @@ class ParticleEngine:
         return stats
     
     def _calculate_recognition_score(self) -> float:
-        """Calculate how well particles match target image positions."""
+        """Calculate how well particles match target image positions (optimized)."""
         if self._particles is None:
             return 0.0
         
-        return calculate_recognition_score(
+        return optimized_recognition_score(
             self._particles.position, 
             self._particles.target
         )
     
     def _calculate_chaos_energy(self) -> float:
-        """Calculate particle chaos energy from velocity variance."""
+        """Calculate particle chaos energy from velocity variance (optimized)."""
         if self._particles is None:
             return 0.0
         
-        return calculate_chaos_energy(self._particles.velocity)
+        return optimized_chaos_energy(self._particles.velocity)
