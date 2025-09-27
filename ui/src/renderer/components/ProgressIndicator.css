@@ -1,0 +1,316 @@
+/**
+ * ProgressIndicator Component Styles
+ * 
+ * Provides styling for various progress indicator types including:
+ * - Linear progress bars with animations
+ * - Circular progress indicators
+ * - Stepped progress visualization
+ * - Status-based color schemes
+ */
+
+.progress-indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* Header */
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.progress-percentage {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Content */
+.progress-content {
+  position: relative;
+}
+
+/* Description */
+.progress-description {
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* Linear Progress */
+.linear-progress-track {
+  width: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.linear-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.3s ease;
+  position: relative;
+  min-width: 0;
+}
+
+.linear-progress-fill.animated {
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.linear-progress-fill.striped {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.15) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.15) 75%,
+    transparent 75%,
+    transparent
+  );
+  background-size: 20px 20px;
+  animation: stripe-animation 1s linear infinite;
+}
+
+.linear-progress-fill.indeterminate {
+  animation: indeterminate-linear 2s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent-color),
+    transparent
+  );
+  width: 100% !important;
+}
+
+@keyframes stripe-animation {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 20px 0;
+  }
+}
+
+@keyframes indeterminate-linear {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Circular Progress */
+.circular-progress-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circular-progress {
+  transform: rotate(-90deg);
+}
+
+.circular-background {
+  fill: none;
+}
+
+.circular-foreground {
+  fill: none;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.circular-foreground.animated {
+  transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.circular-foreground.indeterminate {
+  animation: indeterminate-circular 2s linear infinite;
+}
+
+.circular-text {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.circular-text .percentage {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.circular-text .label {
+  color: var(--text-secondary);
+  margin-top: 2px;
+  line-height: 1;
+}
+
+@keyframes indeterminate-circular {
+  0% {
+    stroke-dasharray: 0 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 75 150;
+    stroke-dashoffset: -25;
+  }
+  100% {
+    stroke-dasharray: 0 150;
+    stroke-dashoffset: -100;
+  }
+}
+
+/* Stepped Progress */
+.stepped-progress {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.step {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.step.active {
+  transform: scaleY(1.2);
+}
+
+.step.current {
+  animation: pulse-step 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-step {
+  0%, 100% {
+    opacity: 1;
+    transform: scaleY(1.2);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scaleY(1.4);
+  }
+}
+
+/* Status Styles */
+.progress-active .linear-progress-fill,
+.progress-active .circular-foreground {
+  background-color: var(--accent-color);
+  stroke: var(--accent-color);
+}
+
+.progress-success .progress-label,
+.progress-success .progress-percentage {
+  color: #22c55e;
+}
+
+.progress-success .linear-progress-fill,
+.progress-success .circular-foreground {
+  background-color: #22c55e;
+  stroke: #22c55e;
+}
+
+.progress-error .progress-label,
+.progress-error .progress-percentage {
+  color: #ef4444;
+}
+
+.progress-error .linear-progress-fill,
+.progress-error .circular-foreground {
+  background-color: #ef4444;
+  stroke: #ef4444;
+}
+
+.progress-warning .progress-label,
+.progress-warning .progress-percentage {
+  color: #f59e0b;
+}
+
+.progress-warning .linear-progress-fill,
+.progress-warning .circular-foreground {
+  background-color: #f59e0b;
+  stroke: #f59e0b;
+}
+
+.progress-idle .progress-label,
+.progress-idle .progress-percentage {
+  color: var(--text-secondary);
+}
+
+.progress-idle .linear-progress-fill,
+.progress-idle .circular-foreground {
+  background-color: var(--bg-secondary);
+  stroke: var(--bg-secondary);
+}
+
+/* Size Variations */
+.progress-indicator.small {
+  font-size: 0.75rem;
+}
+
+.progress-indicator.small .step {
+  height: 4px;
+}
+
+.progress-indicator.large {
+  font-size: 1rem;
+}
+
+.progress-indicator.large .step {
+  height: 12px;
+}
+
+/* Accessibility */
+.progress-indicator:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .linear-progress-track,
+  .circular-background,
+  .step {
+    border: 1px solid var(--text-primary);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .linear-progress-fill,
+  .circular-foreground,
+  .step {
+    transition: none;
+    animation: none;
+  }
+  
+  .linear-progress-fill.indeterminate {
+    background: var(--accent-color);
+    animation: none;
+  }
+  
+  .circular-foreground.indeterminate {
+    animation: none;
+  }
+}

@@ -1,0 +1,447 @@
+/**
+ * SettingsDialog Component Styles
+ * 
+ * Provides styling for the dedicated settings dialog including:
+ * - Modal overlay and dialog layout
+ * - Tab navigation interface
+ * - Settings content panels
+ * - Action buttons and footer
+ */
+
+/* Dialog Overlay */
+.settings-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(6px);
+  animation: fade-in 0.2s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Main Dialog */
+.settings-dialog {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
+  width: 95vw;
+  max-width: 900px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slide-in 0.3s ease-out;
+  outline: none;
+}
+
+@keyframes slide-in {
+  from {
+    transform: scale(0.95) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Header */
+.settings-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  border-radius: 16px 16px 0 0;
+}
+
+.settings-dialog-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.changes-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  background: #f59e0b;
+  color: white;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.changes-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: white;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.changes-text {
+  white-space: nowrap;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.dialog-close-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dialog-close-button:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.dialog-close-button:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* Body */
+.settings-dialog-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Tab Navigation */
+.settings-tabs {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-tertiary);
+  border-right: 1px solid var(--border-color);
+  min-width: 200px;
+  padding: 1rem 0;
+  overflow-y: auto;
+}
+
+.settings-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+.settings-tab:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.settings-tab:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: -2px;
+}
+
+.settings-tab.active {
+  background: var(--bg-primary);
+  color: var(--accent-color);
+  border-left-color: var(--accent-color);
+}
+
+.tab-icon {
+  font-size: 1rem;
+  width: 20px;
+  text-align: center;
+}
+
+.tab-label {
+  font-weight: 500;
+}
+
+/* Content Area */
+.settings-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  background: var(--bg-primary);
+}
+
+/* Footer */
+.settings-dialog-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  border-radius: 0 0 16px 16px;
+}
+
+.settings-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.primary-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.settings-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 40px;
+}
+
+.settings-button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+}
+
+.settings-button:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.settings-button.primary {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+}
+
+.settings-button.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.settings-button.secondary {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.settings-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .settings-dialog {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+    animation: slide-up 0.3s ease-out;
+  }
+
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .settings-dialog-header,
+  .settings-dialog-footer {
+    border-radius: 0;
+  }
+
+  .settings-dialog-body {
+    flex-direction: column;
+  }
+
+  .settings-tabs {
+    flex-direction: row;
+    min-width: auto;
+    padding: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    overflow-x: auto;
+  }
+
+  .settings-tab {
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem 1rem;
+    min-width: 80px;
+    text-align: center;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+  }
+
+  .settings-tab.active {
+    border-left: none;
+    border-bottom-color: var(--accent-color);
+  }
+
+  .tab-label {
+    font-size: 0.75rem;
+  }
+
+  .settings-content {
+    padding: 1rem;
+  }
+
+  .settings-dialog-header {
+    padding: 1rem 1.5rem;
+  }
+
+  .settings-dialog-footer {
+    padding: 1rem 1.5rem;
+  }
+
+  .settings-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .primary-actions {
+    width: 100%;
+  }
+
+  .settings-button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-dialog-title {
+    font-size: 1.25rem;
+  }
+
+  .changes-indicator {
+    padding: 0.25rem 0.5rem;
+  }
+
+  .changes-text {
+    display: none;
+  }
+
+  .settings-tabs {
+    padding: 0.5rem 0;
+  }
+
+  .settings-tab {
+    padding: 0.5rem;
+    min-width: 60px;
+  }
+
+  .tab-icon {
+    font-size: 0.875rem;
+  }
+
+  .tab-label {
+    font-size: 0.625rem;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .settings-dialog {
+    border-width: 2px;
+  }
+
+  .settings-tab,
+  .settings-button {
+    border-width: 2px;
+  }
+
+  .settings-tab.active {
+    border-left-width: 4px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .settings-dialog-overlay,
+  .settings-dialog,
+  .settings-button,
+  .changes-dot {
+    animation: none;
+  }
+
+  .settings-tab,
+  .settings-button,
+  .dialog-close-button {
+    transition: none;
+  }
+
+  .settings-button:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Focus Management */
+.settings-dialog:focus {
+  outline: none;
+}
+
+/* Scrollbar Styling */
+.settings-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.settings-content::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+.settings-content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.settings-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
