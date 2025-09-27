@@ -1,0 +1,580 @@
+{
+  "app": {
+    "name": "Point Shooting Animation",
+    "description": "Particle burst animation system with image formation",
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "update": "Update",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "finish": "Finish"
+  },
+
+  "navigation": {
+    "file": "File",
+    "edit": "Edit",
+    "view": "View",
+    "tools": "Tools",
+    "help": "Help",
+    "settings": "Settings",
+    "about": "About",
+    "quit": "Quit",
+    "preferences": "Preferences"
+  },
+
+  "animation": {
+    "play": "Play",
+    "pause": "Pause",
+    "stop": "Stop",
+    "reset": "Reset",
+    "restart": "Restart",
+    "speed": "Speed",
+    "loop": "Loop",
+    "progress": "Progress",
+    "duration": "Duration",
+    "frame": "Frame",
+    "frames": "Frames",
+    "fps": "FPS",
+    "particles": "Particles",
+    "stage": "Stage",
+    "stages": {
+      "preStart": "Pre-Start",
+      "burst": "Burst",
+      "chaos": "Chaos",
+      "converging": "Converging",
+      "formation": "Formation",
+      "finalBreathing": "Final Breathing"
+    }
+  },
+
+  "file": {
+    "open": "Open",
+    "openImage": "Open Image",
+    "save": "Save",
+    "saveAs": "Save As",
+    "export": "Export",
+    "import": "Import",
+    "recent": "Recent Files",
+    "clear": "Clear",
+    "browse": "Browse",
+    "upload": "Upload",
+    "download": "Download",
+    "formats": {
+      "supported": "Supported Formats",
+      "image": "Image Files",
+      "preset": "Preset Files",
+      "config": "Configuration Files"
+    },
+    "errors": {
+      "notFound": "File not found",
+      "invalidFormat": "Invalid file format",
+      "tooLarge": "File too large",
+      "corrupted": "File corrupted or unreadable",
+      "noPermission": "Permission denied"
+    }
+  },
+
+  "settings": {
+    "title": "Settings",
+    "general": "General",
+    "animation": "Animation",
+    "appearance": "Appearance",
+    "keyboard": "Keyboard",
+    "performance": "Performance",
+    "advanced": "Advanced",
+    "reset": "Reset",
+    "resetAll": "Reset All",
+    "resetConfirm": "Are you sure you want to reset all settings to defaults?",
+    "apply": "Apply",
+    "defaults": "Restore Defaults",
+
+    "animationSettings": {
+      "density": "Particle Density",
+      "speed": "Animation Speed",
+      "colorMode": "Color Mode",
+      "colorModes": {
+        "stylized": "Stylized Colors",
+        "precise": "Precise Colors"
+      },
+      "watermark": "Watermark",
+      "hud": "Show Performance HUD",
+      "background": "Background",
+      "blur": "Background Blur",
+      "breathing": "Final Breathing Effect"
+    },
+
+    "appearanceSettings": {
+      "theme": "Theme",
+      "themes": {
+        "light": "Light",
+        "dark": "Dark",
+        "system": "Follow System"
+      },
+      "contrast": "Contrast",
+      "contrastModes": {
+        "normal": "Normal",
+        "high": "High Contrast"
+      },
+      "fontSize": "Font Size",
+      "fontSizes": {
+        "small": "Small",
+        "medium": "Medium",
+        "large": "Large"
+      },
+      "language": "Language",
+      "direction": "Text Direction"
+    },
+
+    "keyboardSettings": {
+      "shortcuts": "Keyboard Shortcuts",
+      "recordShortcut": "Record New Shortcut",
+      "recording": "Recording... Press keys",
+      "record": "Record",
+      "cancel": "Cancel",
+      "reset": "Reset",
+      "clear": "Clear",
+      "conflicts": "Shortcut conflicts detected",
+      "categories": {
+        "playback": "Playback Control",
+        "navigation": "Navigation",
+        "editing": "Editing",
+        "file": "File Operations",
+        "view": "View Control",
+        "system": "System"
+      },
+      "actions": {
+        "playPause": "Play/Pause Animation",
+        "stop": "Stop Animation",
+        "restart": "Restart Animation",
+        "openImage": "Open Image File",
+        "savePreset": "Save Preset",
+        "exportAnimation": "Export Animation",
+        "toggleSettings": "Toggle Settings Panel",
+        "toggleControls": "Toggle Control Panel",
+        "focusSearch": "Focus Search",
+        "zoomIn": "Zoom In",
+        "zoomOut": "Zoom Out",
+        "zoomFit": "Fit to Window",
+        "increaseSpeed": "Increase Speed",
+        "decreaseSpeed": "Decrease Speed",
+        "increaseParticles": "More Particles",
+        "decreaseParticles": "Fewer Particles",
+        "toggleFullscreen": "Toggle Fullscreen",
+        "minimize": "Minimize Window",
+        "quit": "Quit Application"
+      }
+    }
+  },
+
+  "performance": {
+    "fps": "Frames per Second",
+    "frameTime": "Frame Time",
+    "memory": "Memory Usage",
+    "particles": "Active Particles",
+    "stage": "Current Stage",
+    "optimization": "Performance Optimization",
+    "warning": "Performance Warning",
+    "critical": "Critical Performance Issue",
+    "suggestions": {
+      "reduceParticles": "Try reducing particle count",
+      "lowerResolution": "Consider lowering image resolution",
+      "disableEffects": "Disable visual effects for better performance",
+      "closeOtherApps": "Close other applications to free memory"
+    }
+  },
+
+  "errors": {
+    "general": "An error occurred",
+    "network": "Network connection error",
+    "fileSystem": "File system error",
+    "performance": "Performance degradation detected",
+    "validation": "Input validation failed",
+    "timeout": "Operation timed out",
+    "unknown": "Unknown error occurred",
+    "details": "Error Details",
+    "report": "Report Issue",
+
+    "imageLoad": "Failed to load image file",
+    "presetLoad": "Failed to load preset",
+    "settingsSave": "Failed to save settings",
+    "exportFailed": "Export operation failed",
+    "importFailed": "Import operation failed",
+    "engineConnection": "Cannot connect to animation engine",
+    "memoryLimit": "Memory limit exceeded",
+    "performanceIssue": "Performance issue detected"
+  },
+
+  "success": {
+    "imageLoaded": "Image loaded successfully",
+    "presetSaved": "Preset saved successfully",
+    "presetLoaded": "Preset loaded successfully",
+    "settingsSaved": "Settings saved successfully",
+    "exported": "Animation exported successfully",
+    "imported": "Configuration imported successfully",
+    "reset": "Settings reset to defaults",
+    "updated": "Application updated successfully"
+  },
+
+  "help": {
+    "dragDrop": "Drag and drop an image file to get started",
+    "shortcuts": "Use keyboard shortcuts for quick control",
+    "performance": "Monitor performance metrics in real-time",
+    "themes": "Switch between light and dark themes",
+    "presets": "Save and load animation configurations",
+    "export": "Export animations as video or GIF files",
+    "troubleshooting": "Check the help section for common issues",
+
+    "controls": {
+      "play": "Start or resume the particle animation",
+      "speed": "Adjust animation playback speed",
+      "particles": "Change the number of particles in the simulation",
+      "zoom": "Zoom in or out of the animation view",
+      "reset": "Reset animation to initial burst state"
+    },
+
+    "settings": {
+      "density": "Controls how many particles are generated",
+      "colorMode": "Choose between stylized or precise color matching",
+      "watermark": "Add a custom watermark to exported animations",
+      "theme": "Change the application appearance",
+      "shortcuts": "Customize keyboard shortcuts for all actions"
+    }
+  },
+
+  "accessibility": {
+    "labels": {
+      "closeDialog": "Close dialog",
+      "openMenu": "Open menu",
+      "playAnimation": "Play animation",
+      "pauseAnimation": "Pause animation",
+      "volumeSlider": "Volume control",
+      "speedSlider": "Speed control",
+      "particleSlider": "Particle count control",
+      "themeSelector": "Theme selector",
+      "languageSelector": "Language selector"
+    },
+
+    "descriptions": {
+      "animationView": "Main animation viewport showing particle simulation",
+      "controlPanel": "Animation control panel with play, pause, and settings",
+      "settingsPanel": "Application settings and preferences",
+      "imagePreview": "Preview of the loaded image file",
+      "progressIndicator": "Animation progress and performance indicators"
+    },
+
+    "instructions": {
+      "dragDrop": "Drag and drop image files onto the window to load them",
+      "keyboard": "Use Tab to navigate, Enter to activate, Escape to cancel",
+      "navigation": "Use arrow keys to navigate between elements"
+    }
+  },
+
+  "time": {
+    "formats": {
+      "short": "M/D/YYYY",
+      "long": "MMMM D, YYYY",
+      "relative": "relative"
+    },
+    "units": {
+      "seconds": "seconds",
+      "minutes": "minutes",
+      "hours": "hours",
+      "days": "days"
+    },
+    "relative": {
+      "now": "just now",
+      "secondsAgo": "{{count}} seconds ago",
+      "minutesAgo": "{{count}} minutes ago",
+      "hoursAgo": "{{count}} hours ago",
+      "daysAgo": "{{count}} days ago",
+      "future": "in the future"
+    }
+  },
+
+  "numbers": {
+    "currency": "Currency",
+    "percent": "Percent",
+    "decimal": "Decimal",
+    "integer": "Integer",
+    "fileSize": {
+      "bytes": "bytes",
+      "kilobytes": "KB",
+      "megabytes": "MB",
+      "gigabytes": "GB"
+    }
+  },
+
+  "presets": {
+    "title": "Animation Presets",
+    "create": "Create Preset",
+    "load": "Load Preset",
+    "delete": "Delete Preset",
+    "export": "Export Preset",
+    "import": "Import Preset",
+    "duplicate": "Duplicate",
+    "rename": "Rename",
+    
+    "categories": {
+      "general": "General",
+      "artistic": "Artistic",
+      "technical": "Technical",
+      "experimental": "Experimental",
+      "favorites": "Favorites"
+    },
+    
+    "fields": {
+      "name": "Preset Name",
+      "description": "Description",
+      "category": "Category",
+      "tags": "Tags",
+      "author": "Author",
+      "created": "Created",
+      "modified": "Last Modified"
+    },
+    
+    "actions": {
+      "saveCurrentAsPreset": "Save Current Settings as Preset",
+      "loadPresetSettings": "Load Preset Settings",
+      "exportToFile": "Export to File",
+      "importFromFile": "Import from File",
+      "sharePreset": "Share Preset",
+      "resetToDefaults": "Reset to Defaults"
+    },
+    
+    "validation": {
+      "nameRequired": "Preset name is required",
+      "nameExists": "A preset with this name already exists",
+      "invalidFile": "Invalid preset file format",
+      "loadError": "Failed to load preset",
+      "saveError": "Failed to save preset"
+    }
+  },
+
+  "imageLoader": {
+    "title": "Load Image",
+    "dropzone": "Drop image here or click to browse",
+    "browse": "Browse Files",
+    "recent": "Recent Images",
+    "supported": "Supported formats: JPG, PNG, GIF, BMP, WEBP",
+    "maxSize": "Maximum file size: {{size}}",
+    "processing": "Processing image...",
+    "preview": "Image Preview",
+    
+    "metadata": {
+      "filename": "Filename",
+      "filesize": "File Size",
+      "dimensions": "Dimensions",
+      "format": "Format",
+      "colorSpace": "Color Space",
+      "created": "Created",
+      "modified": "Modified"
+    },
+    
+    "actions": {
+      "load": "Load Image",
+      "replace": "Replace Current",
+      "cancel": "Cancel",
+      "remove": "Remove Image",
+      "reload": "Reload",
+      "properties": "Image Properties"
+    },
+    
+    "errors": {
+      "invalidFormat": "Unsupported image format",
+      "tooLarge": "Image file is too large",
+      "corrupted": "Image file appears to be corrupted",
+      "loadFailed": "Failed to load image",
+      "networkError": "Network error while loading image"
+    }
+  },
+
+  "export": {
+    "title": "Export Animation",
+    "format": "Export Format",
+    "formats": {
+      "mp4": "MP4 Video",
+      "gif": "Animated GIF", 
+      "webm": "WebM Video",
+      "frames": "Image Sequence"
+    },
+    
+    "settings": {
+      "quality": "Quality",
+      "resolution": "Resolution",
+      "framerate": "Frame Rate",
+      "duration": "Duration",
+      "loop": "Loop Animation",
+      "includeWatermark": "Include Watermark",
+      "compression": "Compression Level"
+    },
+    
+    "progress": {
+      "preparing": "Preparing export...",
+      "rendering": "Rendering frames: {{current}}/{{total}}",
+      "encoding": "Encoding video...",
+      "finalizing": "Finalizing export...",
+      "complete": "Export complete!",
+      "failed": "Export failed"
+    },
+    
+    "actions": {
+      "startExport": "Start Export",
+      "cancelExport": "Cancel Export",
+      "openFile": "Open Exported File",
+      "openFolder": "Open Containing Folder",
+      "exportAnother": "Export Another"
+    }
+  },
+
+  "watermark": {
+    "title": "Watermark Settings",
+    "enable": "Enable Watermark",
+    "image": "Watermark Image",
+    "textContent": "Watermark Text",
+    "position": "Position",
+    "positions": {
+      "topLeft": "Top Left",
+      "topRight": "Top Right",
+      "bottomLeft": "Bottom Left",
+      "bottomRight": "Bottom Right",
+      "center": "Center"
+    },
+    
+    "properties": {
+      "opacity": "Opacity",
+      "size": "Size",
+      "rotation": "Rotation",
+      "offset": "Offset",
+      "blendMode": "Blend Mode"
+    },
+    
+    "textSettings": {
+      "content": "Text Content",
+      "font": "Font Family",
+      "fontSize": "Font Size",
+      "color": "Text Color",
+      "backgroundColor": "Background Color",
+      "border": "Border",
+      "shadow": "Drop Shadow"
+    },
+    
+    "preview": "Watermark Preview",
+    "reset": "Reset to Defaults"
+  },
+
+  "controls": {
+    "playback": {
+      "title": "Playback Controls",
+      "play": "Play",
+      "pause": "Pause", 
+      "stop": "Stop",
+      "restart": "Restart",
+      "skipToEnd": "Skip to End",
+      "loop": "Loop",
+      "autoplay": "Auto-play"
+    },
+    
+    "timeline": {
+      "title": "Timeline",
+      "position": "Position",
+      "duration": "Duration",
+      "seek": "Seek to position",
+      "markers": "Stage Markers",
+      "scrub": "Scrub timeline"
+    },
+    
+    "parameters": {
+      "title": "Animation Parameters",
+      "speed": "Speed Multiplier",
+      "particles": "Particle Count",
+      "density": "Particle Density",
+      "spread": "Initial Spread",
+      "convergence": "Convergence Rate",
+      "breathing": "Breathing Amplitude"
+    },
+    
+    "view": {
+      "title": "View Controls",
+      "zoom": "Zoom Level",
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "zoomFit": "Fit to Window",
+      "zoomActual": "Actual Size",
+      "pan": "Pan View",
+      "reset": "Reset View"
+    }
+  },
+
+  "status": {
+    "ready": "Ready",
+    "loading": "Loading",
+    "playing": "Playing",
+    "paused": "Paused",
+    "stopped": "Stopped",
+    "error": "Error",
+    "exporting": "Exporting",
+    "complete": "Complete",
+    
+    "engine": {
+      "connected": "Engine Connected",
+      "disconnected": "Engine Disconnected", 
+      "reconnecting": "Reconnecting...",
+      "error": "Engine Error"
+    },
+    
+    "performance": {
+      "excellent": "Excellent Performance",
+      "good": "Good Performance",
+      "fair": "Fair Performance",
+      "poor": "Poor Performance",
+      "critical": "Critical Performance Issues"
+    }
+  },
+
+  "tooltips": {
+    "playButton": "Play/pause the particle animation",
+    "stopButton": "Stop animation and reset to beginning",
+    "speedSlider": "Adjust animation playback speed",
+    "particleSlider": "Change number of particles",
+    "zoomControls": "Zoom in/out of the animation view",
+    "settingsButton": "Open application settings",
+    "themeToggle": "Switch between light and dark themes",
+    "fullscreenToggle": "Enter/exit fullscreen mode",
+    "exportButton": "Export animation as video or GIF",
+    "presetSelector": "Load saved animation presets"
+  },
+
+  "dialogs": {
+    "confirmDelete": {
+      "title": "Confirm Deletion",
+      "message": "Are you sure you want to delete this item?",
+      "confirmButton": "Delete",
+      "cancelButton": "Cancel"
+    },
+    
+    "unsavedChanges": {
+      "title": "Unsaved Changes",
+      "message": "You have unsaved changes. Do you want to save them?",
+      "saveButton": "Save",
+      "discardButton": "Discard",
+      "cancelButton": "Cancel"
+    },
+    
+    "errorDialog": {
+      "title": "Error",
+      "message": "An error occurred: {{error}}",
+      "details": "Show Details",
+      "report": "Report Bug",
+      "closeButton": "Close"
+    }
+  }
+}
