@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta tags for proper rendering and mobile support -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self'; 
+                   script-src 'self' 'unsafe-inline' 'unsafe-eval'; 
+                   style-src 'self' 'unsafe-inline'; 
+                   img-src 'self' data: blob:; 
+                   font-src 'self' data:; 
+                   connect-src 'self';">
+    
+    <!-- Application title -->
+    <title>Point Shooting Animation</title>
+    
+    <!-- Favicon and icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="theme-color" content="#1e40af" media="(prefers-color-scheme: dark)" />
+    
+    <!-- PWA manifest (for potential future web deployment) -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Prevent flash of unstyled content -->
+    <style>
+        /* Critical CSS to prevent FOUC (Flash of Unstyled Content) */
+        * {
+            box-sizing: border-box;
+        }
+        
+        html {
+            /* Prevent theme flash by setting up defaults */
+            --bg-primary: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
+                        'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        /* Dark theme defaults */
+        @media (prefers-color-scheme: dark) {
+            html {
+                --bg-primary: #111827;
+                --text-primary: #f9fafb;
+                --text-secondary: #9ca3af;
+            }
+        }
+        
+        /* High contrast theme defaults */
+        @media (prefers-contrast: high) {
+            html {
+                --bg-primary: #ffffff;
+                --text-primary: #000000;
+                --text-secondary: #333333;
+            }
+            
+            @media (prefers-color-scheme: dark) {
+                html {
+                    --bg-primary: #000000;
+                    --text-primary: #ffffff;
+                    --text-secondary: #cccccc;
+                }
+            }
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 16px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            /* Prevent scrolling in desktop app */
+            overflow: hidden;
+        }
+        
+        /* Loading state styles */
+        .app-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+        
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid transparent;
+            border-top: 3px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Skip link for accessibility */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 6px;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            padding: 8px;
+            text-decoration: none;
+            border-radius: 4px;
+            z-index: 10000;
+            font-size: 14px;
+            transition: top 0.2s ease;
+        }
+        
+        .skip-link:focus {
+            top: 6px;
+        }
+        
+        /* Electron-specific styles */
+        html[data-platform="darwin"] body {
+            /* macOS-specific adjustments */
+            padding-top: 28px; /* Title bar height */
+        }
+        
+        html[data-platform="win32"] body {
+            /* Windows-specific adjustments */
+            border: 1px solid var(--text-secondary);
+        }
+        
+        /* Accessibility improvements */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        /* Focus management for desktop app */
+        :focus {
+            outline: 2px solid #2563eb;
+            outline-offset: 2px;
+        }
+        
+        :focus:not(:focus-visible) {
+            outline: none;
+        }
+        
+        /* High contrast focus indicators */
+        @media (prefers-contrast: high) {
+            :focus {
+                outline: 3px solid currentColor;
+                outline-offset: 2px;
+            }
+        }
+        
+        /* Prevent text selection in desktop app interface */
+        .no-select {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* Allow text selection in content areas */
+        .selectable {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main application root -->
+    <div id="root">
+        <!-- Fallback content for when JavaScript is disabled or fails to load -->
+        <div class="app-loading">
+            <div class="loading-spinner"></div>
+            <p>Loading Point Shooting Animation...</p>
+            <noscript>
+                <p style="color: #ef4444; margin-top: 2rem;">
+                    This application requires JavaScript to run.
+                </p>
+            </noscript>
+        </div>
+    </div>
+    
+    <!-- Development tools script (only loaded in development) -->
+    <script>
+        // Development mode detection and setup
+        if (process?.env?.NODE_ENV === 'development') {
+            // Add development class to body
+            document.body.classList.add('development-mode');
+            
+            // Enable React DevTools
+            if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
+                console.log('🔧 React DevTools available');
+            }
+            
+            // Add platform detection
+            if (window.electronAPI) {
+                window.electronAPI.platform.getPlatform().then(platform => {
+                    document.documentElement.setAttribute('data-platform', platform);
+                }).catch(console.error);
+            }
+        }
+        
+        // Global error handler
+        window.addEventListener('error', (event) => {
+            console.error('🚨 Global Error:', event.error);
+            
+            // Could send to error reporting service here
+            if (window.electronAPI && window.electronAPI.errorReporting) {
+                window.electronAPI.errorReporting.logError({
+                    message: event.error?.message || 'Unknown error',
+                    stack: event.error?.stack,
+                    filename: event.filename,
+                    lineno: event.lineno,
+                    colno: event.colno,
+                    timestamp: Date.now()
+                });
+            }
+        });
+        
+        // Unhandled promise rejection handler
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('🚨 Unhandled Promise Rejection:', event.reason);
+            
+            // Could send to error reporting service here
+            if (window.electronAPI && window.electronAPI.errorReporting) {
+                window.electronAPI.errorReporting.logError({
+                    message: 'Unhandled Promise Rejection',
+                    reason: event.reason?.toString() || 'Unknown reason',
+                    timestamp: Date.now()
+                });
+            }
+        });
+        
+        // Performance monitoring in development
+        if (process?.env?.NODE_ENV === 'development') {
+            // Log performance marks
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    const perfData = performance.getEntriesByType('navigation')[0];
+                    if (perfData) {
+                        console.log('📊 Performance Metrics:', {
+                            domContentLoaded: Math.round(perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart),
+                            loadComplete: Math.round(perfData.loadEventEnd - perfData.loadEventStart),
+                            totalLoad: Math.round(perfData.loadEventEnd - perfData.navigationStart)
+                        });
+                    }
+                }, 0);
+            });
+        }
+        
+        // Theme flash prevention
+        (function() {
+            const savedTheme = localStorage.getItem('app-theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const systemPrefersHighContrast = window.matchMedia('(prefers-contrast: high)').matches;
+            
+            let theme = savedTheme || 'system';
+            
+            // Apply theme immediately to prevent flash
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            if (systemPrefersHighContrast) {
+                document.documentElement.setAttribute('data-contrast', 'high');
+            }
+            
+            // Mark as pre-initialized
+            document.documentElement.setAttribute('data-theme-pre-init', 'true');
+        })();
+    </script>
+    
+    <!-- Main application script - will be injected by Vite/Webpack -->
+    <script type="module" src="./main.tsx"></script>
+</body>
+</html>
