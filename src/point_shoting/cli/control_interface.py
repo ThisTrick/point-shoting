@@ -227,19 +227,12 @@ class ControlInterface:
                 if self._engine.get_current_stage() == Stage.FINAL_BREATHING:
                     return True  # Already in final stage, operation is idempotent
                 
-                # Force transition to final stage
-                # This is a bit of a hack - we'll reset and configure to final stage
-                self._engine.stop()
+                # Force transition to final stage using the new public method
+                self._engine.force_stage_transition(Stage.FINAL_BREATHING)
                 
-                if self._current_settings and self._current_image_path:
-                    self._engine.init(self._current_settings, self._current_image_path)
-                    
-                    # Force to final breathing stage by manipulating internal state
-                    # This is implementation-specific and might need adjustment
-                    self._engine._stage_state.current_stage = Stage.FINAL_BREATHING
-                    self._engine._stage_state.stage_start_time = time.time()
-                    
-                    self._engine.start()
+                # Ensure engine is running if it was paused
+                if self._state == ControlState.PAUSED:
+                    self._engine.resume()
                     self._state = ControlState.RUNNING
                 
                 # Increment metrics

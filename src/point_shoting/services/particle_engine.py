@@ -77,6 +77,7 @@ class ParticleEngine:
         self._frame_count = 0
         self._fps_history = []
         self._fps_history_size = 30
+        self._manual_stage_override = False  # Flag to prevent auto-transitions
         
         # Target image data
         self._target_image: Optional[Image.Image] = None
@@ -162,6 +163,7 @@ class ParticleEngine:
         self._frame_count = 0
         self._fps_history.clear()
         self._step_times.clear()
+        self._manual_stage_override = False  # Reset manual override on init
         
         # Initialize particles to burst positions
         initialize_burst_positions(self._particles)
@@ -324,8 +326,11 @@ class ParticleEngine:
         recognition_score = self._calculate_recognition_score()
         chaos_energy = self._calculate_chaos_energy()
         
-        # Debug: force quick transitions for testing (skip if manually set to final stage)
-        if self._stage_state.current_stage == Stage.FINAL_BREATHING:
+        # Debug: force quick transitions for testing (skip if manually overridden)
+        if self._manual_stage_override:
+            # Skip automatic transitions if stage was manually set
+            return
+        elif self._stage_state.current_stage == Stage.FINAL_BREATHING:
             # Don't transition away from FINAL_BREATHING if manually set
             return
         elif self._frame_count > 10 and self._stage_state.current_stage == Stage.BURST:
@@ -393,6 +398,26 @@ class ParticleEngine:
     def get_current_stage(self) -> Stage:
         """Get current animation stage"""
         return self._stage_state.current_stage
+    
+    def force_stage_transition(self, target_stage: Stage) -> None:
+        """
+        Force immediate transition to specified stage
+        
+        Args:
+            target_stage: Stage to transition to
+        """
+        # Set manual override flag to prevent automatic transitions
+        self._manual_stage_override = True
+        
+        # Prevent frame-based transitions by setting high frame count
+        self._frame_count = 100
+        
+        # Force transition
+        self._transition_to_stage(target_stage)
+        
+        # Damp velocities for smooth transition (especially for FINAL_BREATHING)
+        if target_stage == Stage.FINAL_BREATHING and self._particles is not None:
+            self._particles.apply_damping(0.3)  # Reduce velocities to 30%
     
     def get_metrics(self) -> Metrics:
         """Get current system metrics"""
