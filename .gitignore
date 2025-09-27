@@ -66,3 +66,4 @@ Thumbs.db
 !examples/*.png
 !tests/fixtures/*.png
 .point_shoting_settings.json
+.hypothesis
