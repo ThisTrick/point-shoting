@@ -1,0 +1,603 @@
+/**
+ * KeyboardSettings Component Styles
+ * 
+ * Provides styling for keyboard shortcut customization interface including:
+ * - Shortcut recording and conflict detection
+ * - Category-based organization with search/filter
+ * - Accessibility-focused design with proper focus management
+ * - Key combination display and recording states
+ */
+
+.keyboard-settings {
+  width: 100%;
+}
+
+.keyboard-settings.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Header Section */
+.keyboard-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.search-filter-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.5rem;
+  align-items: end;
+}
+
+.search-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.search-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.search-input {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.category-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filter-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.category-select {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 180px;
+}
+
+.category-select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.category-select:hover:not(:disabled) {
+  border-color: var(--border-hover);
+  background: var(--bg-hover);
+}
+
+.actions-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.reset-all-button {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  background: transparent;
+  color: #f59e0b;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reset-all-button:hover:not(:disabled) {
+  background: #f59e0b;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.reset-all-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+}
+
+.reset-all-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Content Section */
+.shortcuts-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.shortcut-category {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.category-title {
+  margin: 0;
+  padding: 1rem 1.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.shortcut-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+  min-height: 80px;
+}
+
+.shortcut-item:last-child {
+  border-bottom: none;
+}
+
+.shortcut-item:hover:not(.recording) {
+  background: var(--bg-hover);
+}
+
+.shortcut-item.has-conflict {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(239, 68, 68, 0.05) 100%);
+  border-left: 4px solid #ef4444;
+}
+
+.shortcut-item.recording {
+  background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border-left: 4px solid var(--accent-color);
+  animation: pulse-recording 2s infinite;
+}
+
+@keyframes pulse-recording {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.shortcut-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-right: 2rem;
+}
+
+.shortcut-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.shortcut-description {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.conflict-warning {
+  font-size: 0.65rem;
+  color: #ef4444;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 4px;
+  margin-top: 0.25rem;
+}
+
+.shortcut-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.key-display {
+  min-width: 200px;
+  text-align: right;
+}
+
+.current-keys {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  letter-spacing: 0.5px;
+  min-height: 32px;
+  justify-content: center;
+}
+
+.recording-display {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  align-items: flex-end;
+}
+
+.recorded-keys {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 2px solid var(--accent-color);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  letter-spacing: 0.5px;
+  animation: glow-recording 1s ease-in-out infinite alternate;
+}
+
+@keyframes glow-recording {
+  from { box-shadow: 0 0 5px rgba(59, 130, 246, 0.3); }
+  to { box-shadow: 0 0 15px rgba(59, 130, 246, 0.6); }
+}
+
+.recording-prompt {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 2px dashed var(--accent-color);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--accent-color);
+  animation: blink-prompt 1.5s ease-in-out infinite;
+}
+
+@keyframes blink-prompt {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.6; }
+}
+
+.recording-conflicts {
+  font-size: 0.65rem;
+  color: #ef4444;
+  font-weight: 500;
+  text-align: right;
+}
+
+.shortcut-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.record-button,
+.reset-button,
+.clear-button,
+.apply-button,
+.cancel-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+.record-button {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+}
+
+.record-button:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.apply-button {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.apply-button:hover:not(:disabled) {
+  background: #059669;
+  border-color: #059669;
+  transform: translateY(-1px);
+}
+
+.cancel-button {
+  background: transparent;
+  border-color: #6b7280;
+  color: #6b7280;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background: #6b7280;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.reset-button {
+  background: transparent;
+  border-color: #f59e0b;
+  color: #f59e0b;
+}
+
+.reset-button:hover:not(:disabled) {
+  background: #f59e0b;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.clear-button {
+  background: transparent;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.clear-button:hover:not(:disabled) {
+  background: #ef4444;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.record-button:focus,
+.reset-button:focus,
+.clear-button:focus,
+.apply-button:focus,
+.cancel-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.record-button:disabled,
+.reset-button:disabled,
+.clear-button:disabled,
+.apply-button:disabled,
+.cancel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* No Results State */
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.no-results p {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.clear-search-button {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--accent-color);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--accent-color);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-search-button:hover:not(:disabled) {
+  background: var(--accent-color);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.clear-search-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+  .search-filter-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .category-select {
+    min-width: auto;
+  }
+
+  .shortcut-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    min-height: auto;
+    padding: 1.5rem;
+  }
+
+  .shortcut-info {
+    margin-right: 0;
+    width: 100%;
+  }
+
+  .shortcut-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .key-display {
+    min-width: auto;
+    text-align: left;
+    flex: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .keyboard-header {
+    padding: 1rem;
+  }
+
+  .shortcut-item {
+    padding: 1rem;
+  }
+
+  .shortcut-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .record-button,
+  .reset-button,
+  .clear-button,
+  .apply-button,
+  .cancel-button {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .recording-display {
+    align-items: flex-start;
+  }
+
+  .key-display {
+    margin-bottom: 0.5rem;
+  }
+
+  .actions-row {
+    justify-content: stretch;
+  }
+
+  .reset-all-button {
+    width: 100%;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .shortcut-item,
+  .current-keys,
+  .recorded-keys,
+  .recording-prompt,
+  .conflict-warning,
+  .record-button,
+  .reset-button,
+  .clear-button,
+  .apply-button,
+  .cancel-button {
+    border-width: 2px;
+  }
+
+  .shortcut-item.has-conflict {
+    border-left-width: 6px;
+  }
+
+  .shortcut-item.recording {
+    border-left-width: 6px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .shortcut-item,
+  .record-button,
+  .reset-button,
+  .clear-button,
+  .apply-button,
+  .cancel-button,
+  .reset-all-button,
+  .clear-search-button,
+  .search-input,
+  .category-select {
+    transition: none;
+  }
+
+  .shortcut-item.recording {
+    animation: none;
+  }
+
+  .recorded-keys {
+    animation: none;
+  }
+
+  .recording-prompt {
+    animation: none;
+  }
+
+  .record-button:hover:not(:disabled),
+  .reset-button:hover:not(:disabled),
+  .clear-button:hover:not(:disabled),
+  .apply-button:hover:not(:disabled),
+  .cancel-button:hover:not(:disabled),
+  .reset-all-button:hover:not(:disabled),
+  .clear-search-button:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Focus Visible */
+@media (prefers-reduced-motion: no-preference) {
+  .keyboard-settings :focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+  }
+}
