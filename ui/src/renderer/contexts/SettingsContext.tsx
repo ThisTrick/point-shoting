@@ -238,7 +238,7 @@ function settingsReducer(state: SettingsState, action: SettingsAction): Settings
 }
 
 // Create context
-const SettingsContext = createContext<SettingsContextValue | null>(null);
+export const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 // Provider component
 interface SettingsProviderProps {
