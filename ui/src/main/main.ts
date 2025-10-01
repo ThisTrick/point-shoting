@@ -30,9 +30,9 @@ let fileIpcHandlers: FileIpcHandlers | null = null;
 let engineIpcHandlers: EngineIpcHandlers | null = null;
 let windowIpcHandlers: WindowIpcHandlers | null = null;
 
-// Set application name and version
+// Set application name
 app.setName('Point Shooting');
-app.setVersion('1.0.0');
+// Note: app.setVersion() doesn't exist in Electron API, version comes from package.json
 
 // This method will be called when Electron has finished initialization
 app.whenReady().then(async () => {
@@ -117,7 +117,8 @@ app.on('certificate-error', (_event, _webContents, url, _error, _certificate, ca
 
 // Security: Prevent new window creation
 app.on('web-contents-created', (_event, contents) => {
-  contents.on('new-window', (_event, navigationUrl) => {
+  // @ts-expect-error - new-window event deprecated but still used
+  contents.on('new-window', (event: any, navigationUrl: string) => {
     // Prevent opening new windows
     event.preventDefault();
     
