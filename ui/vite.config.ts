@@ -28,7 +28,8 @@ export default defineConfig({
   },
   define: {
     __ELECTRON__: 'true',
-    __DEV__: process.env.NODE_ENV === 'development'
+    __DEV__: process.env.NODE_ENV === 'development',
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
   },
   optimizeDeps: {
     exclude: ['electron']
