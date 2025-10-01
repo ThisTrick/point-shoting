@@ -136,8 +136,6 @@ export interface TranslationKeys {
     title: string;
     general: string;
     animation: string;
-    appearance: string;
-    keyboard: string;
     performance: string;
     advanced: string;
     reset: string;
@@ -472,7 +470,7 @@ class TranslationLoader {
         console.warn(`Failed to preload ${locale}:`, error)
       )
     );
-    return Promise.allSettled(promises) as Promise<void[]>;
+    return Promise.allSettled(promises) as unknown as Promise<void[]>;
   }
 }
 
@@ -520,7 +518,7 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   // Get locale configuration
-  const localeConfig = SUPPORTED_LOCALES[locale] || SUPPORTED_LOCALES[DEFAULT_LOCALE];
+  const localeConfig = (SUPPORTED_LOCALES[locale] || SUPPORTED_LOCALES[DEFAULT_LOCALE])!;
 
   // Load saved locale from storage
   useEffect(() => {
@@ -529,7 +527,7 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
       setLocaleState(savedLocale);
     } else {
       // Detect system locale
-      const systemLocale = navigator.language.split('-')[0];
+      const systemLocale = navigator.language.split('-')[0] || DEFAULT_LOCALE;
       if (SUPPORTED_LOCALES[systemLocale]) {
         setLocaleState(systemLocale);
       }
@@ -664,7 +662,8 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
     }
 
     const formattedSize = unitIndex === 0 ? size.toString() : size.toFixed(1);
-    return `${formattedSize} ${t(`numbers.fileSize.${units[unitIndex].toLowerCase()}`)}`;
+    const unit = units[unitIndex] || 'bytes';
+    return `${formattedSize} ${t(`numbers.fileSize.${unit.toLowerCase()}`)}`;
   };
 
   // Relative time formatting
@@ -765,7 +764,7 @@ export const isRTL = (locale: string): boolean => {
 };
 
 export const detectSystemLocale = (): string => {
-  const systemLocale = navigator.language.split('-')[0];
+  const systemLocale = navigator.language.split('-')[0] || DEFAULT_LOCALE;
   return SUPPORTED_LOCALES[systemLocale] ? systemLocale : DEFAULT_LOCALE;
 };
 
