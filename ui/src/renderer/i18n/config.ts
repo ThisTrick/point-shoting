@@ -13,7 +13,7 @@
  * - Performance optimization with lazy loading
  */
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, createElement } from 'react';
 
 // ==========================================
 // TYPE DEFINITIONS
@@ -703,10 +703,10 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
     pluralize,
   };
 
-  return (
-    <I18nContext.Provider value={contextValue}>
-      {children}
-    </I18nContext.Provider>
+  return createElement(
+    I18nContext.Provider,
+    { value: contextValue },
+    children
   );
 };
 
@@ -787,7 +787,7 @@ export const withI18n = <P extends WithI18nProps>(
 ) => {
   const WrappedComponent: React.FC<Omit<P, 'i18n'>> = (props) => {
     const i18n = useI18n();
-    return <Component {...(props as P)} i18n={i18n} />;
+    return createElement(Component, { ...(props as P), i18n } as P);
   };
 
   WrappedComponent.displayName = `withI18n(${Component.displayName || Component.name})`;

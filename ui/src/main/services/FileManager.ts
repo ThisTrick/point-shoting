@@ -330,18 +330,20 @@ export class FileManager extends EventEmitter {
 
       // TODO: Add more detailed validation based on PresetConfig schema
 
-    } catch (jsonError) {
-      errors.push({
-        field: 'format',
-        message: 'Invalid JSON format',
-        severity: 'error'
-      });
     } catch (error) {
-      errors.push({
-        field: 'file',
-        message: 'File not accessible or does not exist',
-        severity: 'error'
-      });
+      if (error instanceof SyntaxError) {
+        errors.push({
+          field: 'format',
+          message: 'Invalid JSON format',
+          severity: 'error'
+        });
+      } else {
+        errors.push({
+          field: 'file',
+          message: 'File not accessible or does not exist',
+          severity: 'error'
+        });
+      }
     }
 
     return {

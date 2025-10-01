@@ -122,15 +122,15 @@ export const usePerformance = (options: UsePerformanceOptions = {}) => {
 
   // Optimized callback creator
   const createStableCallback = useCallback(
-    <T extends (...args: any[]) => any>(callback: T, deps: any[]): T => {
-      return useCallback(callback, deps);
+    (callback: Function, deps: any[]) => {
+      return useCallback(callback as any, deps);
     },
     []
   );
 
   // Optimized memo creator
   const createStableMemo = useCallback(
-    <T>(factory: () => T, deps: any[]): T => {
+    (factory: () => any, deps: any[]) => {
       return useMemo(factory, deps);
     },
     []
@@ -167,46 +167,9 @@ export const usePerformance = (options: UsePerformanceOptions = {}) => {
   };
 };
 
-/**
- * Lazy loading helper with error boundaries
- */
-export const createLazyComponent = <T extends React.ComponentType<any>>(
-  importFunc: () => Promise<{ default: T }>,
-  fallback?: React.ComponentType,
-  errorBoundary?: React.ComponentType<{ error: Error; retry: () => void }>
-) => {
-  const LazyComponent = React.lazy(async () => {
-    try {
-      return await importFunc();
-    } catch (error) {
-      console.error('Lazy component loading failed:', error);
-      throw error;
-    }
-  });
-
-  return React.memo((props: React.ComponentProps<T>) => {
-    const [error, setError] = useState<Error | null>(null);
-    const [retryCount, setRetryCount] = useState(0);
-
-    const retry = useCallback(() => {
-      setError(null);
-      setRetryCount(prev => prev + 1);
-    }, []);
-
-    if (error && errorBoundary) {
-      const ErrorBoundaryComponent = errorBoundary;
-      return <ErrorBoundaryComponent error={error} retry={retry} />;
-    }
-
-    const FallbackComponent = fallback || (() => <div>Loading...</div>);
-
-    return (
-      <React.Suspense fallback={<FallbackComponent />}>
-        <LazyComponent key={retryCount} {...props} />
-      </React.Suspense>
-    );
-  });
-};
+// Note: createLazyComponent has been moved to useLazyComponent.tsx
+// to avoid JSX/TypeScript generic conflicts in .ts files
+export { createLazyComponent } from './useLazyComponent';
 
 /**
  * Debounced value hook for performance optimization
@@ -425,6 +388,3 @@ export const measureAsyncPerformance = async <T>(
   
   return result;
 };
-
-// React import for createLazyComponent
-import React from 'react';
