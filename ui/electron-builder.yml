@@ -5,9 +5,16 @@ copyright: "Copyright © 2025 Point-Shoting Team"
 directories:
   output: dist-packages/
 
+asar: false
+
 files:
   - dist/
   - package.json
+  - node_modules/sharp/**/*
+  - node_modules/@img/**/*
+  - node_modules/color/**/*
+  - node_modules/detect-libc/**/*
+  - node_modules/semver/**/*
   - "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}"
   - "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}"
   - "!**/node_modules/*.d.ts"
