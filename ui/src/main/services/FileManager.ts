@@ -158,7 +158,7 @@ export class FileManager extends EventEmitter {
         }
 
         // Extract dominant colors
-        const { dominant } = await sharpImage
+        const { dominant: _dominant } = await sharpImage
           .resize(100, 100, { fit: 'inside' })
           .raw()
           .toBuffer({ resolveWithObject: true });

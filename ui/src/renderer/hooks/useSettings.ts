@@ -45,7 +45,6 @@ export function useSettings(options: SettingsHookOptions = {}) {
   const {
     autoSave = true,
     validateOnChange = true,
-    debounceDelay = 300
   } = options;
 
   // Validation helpers

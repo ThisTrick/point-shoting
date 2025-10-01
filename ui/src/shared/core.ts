@@ -153,6 +153,42 @@ export interface UISettings {
   readonly windowSize?: WindowDimensions;
   readonly windowBounds?: { width: number; height: number; x?: number; y?: number };
   readonly accessibility?: AccessibilitySettings;
+  
+  // Animation settings (nested configuration)
+  readonly animation?: {
+    readonly density: ParticleDensity;
+    readonly speed: AnimationSpeed;
+    readonly colorMode: ColorMappingMode;
+    readonly watermark: boolean;
+    readonly hud: boolean;
+    readonly background: string;
+    readonly blur: number;
+    readonly breathing: boolean;
+  };
+  
+  // Performance settings
+  readonly performance?: {
+    readonly targetFPS: number;
+    readonly particleLimit: number;
+    readonly enableGPU: boolean;
+    readonly lowPowerMode: boolean;
+  };
+  
+  // Interface/display settings
+  readonly interface?: {
+    readonly showFPS: boolean;
+    readonly showParticleCount: boolean;
+    readonly enableAnimations: boolean;
+    readonly compactMode: boolean;
+  };
+  
+  // Watermark configuration (separate from animation.watermark boolean)
+  readonly watermark?: {
+    readonly enabled: boolean;
+    readonly position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+    readonly opacity: number;
+    readonly scale: number;
+  };
 }
 
 /**
