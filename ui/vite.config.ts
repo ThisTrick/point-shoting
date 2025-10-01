@@ -9,9 +9,7 @@ export default defineConfig({
     outDir: 'dist/renderer',
     emptyOutDir: true,
     rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'src/renderer/index.html')
-      }
+      input: resolve(__dirname, 'src/renderer/index.html')
     },
     sourcemap: true,
     minify: process.env.NODE_ENV === 'production' ? 'esbuild' : false

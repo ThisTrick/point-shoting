@@ -82,7 +82,7 @@ app.on('window-all-closed', () => {
 });
 
 // Handle app termination
-app.on('before-quit', async (_event) => {
+app.on('before-quit', async (event) => {
   event.preventDefault();
   
   try {
@@ -97,14 +97,14 @@ app.on('before-quit', async (_event) => {
     console.log('Shutdown complete');
     app.exit(0);
     
-  } catch (_error) {
-    console.error('Error during shutdown:', _error);
+  } catch (error) {
+    console.error('Error during shutdown:', error);
     app.exit(1);
   }
 });
 
 // Handle certificate errors (for development)
-app.on('certificate-error', (_event, _webContents, url, _error, _certificate, callback) => {
+app.on('certificate-error', (event, _webContents, url, _error, _certificate, callback) => {
   if (is.dev && url.startsWith('https://localhost')) {
     // In development, ignore certificate errors for localhost
     event.preventDefault();
@@ -123,7 +123,6 @@ app.on('web-contents-created', (_event, contents) => {
     event.preventDefault();
     
     // Optionally open in external browser
-    const { shell } = require('electron');
     if (navigationUrl.startsWith('http')) {
       shell.openExternal(navigationUrl);
     }
@@ -143,8 +142,8 @@ async function initializeServices(): Promise<void> {
     
     console.log('Core services initialized successfully');
     
-  } catch (_error) {
-    console.error('Failed to initialize services:', _error);
+  } catch (error) {
+    console.error('Failed to initialize services:', error);
     throw error;
   }
 }
@@ -165,8 +164,8 @@ function initializeIpcHandlers(): void {
     
     console.log('IPC handlers initialized successfully');
     
-  } catch (_error) {
-    console.error('Failed to initialize IPC handlers:', _error);
+  } catch (error) {
+    console.error('Failed to initialize IPC handlers:', error);
     throw error;
   }
 }
@@ -183,8 +182,8 @@ async function createWindow(): Promise<void> {
     await mainWindowController.initializeWindow();
     console.log('Main window created successfully');
     
-  } catch (_error) {
-    console.error('Failed to create main window:', _error);
+  } catch (error) {
+    console.error('Failed to create main window:', error);
     throw error;
   }
 }
@@ -271,8 +270,8 @@ if (is.dev) {
 }
 
 // Handle unhandled errors
-process.on('uncaughtException', (_error) => {
-  console.error('Uncaught Exception:', _error);
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
   
   // Try to show error dialog if possible
   try {
