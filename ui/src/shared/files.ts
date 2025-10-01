@@ -6,6 +6,20 @@
  */
 
 // ============================================================================
+// VALIDATION TYPES
+// ============================================================================
+
+/**
+ * Structured validation error with details
+ */
+export interface ValidationError {
+  field: string;
+  message: string;
+  code: string;
+  severity?: 'error' | 'warning';
+}
+
+// ============================================================================
 // IMAGE FILE TYPES
 // ============================================================================
 
@@ -25,8 +39,8 @@ export interface ImageFileResult {
  */
 export interface ImageValidationResult {
   isValid: boolean;
-  errors: string[];
-  warnings: string[];
+  errors: ValidationError[];
+  warnings: ValidationError[];
   metadata?: ImageMetadata;
 }
 
@@ -64,8 +78,8 @@ export interface WatermarkFileResult {
  */
 export interface WatermarkValidationResult {
   isValid: boolean;
-  errors: string[];
-  warnings: string[];
+  errors: ValidationError[];
+  warnings: ValidationError[];
   minSizeMet: boolean; // ≥64px requirement
   isPNG: boolean;
 }
@@ -145,17 +159,8 @@ export interface PresetSettings {
 export interface ConfigValidationResult {
   isValid: boolean;
   errors: ValidationError[];
-  warnings: string[];
+  warnings: ValidationError[];
   versionCompatible: boolean;
-}
-
-/**
- * Validation error details
- */
-export interface ValidationError {
-  field: string;
-  message: string;
-  severity: 'error' | 'warning';
 }
 
 // ============================================================================
