@@ -11,12 +11,15 @@ import {
   UISettings,
   AnimationConfig,
   FileResults,
-  EngineStatus,
+  EngineState,
   ErrorInfo,
   PerformanceMetrics,
   EventHandler,
   CallbackFunction
 } from './core';
+
+// Alias for backward compatibility
+type EngineStatus = EngineState;
 
 // ============================================================================
 // MAIN APPLICATION COMPONENT PROPS

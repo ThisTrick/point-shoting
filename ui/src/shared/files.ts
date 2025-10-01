@@ -10,12 +10,12 @@
 // ============================================================================
 
 /**
- * Structured validation error with details
+ * Represents a validation error with structured information
  */
 export interface ValidationError {
   field: string;
   message: string;
-  code: string;
+  code?: string;  // Made optional for backward compatibility
   severity?: 'error' | 'warning';
 }
 
