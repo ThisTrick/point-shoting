@@ -5,7 +5,7 @@
  * Animation application.
  */
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import type { KeyboardShortcut, KeyboardShortcutCategory } from '../types';
 
 interface UseKeyboardShortcutsOptions {
@@ -93,6 +93,21 @@ export const defaultShortcuts: KeyboardShortcutCategory[] = [
       },
     ],
   },
+  {
+    id: 'help',
+    name: 'Help & Information',
+    shortcuts: [
+      {
+        id: 'help.shortcuts',
+        key: '?',
+        modifiers: ['meta'],
+        description: 'Show keyboard shortcuts',
+        category: 'help',
+        global: true,
+        action: () => console.log('Show shortcuts help'),
+      },
+    ],
+  },
 ];
 
 /**
@@ -142,9 +157,35 @@ export const useKeyboardShortcuts = (
     stopPropagation = false,
   } = options;
   
+  // State for help overlay visibility
+  const [isHelpOverlayOpen, setIsHelpOverlayOpen] = useState(false);
+  
+  const showShortcutsHelp = useCallback(() => {
+    setIsHelpOverlayOpen(true);
+  }, []);
+  
+  const hideShortcutsHelp = useCallback(() => {
+    setIsHelpOverlayOpen(false);
+  }, []);
+  
+  const toggleShortcutsHelp = useCallback(() => {
+    setIsHelpOverlayOpen(prev => !prev);
+  }, []);
+  
+  // Update default shortcuts with actual help action
+  const defaultShortcutsWithActions = defaultShortcuts.map(category => ({
+    ...category,
+    shortcuts: category.shortcuts.map(shortcut => {
+      if (shortcut.id === 'help.shortcuts') {
+        return { ...shortcut, action: toggleShortcutsHelp };
+      }
+      return shortcut;
+    }),
+  }));
+  
   // Merge default shortcuts with custom ones
   const allShortcuts = [
-    ...defaultShortcuts.flatMap(cat => cat.shortcuts),
+    ...defaultShortcutsWithActions.flatMap(cat => cat.shortcuts),
     ...shortcuts
   ];
   
@@ -227,18 +268,22 @@ export const useKeyboardShortcuts = (
   }, []);
   
   const getAllShortcuts = useCallback((): KeyboardShortcutCategory[] => {
-    return defaultShortcuts.map(category => ({
+    return defaultShortcutsWithActions.map(category => ({
       ...category,
       shortcuts: category.shortcuts.concat(
         shortcuts.filter(s => s.category === category.id)
       ),
     }));
-  }, [shortcuts]);
+  }, [shortcuts, defaultShortcutsWithActions]);
   
   return {
     getShortcutDisplay,
     getAllShortcuts,
     allShortcuts,
     isEnabled: enabled,
+    showShortcutsHelp,
+    hideShortcutsHelp,
+    toggleShortcutsHelp,
+    isHelpOverlayOpen,
   };
 };

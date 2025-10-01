@@ -9,6 +9,7 @@
 import React, { useEffect, useState } from 'react';
 import { LoadingSpinner } from './components/utils/LoadingSpinner';
 import { MainLayout } from './components/MainLayout';
+import { ErrorBoundary } from './components/utils/ErrorBoundary';
 
 // Context Providers
 import { SettingsProvider } from './contexts/SettingsContext';
@@ -16,12 +17,16 @@ import { AnimationProvider } from './contexts/AnimationContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { I18nProvider } from './i18n/config';
 
+// Hooks
+import { usePerformance } from './hooks/usePerformance';
+
 // Styles
 import './styles/global.css';
 import './styles/themes.css';
 
 // Types
 import type { ApplicationState } from './types/index';
+import type { ErrorReport } from './types/errors';
 
 interface AppProps {
   developmentMode?: boolean;
@@ -43,6 +48,35 @@ const App: React.FC<AppProps> = ({
       particleCount: 0
     }
   });
+
+  // Performance monitoring
+  const performanceMetrics = usePerformance({
+    componentName: 'App',
+    trackRenders: developmentMode,
+    trackMemory: developmentMode,
+    enableProfiling: developmentMode,
+    debugMode: developmentMode,
+  });
+
+  // Update app state with performance metrics
+  useEffect(() => {
+    if (!developmentMode) return;
+    
+    const interval = setInterval(() => {
+      const metrics = performanceMetrics.metrics;
+      setAppState((prev) => ({
+        ...prev,
+        performanceMetrics: {
+          fps: Math.round(1000 / (metrics.renderTime || 16)),
+          frameTime: metrics.renderTime,
+          memoryUsage: metrics.memoryUsage,
+          particleCount: prev.performanceMetrics.particleCount,
+        },
+      }));
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [developmentMode, performanceMetrics]);
 
   // Theme initialization and system preference detection
   useEffect(() => {
@@ -265,39 +299,81 @@ const App: React.FC<AppProps> = ({
     );
   }
 
+  // Error handler for application-level errors
+  const handleApplicationError = React.useCallback((error: Error, errorInfo: React.ErrorInfo, report: ErrorReport) => {
+    console.error('Application error:', { error, errorInfo, report });
+    
+    // Log to external error tracking service in production
+    if (!developmentMode && typeof window !== 'undefined' && (window as any).errorTracker) {
+      (window as any).errorTracker.logError(report);
+    }
+  }, [developmentMode]);
+
   // Main application render
   return (
-    <I18nProvider defaultLocale="en">
-      <NotificationProvider>
-        <SettingsProvider>
-          <AnimationProvider>
-            <div 
-              className="app"
-              data-development={developmentMode}
-              data-initialized={isInitialized}
+    <ErrorBoundary
+      identifier="Application Root"
+      level="page"
+      enableRetry={true}
+      enableReporting={!developmentMode}
+      onError={handleApplicationError}
+    >
+      <I18nProvider defaultLocale="en">
+        <ErrorBoundary
+          identifier="Notification System"
+          level="feature"
+          enableRetry={false}
+        >
+          <NotificationProvider>
+            <ErrorBoundary
+              identifier="Settings System"
+              level="feature"
+              enableRetry={true}
             >
-              {/* Skip link for accessibility */}
-              <a href="#main-content" className="skip-link">
-                Skip to main content
-              </a>
-              
-              {/* Main application layout */}
-              <MainLayout />
-              
-              {/* Development tools in development mode */}
-              {developmentMode && (
-                <div className="development-tools">
-                  <div className="perf-monitor">
-                    <span>FPS: {appState.performanceMetrics.fps}</span>
-                    <span>Frame: {appState.performanceMetrics.frameTime.toFixed(1)}ms</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </AnimationProvider>
-        </SettingsProvider>
-      </NotificationProvider>
-    </I18nProvider>
+              <SettingsProvider>
+                <ErrorBoundary
+                  identifier="Animation System"
+                  level="feature"
+                  enableRetry={true}
+                >
+                  <AnimationProvider>
+                    <div 
+                      className="app"
+                      data-development={developmentMode}
+                      data-initialized={isInitialized}
+                    >
+                      {/* Skip link for accessibility */}
+                      <a href="#main-content" className="skip-link">
+                        Skip to main content
+                      </a>
+                      
+                      {/* Main application layout */}
+                      <ErrorBoundary
+                        identifier="Main Layout"
+                        level="component"
+                        enableRetry={true}
+                      >
+                        <MainLayout />
+                      </ErrorBoundary>
+                      
+                      {/* Development tools in development mode */}
+                      {developmentMode && (
+                        <div className="development-tools">
+                          <div className="perf-monitor">
+                            <span>FPS: {appState.performanceMetrics.fps}</span>
+                            <span>Frame: {appState.performanceMetrics.frameTime.toFixed(1)}ms</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </AnimationProvider>
+                </ErrorBoundary>
+              </SettingsProvider>
+            </ErrorBoundary>
+          </NotificationProvider>
+        </ErrorBoundary>
+      </I18nProvider>
+    </ErrorBoundary>
   );
 };
 

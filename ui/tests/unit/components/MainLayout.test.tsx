@@ -59,8 +59,20 @@ jest.mock('../../../src/renderer/hooks/useKeyboardShortcuts', () => ({
   useKeyboardShortcuts: () => ({
     shortcuts: [],
     registerShortcut: jest.fn(),
-    unregisterShortcut: jest.fn()
+    unregisterShortcut: jest.fn(),
+    showShortcutsHelp: jest.fn(),
+    hideShortcutsHelp: jest.fn(),
+    toggleShortcutsHelp: jest.fn(),
+    isHelpOverlayOpen: false,
+    getAllShortcuts: jest.fn(() => []),
+    getShortcutDisplay: jest.fn((shortcut) => `${shortcut.key}`),
+    allShortcuts: [],
+    isEnabled: true,
   })
+}));
+
+jest.mock('../../../src/renderer/components/utils/ShortcutsHelpOverlay', () => ({
+  ShortcutsHelpOverlay: () => null
 }));
 
 describe('MainLayout Component', () => {

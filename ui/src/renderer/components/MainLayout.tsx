@@ -8,6 +8,7 @@ import { useSettings } from '../hooks/useSettings';
 import { useAnimationState } from '../hooks/useAnimationState';
 import { useNotifications } from '../contexts/NotificationContext';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { ShortcutsHelpOverlay } from './utils/ShortcutsHelpOverlay';
 import './MainLayout.css';
 
 // Layout types
@@ -26,7 +27,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   const settings = useSettings();
   const animation = useAnimationState();
   const notifications = useNotifications();
-  const shortcuts = useKeyboardShortcuts({ showNotifications: true });
+  const shortcuts = useKeyboardShortcuts();
 
   const [layoutState, setLayoutState] = useState<LayoutState>({
     sidebarCollapsed: false,
@@ -439,6 +440,14 @@ export function MainLayout({ children }: MainLayoutProps) {
           </button>
         </div>
       )}
+      
+      {/* Keyboard shortcuts help overlay */}
+      <ShortcutsHelpOverlay
+        isOpen={shortcuts.isHelpOverlayOpen}
+        onClose={shortcuts.hideShortcutsHelp}
+        shortcuts={shortcuts.getAllShortcuts()}
+        getShortcutDisplay={shortcuts.getShortcutDisplay}
+      />
     </div>
   );
 }
