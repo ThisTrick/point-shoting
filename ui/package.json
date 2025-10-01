@@ -36,7 +36,10 @@
     "typescript",
     "react"
   ],
-  "author": "Point-Shoting Team",
+  "author": {
+    "name": "Point-Shoting Team",
+    "email": "team@point-shoting.dev"
+  },
   "license": "MIT",
   "devDependencies": {
     "@electron-toolkit/utils": "^4.0.0",
