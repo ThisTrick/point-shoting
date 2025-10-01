@@ -10,12 +10,13 @@ import {
   UISettings,
   AnimationConfig,
   FileResults,
-  EngineStatus,
   ErrorInfo,
   IPCMessage,
   IPCResponse,
   PerformanceMetrics
 } from './core';
+
+import { EngineStatus } from './engine';
 
 // ============================================================================
 // MAIN WINDOW CONTROLLER SERVICE

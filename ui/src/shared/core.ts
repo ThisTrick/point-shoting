@@ -17,10 +17,15 @@
  * Includes current mode, engine status, and UI configuration
  */
 export interface ApplicationState {
-  readonly mode: ApplicationMode;
-  readonly engineStatus: EngineStatus;
-  readonly isEngineReady: boolean;
+  readonly mode?: ApplicationMode;
+  readonly engineStatus?: BasicEngineStatus;
+  readonly isEngineReady?: boolean;
+  readonly isEngineRunning?: boolean;
   readonly currentImagePath?: string;
+  readonly currentAnimation?: any | null;
+  readonly loadedImage?: any | null;
+  readonly notifications?: any[];
+  readonly debugMode?: boolean;
   readonly lastError?: ErrorInfo;
   readonly performanceMetrics?: PerformanceMetrics;
 }
@@ -38,9 +43,10 @@ export enum ApplicationMode {
 }
 
 /**
- * Engine status information from Python backend
+ * Basic engine status information (UI perspective)
+ * @deprecated Use EngineStatus from engine.ts for more detailed status
  */
-export interface EngineStatus {
+export interface BasicEngineStatus {
   readonly status: EngineState;
   readonly fps?: number;
   readonly particleCount?: number;
@@ -139,12 +145,13 @@ export interface CustomAnimationSettings {
  * Controls appearance, behavior, and accessibility
  */
 export interface UISettings {
-  readonly theme: UITheme;
-  readonly language: string;
+  readonly theme: UIThemeString;
+  readonly language: 'uk' | 'en';
   readonly showAdvancedControls: boolean;
   readonly enableKeyboardShortcuts: boolean;
   readonly autoSaveSettings: boolean;
   readonly windowSize?: WindowDimensions;
+  readonly windowBounds?: { width: number; height: number; x?: number; y?: number };
   readonly accessibility?: AccessibilitySettings;
 }
 
@@ -154,8 +161,13 @@ export interface UISettings {
 export enum UITheme {
   LIGHT = 'light',
   DARK = 'dark',
-  AUTO = 'auto'
+  SYSTEM = 'system'
 }
+
+/**
+ * UI theme type as string literal union
+ */
+export type UIThemeString = 'light' | 'dark' | 'system';
 
 /**
  * Window dimensions

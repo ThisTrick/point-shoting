@@ -9,11 +9,9 @@ import { EventEmitter } from 'events';
 import { SettingsManager } from './services/SettingsManager';
 import { FileManager } from './services/FileManager';
 import { PythonEngineBridge } from './services/PythonEngineBridge';
-import {
+import type {
   ApplicationState,
   UISettings,
-  AnimationState,
-  ImageInfo,
   NotificationMessage,
   OutgoingMessage,
   IncomingMessage,
@@ -54,12 +52,15 @@ export class MainWindowController extends EventEmitter {
       // Load settings first
       const settings = await this.loadSettings();
       
+      // Get window bounds with defaults
+      const bounds = settings.windowBounds || { width: 1200, height: 800 };
+      
       // Create the browser window
       this.mainWindow = new BrowserWindow({
-        width: settings.windowBounds.width,
-        height: settings.windowBounds.height,
-        x: settings.windowBounds.x,
-        y: settings.windowBounds.y,
+        width: bounds.width,
+        height: bounds.height,
+        x: bounds.x,
+        y: bounds.y,
         minWidth: 800,
         minHeight: 600,
         show: false, // Don't show until ready
@@ -67,7 +68,6 @@ export class MainWindowController extends EventEmitter {
         webPreferences: {
           nodeIntegration: false,
           contextIsolation: true,
-          enableRemoteModule: false,
           preload: path.join(__dirname, 'preload.js')
         }
       });
@@ -211,6 +211,7 @@ export class MainWindowController extends EventEmitter {
           title: 'Engine Startup Failed',
           message: result.error || 'Unknown error during engine startup',
           timestamp: Date.now(),
+          autoClose: false,
           persistent: false
         });
       }
@@ -333,6 +334,7 @@ export class MainWindowController extends EventEmitter {
         title: 'Engine Error',
         message: error.message,
         timestamp: Date.now(),
+        autoClose: false,
         persistent: true
       });
 
@@ -558,8 +560,11 @@ export class MainWindowController extends EventEmitter {
   }
 
   private addNotification(notification: NotificationMessage): void {
-    this.applicationState.notifications.push(notification);
-    this.updateApplicationState(this.applicationState);
+    const notifications = this.applicationState.notifications || [];
+    this.updateApplicationState({
+      ...this.applicationState,
+      notifications: [...notifications, notification]
+    });
 
     // Send to renderer
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {

@@ -5,33 +5,17 @@
 
 import { ipcMain, IpcMainInvokeEvent } from 'electron';
 import { SettingsManager } from '../services/SettingsManager';
-import { UISettings } from '../../types';
+import type {
+  UISettings,
+  ValidationError,
+  PresetConfig
+} from '../../shared/types';
 
-// Temporary type definitions until they're properly defined in types module
+// Simple validation result type
 interface ValidationResult {
   isValid: boolean;
   errors: ValidationError[];
-  warnings: ValidationWarning[];
-}
-
-interface ValidationError {
-  field: string;
-  message: string;
-  severity: 'error' | 'warning';
-}
-
-interface ValidationWarning {
-  field: string;
-  message: string;
-  severity: 'warning';
-}
-
-interface PresetInfo {
-  id: string;
-  name: string;
-  description: string;
-  createdAt: string;
-  version: string;
+  warnings: ValidationError[];
 }
 
 export class SettingsIpcHandlers {

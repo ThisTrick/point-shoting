@@ -7,10 +7,10 @@ import { spawn, ChildProcess } from 'child_process';
 import { EventEmitter } from 'events';
 import path from 'path';
 import { app } from 'electron';
-import {
+import type {
   EngineStartResult,
   EngineHealthStatus,
-  AnimationConfig,
+  StartAnimationPayload,
   EngineSettings,
   WatermarkConfig,
   ImageLoadResult,
@@ -20,7 +20,7 @@ import {
   AnimationStage,
   OutgoingMessage,
   IncomingMessage
-} from '@shared/types';
+} from '../../shared/types';
 
 export class PythonEngineBridge extends EventEmitter {
   private engineProcess: ChildProcess | null = null;
@@ -177,7 +177,7 @@ export class PythonEngineBridge extends EventEmitter {
   }
 
   // Animation Commands
-  async startAnimation(config: AnimationConfig): Promise<void> {
+  async startAnimation(config: StartAnimationPayload): Promise<void> {
     await this.sendMessage({
       type: 'start_animation',
       id: this.getNextMessageId(),

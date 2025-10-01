@@ -5,94 +5,20 @@
 
 import { ipcMain, IpcMainInvokeEvent } from 'electron';
 import { FileManager } from '../services/FileManager';
-import { UISettings } from '../../types';
-
-// Temporary type definitions until properly defined in types module
-interface ImageFileResult {
-  path: string;
-  filename: string;
-  metadata: ImageMetadata;
-  validationResult: ImageValidationResult;
-}
-
-interface ImageMetadata {
-  width: number;
-  height: number;
-  format: string;
-  fileSize: number;
-  hasTransparency: boolean;
-  dominantColors: string[];
-  aspectRatio: number;
-  colorSpace?: string;
-}
-
-interface ImageValidationResult {
-  isValid: boolean;
-  errors: ValidationError[];
-  warnings: ValidationError[];
-  metadata?: ImageMetadata;
-}
-
-interface ValidationError {
-  field: string;
-  message: string;
-  severity: 'error' | 'warning';
-}
-
-interface WatermarkFileResult {
-  path: string;
-  filename: string;
-  validationResult: WatermarkValidationResult;
-}
-
-interface WatermarkValidationResult {
-  isValid: boolean;
-  errors: ValidationError[];
-  warnings: ValidationError[];
-  metadata?: {
-    width: number;
-    height: number;
-    hasTransparency: boolean;
-  };
-}
-
-interface RecentFileInfo {
-  path: string;
-  filename: string;
-  lastUsed: number;
-  fileSize: number;
-  isAccessible: boolean;
-  thumbnailPath?: string;
-}
-
-interface FileStats {
-  size: number;
-  created: number;
-  modified: number;
-  accessed: number;
-  isDirectory: boolean;
-  permissions: FilePermissions;
-}
-
-interface FilePermissions {
-  read: boolean;
-  write: boolean;
-  execute: boolean;
-}
-
-interface PresetConfig {
-  settings: UISettings;
-  metadata?: {
-    name: string;
-    description?: string;
-    version: string;
-  };
-}
-
-interface ConfigValidationResult {
-  isValid: boolean;
-  errors: ValidationError[];
-}
+import type {
+  UISettings,
+  ImageFileResult,
+  ImageMetadata,
+  ImageValidationResult,
+  ValidationError,
+  WatermarkFileResult,
+  WatermarkValidationResult,
+  RecentFileInfo,
+  FileStats,
+  FilePermissions,
+  PresetConfig,
+  ConfigValidationResult
+} from '../../shared/types';
 
 export class FileIpcHandlers {
   constructor(private fileManager: FileManager) {

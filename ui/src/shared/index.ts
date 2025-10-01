@@ -14,6 +14,12 @@ export * from './services';
 // React component prop types
 export * from './components';
 
+// Engine communication types
+export * from './engine';
+
+// File management types
+export * from './files';
+
 // Re-export commonly used utility types
 export type {
   DeepReadonly,
