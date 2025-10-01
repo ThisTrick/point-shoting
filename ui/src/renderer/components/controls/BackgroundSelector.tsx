@@ -106,7 +106,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
 }) => {
   const { t } = useLocalization();
   const [activeTab, setActiveTab] = useState<BackgroundConfig['type']>(background.type);
-  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [_showColorPicker, setShowColorPicker] = useState(false);
   const [selectedPalette, setSelectedPalette] = useState<keyof typeof COLOR_PALETTES>('basic');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -123,7 +123,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
         if (!config.gradient) return '#ffffff';
         
         const { type, direction, stops } = config.gradient;
-        const sortedStops = [...stops].sort((a, b) => a.position - b.position);
+        const sortedStops = [...stops].sort((a, b) => a.position - b._position);
         const stopsCSS = sortedStops.map(stop => `${stop.color} ${stop.position}%`).join(', ');
         
         if (type === 'linear') {
@@ -135,7 +135,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
       case 'image':
         if (!config.image) return '#ffffff';
         
-        const { src, size, position, opacity } = config.image;
+        const { src, size, _position, opacity } = config.image;
         let backgroundSize: string;
         
         switch (size) {
@@ -234,8 +234,8 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
     if (!background.gradient) return;
     
     const stops = [...background.gradient.stops];
-    const position = stops.length > 0 ? Math.max(...stops.map(s => s.position)) + 10 : 50;
-    stops.push({ color: '#ffffff', position: Math.min(100, position) });
+    const position = stops.length > 0 ? Math.max(...stops.map(s => s._position)) + 10 : 50;
+    stops.push({ color: '#ffffff', position: Math.min(100, _position) });
     
     handleGradientChange({ stops });
   }, [background.gradient, handleGradientChange]);
@@ -328,7 +328,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
     };
 
     if (background.type === 'image' && background.image) {
-      const { size, position, opacity } = background.image;
+      const { size, _position, opacity } = background.image;
       
       switch (size) {
         case 'cover':
@@ -558,7 +558,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
                       className="stop-position"
                     />
                     <span className="position-value">{stop.position}%</span>
-                    {background.gradient.stops.length > 2 && (
+                    {background.gradient?.stops.length > 2 && (
                       <button
                         type="button"
                         className="remove-stop-button"
@@ -640,7 +640,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
                       max="100"
                       value={background.image.position.x}
                       onChange={(e) => handleImageChange({ 
-                        position: { ...background.image.position, x: Number(e.target.value) }
+                        position: { ...background.image?._position, x: Number(e.target.value) }
                       })}
                       disabled={disabled}
                       className="position-slider"
@@ -654,7 +654,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
                       max="100"
                       value={background.image.position.y}
                       onChange={(e) => handleImageChange({ 
-                        position: { ...background.image.position, y: Number(e.target.value) }
+                        position: { ...background.image?._position, y: Number(e.target.value) }
                       })}
                       disabled={disabled}
                       className="position-slider"
@@ -693,7 +693,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
                   <button
                     key={patternType.id}
                     type="button"
-                    className={`pattern-type-button ${background.pattern.type === patternType.id ? 'active' : ''}`}
+                    className={`pattern-type-button ${background.pattern?.type === patternType.id ? 'active' : ''}`}
                     onClick={() => handlePatternChange({ type: patternType.id as any })}
                     disabled={disabled}
                     title={patternType.name}

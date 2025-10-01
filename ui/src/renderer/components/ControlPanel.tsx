@@ -10,7 +10,7 @@
 
 import React, { useMemo, useCallback } from 'react';
 import { ControlPanelProps } from '../../types/components';
-import { EngineStatus, EngineState, ParticleDensity, AnimationSpeed } from '../../types/core';
+import { EngineState, ParticleDensity, AnimationSpeed } from '../../types/core';
 import './ControlPanel.css';
 
 /**

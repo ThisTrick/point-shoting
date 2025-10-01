@@ -70,7 +70,7 @@ export function useAnimationState(options: AnimationHookOptions = {}) {
     startEngine,
     stopEngine,
     restartEngine,
-    getEngineHealth,
+    _getEngineHealth,
     startAnimation,
     pauseAnimation,
     resumeAnimation,

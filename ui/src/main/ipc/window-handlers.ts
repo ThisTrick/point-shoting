@@ -4,7 +4,7 @@
  */
 
 import { ipcMain, IpcMainInvokeEvent, BrowserWindow } from 'electron';
-import { UISettings } from '../../types';
+ '../../types';
 
 // Temporary type definitions until properly defined in types module
 interface WindowBounds {

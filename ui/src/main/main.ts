@@ -3,11 +3,9 @@
  * Entry point for the Electron main process of the Point Shooting UI application
  */
 
-import { app, protocol, net, BrowserWindow } from 'electron';
-import { join } from 'path';
+import { app, BrowserWindow } from 'electron';
+ 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
-import icon from '../../resources/icon.png?asset';
-
 // Import service managers and controllers
 import { MainWindowController } from './MainWindowController';
 import { SettingsManager } from './services/SettingsManager';
@@ -68,8 +66,8 @@ app.whenReady().then(async () => {
 
     console.log('Point Shooting UI application started successfully');
 
-  } catch (error) {
-    console.error('Failed to initialize application:', error);
+  } catch (_error) {
+    console.error('Failed to initialize application:', _error);
     app.quit();
   }
 });
@@ -84,7 +82,7 @@ app.on('window-all-closed', () => {
 });
 
 // Handle app termination
-app.on('before-quit', async (event) => {
+app.on('before-quit', async (_event) => {
   event.preventDefault();
   
   try {
@@ -99,14 +97,14 @@ app.on('before-quit', async (event) => {
     console.log('Shutdown complete');
     app.exit(0);
     
-  } catch (error) {
-    console.error('Error during shutdown:', error);
+  } catch (_error) {
+    console.error('Error during shutdown:', _error);
     app.exit(1);
   }
 });
 
 // Handle certificate errors (for development)
-app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
+app.on('certificate-error', (_event, _webContents, url, _error, _certificate, callback) => {
   if (is.dev && url.startsWith('https://localhost')) {
     // In development, ignore certificate errors for localhost
     event.preventDefault();
@@ -118,8 +116,8 @@ app.on('certificate-error', (event, webContents, url, error, certificate, callba
 });
 
 // Security: Prevent new window creation
-app.on('web-contents-created', (event, contents) => {
-  contents.on('new-window', (event, navigationUrl) => {
+app.on('web-contents-created', (_event, contents) => {
+  contents.on('new-window', (_event, navigationUrl) => {
     // Prevent opening new windows
     event.preventDefault();
     
@@ -144,8 +142,8 @@ async function initializeServices(): Promise<void> {
     
     console.log('Core services initialized successfully');
     
-  } catch (error) {
-    console.error('Failed to initialize services:', error);
+  } catch (_error) {
+    console.error('Failed to initialize services:', _error);
     throw error;
   }
 }
@@ -166,8 +164,8 @@ function initializeIpcHandlers(): void {
     
     console.log('IPC handlers initialized successfully');
     
-  } catch (error) {
-    console.error('Failed to initialize IPC handlers:', error);
+  } catch (_error) {
+    console.error('Failed to initialize IPC handlers:', _error);
     throw error;
   }
 }
@@ -184,8 +182,8 @@ async function createWindow(): Promise<void> {
     await mainWindowController.initializeWindow();
     console.log('Main window created successfully');
     
-  } catch (error) {
-    console.error('Failed to create main window:', error);
+  } catch (_error) {
+    console.error('Failed to create main window:', _error);
     throw error;
   }
 }
@@ -223,8 +221,8 @@ async function shutdownServices(): Promise<void> {
     
     console.log('Services shutdown complete');
     
-  } catch (error) {
-    console.error('Error during service shutdown:', error);
+  } catch (_error) {
+    console.error('Error during service shutdown:', _error);
     // Continue with shutdown even if there are errors
   }
 }
@@ -256,8 +254,8 @@ function cleanupIpcHandlers(): void {
     
     console.log('IPC handlers cleanup complete');
     
-  } catch (error) {
-    console.error('Error during IPC cleanup:', error);
+  } catch (_error) {
+    console.error('Error during IPC cleanup:', _error);
     // Continue with shutdown
   }
 }
@@ -272,8 +270,8 @@ if (is.dev) {
 }
 
 // Handle unhandled errors
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
+process.on('uncaughtException', (_error) => {
+  console.error('Uncaught Exception:', _error);
   
   // Try to show error dialog if possible
   try {

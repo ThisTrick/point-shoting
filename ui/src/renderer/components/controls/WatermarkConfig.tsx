@@ -267,7 +267,7 @@ export const WatermarkConfig: React.FC<WatermarkConfigProps> = ({
     }
 
     try {
-      const result = await window.electron.dialog.showOpenDialog({
+      const result = await window.electron.dialog?.showOpenDialog({
         properties: ['openFile'],
         filters: [
           { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'svg'] }

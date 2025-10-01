@@ -101,7 +101,7 @@ describe('IPC Communication Integration', () => {
         }
       }
 
-      const mockHandler = jest.fn((event, data) => {
+      const mockHandler = jest.fn((_event, data) => {
         // Verify data structure is preserved
         expect(data.settings.theme).toBe('dark')
         expect(data.settings.nested.value).toBe(42)
@@ -120,7 +120,7 @@ describe('IPC Communication Integration', () => {
       const largeArray = new Array(10000).fill(0).map((_, i) => ({ id: i, data: `item-${i}` }))
       const largePayload = { items: largeArray, metadata: { count: largeArray.length } }
 
-      const mockHandler = jest.fn((event, data) => {
+      const mockHandler = jest.fn((_event, data) => {
         expect(data.items).toHaveLength(10000)
         expect(data.metadata.count).toBe(10000)
         return { processed: true, count: data.items.length }
@@ -177,7 +177,7 @@ describe('IPC Communication Integration', () => {
     }, 7000)
 
     it('should handle malformed messages', async () => {
-      const mockHandler = jest.fn().mockImplementation((event, data) => {
+      const mockHandler = jest.fn().mockImplementation((_event, data) => {
         if (!data || typeof data !== 'object') {
           throw new Error('Invalid message format')
         }
@@ -219,7 +219,7 @@ describe('IPC Communication Integration', () => {
   describe('Performance Requirements', () => {
     
     it('should handle high-frequency messages efficiently', async () => {
-      const mockHandler = jest.fn().mockImplementation((event, data) => ({ 
+      const mockHandler = jest.fn().mockImplementation((_event, data) => ({ 
         echo: data.value,
         timestamp: Date.now()
       }))
@@ -241,7 +241,7 @@ describe('IPC Communication Integration', () => {
 
     it('should maintain message order under load', async () => {
       const receivedOrder: number[] = []
-      const mockHandler = jest.fn().mockImplementation((event, data) => {
+      const mockHandler = jest.fn().mockImplementation((_event, data) => {
         receivedOrder.push(data.sequence)
         // Add small delay to test ordering
         return new Promise(resolve => 
@@ -278,7 +278,7 @@ describe('IPC Communication Integration', () => {
         }
       }
 
-      const mockHandler = jest.fn().mockImplementation((event, message) => {
+      const mockHandler = jest.fn().mockImplementation((_event, message) => {
         // Validate required fields
         if (!message.action || !message.payload) {
           throw new Error('Invalid message structure')
@@ -304,7 +304,7 @@ describe('IPC Communication Integration', () => {
         timestamp: Date.now()
       }
 
-      const mockHandler = jest.fn().mockImplementation((event, message) => {
+      const mockHandler = jest.fn().mockImplementation((_event, message) => {
         if (!message.command || !message.payload || !message.id) {
           throw new Error('Invalid engine message structure')
         }
@@ -336,7 +336,7 @@ describe('IPC Communication Integration', () => {
         }
       }
 
-      const mockHandler = jest.fn().mockImplementation((event, message) => {
+      const mockHandler = jest.fn().mockImplementation((_event, message) => {
         if (!message.operation || !message.type) {
           throw new Error('Invalid file operation message')
         }

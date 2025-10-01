@@ -5,7 +5,6 @@
 
 import Store from 'electron-store';
 import { promises as fs } from 'fs';
-import path from 'path';
 import { EventEmitter } from 'events';
 import { 
   UISettings, 

@@ -55,9 +55,9 @@ describe('Python Engine Bridge Integration', () => {
       const mockOnData = jest.fn()
       
       // Mock stdout data handler
-      mockProcess.stdout!.on = jest.fn((event, handler) => {
+      mockProcess.stdout!.on = jest.fn((event, _handler) => {
         if (event === 'data') {
-          mockOnData.mockImplementation(handler)
+          mockOnData.mockImplementation(_handler)
         }
       })
 
@@ -84,9 +84,9 @@ describe('Python Engine Bridge Integration', () => {
     it('should handle process startup failure', (done) => {
       const mockOnError = jest.fn()
       
-      mockProcess.on = jest.fn((event, handler) => {
+      mockProcess.on = jest.fn((event, _handler) => {
         if (event === 'error') {
-          mockOnError.mockImplementation(handler)
+          mockOnError.mockImplementation(_handler)
         }
       })
 
@@ -119,9 +119,9 @@ describe('Python Engine Bridge Integration', () => {
     it('should handle process crash recovery', (done) => {
       const mockOnExit = jest.fn()
       
-      mockProcess.on = jest.fn((event, handler) => {
+      mockProcess.on = jest.fn((event, _handler) => {
         if (event === 'exit') {
-          mockOnExit.mockImplementation(handler)
+          mockOnExit.mockImplementation(_handler)
         }
       })
 
@@ -210,9 +210,9 @@ describe('Python Engine Bridge Integration', () => {
     it('should parse incoming status messages correctly', (done) => {
       const mockOnData = jest.fn()
       
-      mockProcess.stdout!.on = jest.fn((event, handler) => {
+      mockProcess.stdout!.on = jest.fn((event, _handler) => {
         if (event === 'data') {
-          mockOnData.mockImplementation(handler)
+          mockOnData.mockImplementation(_handler)
         }
       })
 
@@ -252,12 +252,12 @@ describe('Python Engine Bridge Integration', () => {
       const mockOnData = jest.fn()
       const mockOnError = jest.fn()
       
-      mockProcess.stdout!.on = jest.fn((event, handler) => {
-        if (event === 'data') mockOnData.mockImplementation(handler)
+      mockProcess.stdout!.on = jest.fn((event, _handler) => {
+        if (event === 'data') mockOnData.mockImplementation(_handler)
       })
       
-      mockProcess.stderr!.on = jest.fn((event, handler) => {
-        if (event === 'data') mockOnError.mockImplementation(handler)
+      mockProcess.stderr!.on = jest.fn((event, _handler) => {
+        if (event === 'data') mockOnError.mockImplementation(_handler)
       })
 
       mockSpawn('python', [], { stdio: 'pipe' })
@@ -278,7 +278,7 @@ describe('Python Engine Bridge Integration', () => {
       const mockOnData = jest.fn()
       let buffer = ''
       
-      mockProcess.stdout!.on = jest.fn((event, handler) => {
+      mockProcess.stdout!.on = jest.fn((event, _handler) => {
         if (event === 'data') {
           mockOnData.mockImplementation((data: Buffer) => {
             buffer += data.toString()
@@ -337,9 +337,9 @@ describe('Python Engine Bridge Integration', () => {
     it('should handle engine error responses', (done) => {
       const mockOnData = jest.fn()
       
-      mockProcess.stdout!.on = jest.fn((event, handler) => {
+      mockProcess.stdout!.on = jest.fn((event, _handler) => {
         if (event === 'data') {
-          mockOnData.mockImplementation(handler)
+          mockOnData.mockImplementation(_handler)
         }
       })
 
@@ -394,9 +394,9 @@ describe('Python Engine Bridge Integration', () => {
     it('should monitor process memory usage', (done) => {
       const mockOnData = jest.fn()
       
-      mockProcess.stdout!.on = jest.fn((event, handler) => {
+      mockProcess.stdout!.on = jest.fn((event, _handler) => {
         if (event === 'data') {
-          mockOnData.mockImplementation(handler)
+          mockOnData.mockImplementation(_handler)
         }
       })
 
@@ -499,9 +499,9 @@ describe('Python Engine Bridge Integration', () => {
     it('should detect unresponsive engine', (done) => {
       const mockOnData = jest.fn()
       
-      mockProcess.stdout!.on = jest.fn((event, handler) => {
+      mockProcess.stdout!.on = jest.fn((event, _handler) => {
         if (event === 'data') {
-          mockOnData.mockImplementation(handler)
+          mockOnData.mockImplementation(_handler)
         }
       })
 

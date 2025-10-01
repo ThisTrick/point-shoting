@@ -5,11 +5,7 @@
 
 import { ipcMain, IpcMainInvokeEvent } from 'electron';
 import { SettingsManager } from '../services/SettingsManager';
-import type {
-  UISettings,
-  ValidationError,
-  PresetConfig
-} from '../../shared/types';
+import type { UISettings, ValidationError } from '../../shared/types';
 
 // Simple validation result type
 interface ValidationResult {

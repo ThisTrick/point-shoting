@@ -3,7 +3,7 @@
  * Централізоване керування файловими операціями для зображень, конфігурацій та ресурсів
  */
 
-import { dialog, app, shell } from 'electron';
+import { dialog } from 'electron';
 import { promises as fs, constants } from 'fs';
 import path from 'path';
 import { EventEmitter } from 'events';

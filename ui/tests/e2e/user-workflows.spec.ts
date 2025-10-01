@@ -359,7 +359,7 @@ describe('Particle Animation UI E2E Tests', () => {
       // Mock save settings
       await page.evaluate(() => {
         window.electronAPI = {
-          saveSettings: (settings) => Promise.resolve({ success: true })
+          saveSettings: (_settings) => Promise.resolve({ success: true })
         }
       })
       
@@ -426,7 +426,7 @@ describe('Particle Animation UI E2E Tests', () => {
       
       await page.evaluate(() => {
         window.electronAPI = {
-          savePreset: (name, description) => Promise.resolve({ success: true })
+          savePreset: (_name, _description) => Promise.resolve({ success: true })
         }
       })
       
@@ -559,7 +559,7 @@ describe('Particle Animation UI E2E Tests', () => {
               const interval = setInterval(() => {
                 loadingProgress += 10
                 if (loadingProgress >= 100) {
-                  clearInterval(interval)
+                  clearInterval(_interval)
                   resolve({
                     path: '/mock/large.png',
                     metadata: { width: 8000, height: 6000, size: 50000000 }

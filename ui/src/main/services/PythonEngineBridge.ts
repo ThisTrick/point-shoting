@@ -334,10 +334,10 @@ export class PythonEngineBridge extends EventEmitter {
     this.lastHeartbeat = Date.now();
 
     // Handle message responses
-    if (message.id && this.pendingMessages.has(message.id)) {
-      const pending = this.pendingMessages.get(message.id)!;
+    if (message.id && this.pendingMessages.has(message._id)) {
+      const pending = this.pendingMessages.get(message._id)!;
       clearTimeout(pending.timeout);
-      this.pendingMessages.delete(message.id);
+      this.pendingMessages.delete(message._id);
 
       if (message.type === 'error') {
         pending.reject(new Error(message.payload?.message || 'Engine error'));
@@ -385,18 +385,18 @@ export class PythonEngineBridge extends EventEmitter {
 
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        this.pendingMessages.delete(message.id);
+        this.pendingMessages.delete(message._id);
         reject(new Error('Message timeout'));
       }, this.ENGINE_TIMEOUT);
 
-      this.pendingMessages.set(message.id, { resolve, reject, timeout });
+      this.pendingMessages.set(message._id, { resolve, reject, timeout });
 
       const messageStr = JSON.stringify(message) + '\n';
       
       if (this.engineProcess?.stdin?.writable) {
         this.engineProcess.stdin.write(messageStr);
       } else {
-        this.pendingMessages.delete(message.id);
+        this.pendingMessages.delete(message._id);
         clearTimeout(timeout);
         reject(new Error('Engine stdin not writable'));
       }
@@ -435,7 +435,7 @@ export class PythonEngineBridge extends EventEmitter {
     this.engineProcess = null;
 
     // Reject all pending messages
-    for (const [id, pending] of this.pendingMessages) {
+    for (const [_id, pending] of this.pendingMessages) {
       clearTimeout(pending.timeout);
       pending.reject(new Error('Engine disconnected'));
     }

@@ -5,7 +5,7 @@
 
 import { useContext, useCallback } from 'react';
 import { SettingsContext } from '../contexts/SettingsContext';
-import type { UISettings, SettingsPreset } from '../contexts/SettingsContext';
+import type { UISettings } from '../contexts/SettingsContext';
 
 // Settings validation utilities
 interface ValidationResult {
@@ -88,20 +88,20 @@ export function useSettings(options: SettingsHookOptions = {}) {
 
   // Animation settings helpers
   const updateAnimationSettings = useCallback((updates: Partial<UISettings['animation']>) => {
-    return updateSetting('animation', { ...state.settings.animation, ...updates });
-  }, [state.settings.animation, updateSetting]);
+    return updateSetting('animation', { ...state.settings?.animation, ...updates });
+  }, [state.settings?.animation, updateSetting]);
 
   const updatePerformanceSettings = useCallback((updates: Partial<UISettings['performance']>) => {
-    return updateSetting('performance', { ...state.settings.performance, ...updates });
-  }, [state.settings.performance, updateSetting]);
+    return updateSetting('performance', { ...state.settings?.performance, ...updates });
+  }, [state.settings?.performance, updateSetting]);
 
   const updateInterfaceSettings = useCallback((updates: Partial<UISettings['interface']>) => {
-    return updateSetting('interface', { ...state.settings.interface, ...updates });
-  }, [state.settings.interface, updateSetting]);
+    return updateSetting('interface', { ...state.settings?.interface, ...updates });
+  }, [state.settings?.interface, updateSetting]);
 
   const updateWatermarkSettings = useCallback((updates: Partial<UISettings['watermark']>) => {
-    return updateSetting('watermark', { ...state.settings.watermark, ...updates });
-  }, [state.settings.watermark, updateSetting]);
+    return updateSetting('watermark', { ...state.settings?.watermark, ...updates });
+  }, [state.settings?.watermark, updateSetting]);
 
   // Quick setters for common operations
   const setDensity = useCallback((density: number) => {

@@ -5,20 +5,7 @@
 
 import { ipcMain, IpcMainInvokeEvent } from 'electron';
 import { FileManager } from '../services/FileManager';
-import type {
-  UISettings,
-  ImageFileResult,
-  ImageMetadata,
-  ImageValidationResult,
-  ValidationError,
-  WatermarkFileResult,
-  WatermarkValidationResult,
-  RecentFileInfo,
-  FileStats,
-  FilePermissions,
-  PresetConfig,
-  ConfigValidationResult
-} from '../../shared/types';
+import type { ImageFileResult, ImageMetadata, ImageValidationResult, WatermarkFileResult, WatermarkValidationResult, RecentFileInfo, FileStats, PresetConfig, ConfigValidationResult } from '../../shared/types';
 
 export class FileIpcHandlers {
   constructor(private fileManager: FileManager) {
