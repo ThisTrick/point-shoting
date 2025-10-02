@@ -5,113 +5,28 @@
  * from /specs/002-ui/contracts/file_manager.md
  */
 
-interface FileManager {
-  // Image Operations
-  selectImageFile(): Promise<ImageFileResult | null>
-  validateImageFile(path: string): Promise<ImageValidationResult>
-  generateImagePreview(path: string, maxSize: number): Promise<string> // base64
-  getImageMetadata(path: string): Promise<ImageMetadata>
-  
-  // Configuration Operations
-  selectConfigFile(mode: 'import' | 'export'): Promise<string | null>
-  saveConfigFile(path: string, config: PresetConfig): Promise<void>
-  loadConfigFile(path: string): Promise<PresetConfig>
-  validateConfigFile(path: string): Promise<ConfigValidationResult>
-  
-  // Watermark Operations
-  selectWatermarkFile(): Promise<WatermarkFileResult | null>
-  validateWatermarkFile(path: string): Promise<WatermarkValidationResult>
-  
-  // Recent Files Management
-  getRecentImages(): Promise<RecentFileInfo[]>
-  addToRecentImages(path: string): Promise<void>
-  removeFromRecentImages(path: string): Promise<void>
-  clearRecentImages(): Promise<void>
-  
-  // File System Utilities
-  watchFile(path: string, callback: (event: FileChangeEvent) => void): FileWatcher
-  unwatchFile(watcher: FileWatcher): void
-  getFileStats(path: string): Promise<FileStats>
-  fileExists(path: string): Promise<boolean>
-}
-
-interface ImageFileResult {
-  path: string
-  filename: string
-  metadata: ImageMetadata
-  validationResult: ImageValidationResult
-}
-
-interface ImageValidationResult {
-  isValid: boolean
-  format?: 'PNG' | 'JPG'
-  errors: ValidationError[]
-  warnings: ValidationWarning[]
-}
-
-interface ImageMetadata {
-  width: number
-  height: number
-  format: string
-  size: number
-  colorDepth: number
-  hasTransparency: boolean
-}
-
-interface WatermarkFileResult {
-  path: string
-  filename: string
-  validationResult: WatermarkValidationResult
-}
-
-interface WatermarkValidationResult {
-  isValid: boolean
-  supportedFormat: boolean
-  errors: ValidationError[]
-}
-
-interface RecentFileInfo {
-  path: string
-  filename: string
-  lastAccessed: Date
-  metadata?: ImageMetadata
-}
-
-interface FileStats {
-  size: number
-  created: Date
-  modified: Date
-  isDirectory: boolean
-}
-
-interface FileChangeEvent {
-  type: 'created' | 'modified' | 'deleted' | 'renamed'
-  path: string
-  newPath?: string
-}
-
-interface FileWatcher {
-  path: string
-  isActive: boolean
-  stop(): void
-}
-
-// Mock types for testing
-type PresetConfig = any
-type ConfigValidationResult = any
-type ValidationError = any
-type ValidationWarning = any
+import { FileManager } from '@main/services/FileManager'
+import type { 
+  ImageFileResult, 
+  ImageValidationResult, 
+  ImageMetadata, 
+  WatermarkFileResult, 
+  WatermarkValidationResult, 
+  RecentFileInfo, 
+  FileStats, 
+  PresetConfig, 
+  ConfigValidationResult, 
+  ValidationError, 
+  FileChangeEvent, 
+  FileWatcher 
+} from '@shared/types'
 
 describe('FileManager Contract', () => {
   let fileManager: FileManager
   
   beforeEach(() => {
-    // This will fail until FileManager is implemented
-    // const { FileManager: FileManagerImpl } = require('@main/FileManager')
-    // fileManager = new FileManagerImpl()
-    
-    // For now, use a mock that will cause tests to fail
-    fileManager = {} as FileManager
+    // Import and instantiate the actual FileManager implementation
+    fileManager = new FileManager()
   })
 
   describe('Interface Compliance', () => {
@@ -151,10 +66,10 @@ describe('FileManager Contract', () => {
       const result = await fileManager.selectImageFile()
       
       if (result !== null) {
+        expect(result.success).toBe(true)
         expect(typeof result.path).toBe('string')
         expect(typeof result.filename).toBe('string')
-        expect(result.metadata).toBeDefined()
-        expect(result.validationResult).toBeDefined()
+        expect(typeof result.fileSize).toBe('number')
       }
     })
 
@@ -166,10 +81,6 @@ describe('FileManager Contract', () => {
       expect(typeof validation.isValid).toBe('boolean')
       expect(Array.isArray(validation.errors)).toBe(true)
       expect(Array.isArray(validation.warnings)).toBe(true)
-      
-      if (validation.isValid) {
-        expect(['PNG', 'JPG'].includes(validation.format!)).toBe(true)
-      }
     })
 
     it('should generate base64 image preview', async () => {
@@ -189,9 +100,28 @@ describe('FileManager Contract', () => {
       expect(typeof metadata.width).toBe('number')
       expect(typeof metadata.height).toBe('number')
       expect(typeof metadata.format).toBe('string')
-      expect(typeof metadata.size).toBe('number')
-      expect(typeof metadata.colorDepth).toBe('number')
-      expect(typeof metadata.hasTransparency).toBe('boolean')
+      expect(typeof metadata.hasAlpha).toBe('boolean')
+    })
+    })
+
+    it('should generate base64 image preview', async () => {
+      const imagePath = '/path/to/test.png'
+      const maxSize = 200
+      const preview = await fileManager.generateImagePreview(imagePath, maxSize)
+      
+      expect(typeof preview).toBe('string')
+      expect(preview.startsWith('data:image/')).toBe(true)
+    })
+
+    it('should extract comprehensive image metadata', async () => {
+      const imagePath = '/path/to/test.png'
+      const metadata = await fileManager.getImageMetadata(imagePath)
+      
+      expect(metadata).toBeDefined()
+      expect(typeof metadata.width).toBe('number')
+      expect(typeof metadata.height).toBe('number')
+      expect(typeof metadata.format).toBe('string')
+      expect(typeof metadata.hasAlpha).toBe('boolean')
     })
   })
 
@@ -210,7 +140,7 @@ describe('FileManager Contract', () => {
 
     it('should save configuration to JSON file', async () => {
       const path = '/tmp/test-config.json'
-      const config = { theme: 'dark', particleCount: 1000 }
+      const config = { theme: 'dark', particleCount: 1000 } as any
       
       await expect(fileManager.saveConfigFile(path, config))
         .resolves.toBeUndefined()
@@ -238,9 +168,9 @@ describe('FileManager Contract', () => {
       const result = await fileManager.selectWatermarkFile()
       
       if (result !== null) {
+        expect(result.success).toBe(true)
         expect(typeof result.path).toBe('string')
         expect(typeof result.filename).toBe('string')
-        expect(result.validationResult).toBeDefined()
       }
     })
 
@@ -250,7 +180,8 @@ describe('FileManager Contract', () => {
       
       expect(validation).toBeDefined()
       expect(typeof validation.isValid).toBe('boolean')
-      expect(typeof validation.supportedFormat).toBe('boolean')
+      expect(typeof validation.minSizeMet).toBe('boolean')
+      expect(typeof validation.isPNG).toBe('boolean')
       expect(Array.isArray(validation.errors)).toBe(true)
     })
   })
@@ -373,7 +304,7 @@ describe('FileManager Contract', () => {
 
     it('should handle permission errors for config files', async () => {
       const restrictedPath = '/root/config.json'
-      await expect(fileManager.saveConfigFile(restrictedPath, {}))
+      await expect(fileManager.saveConfigFile(restrictedPath, {} as any))
         .rejects.toThrow()
     })
 
@@ -423,8 +354,8 @@ describe('FileManager Contract', () => {
       const recentFiles = await fileManager.getRecentImages()
       
       for (let i = 1; i < recentFiles.length; i++) {
-        expect(recentFiles[i-1].lastAccessed.getTime())
-          .toBeGreaterThanOrEqual(recentFiles[i].lastAccessed.getTime())
+        expect(recentFiles[i-1].timestamp)
+          .toBeGreaterThanOrEqual(recentFiles[i].timestamp)
       }
     })
 

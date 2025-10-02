@@ -4,7 +4,10 @@ import { resolve } from 'path'
 
 export default defineConfig({
   mode: process.env.NODE_ENV || 'development',
-  plugins: [react()],
+  plugins: [react({
+    // Ensure React runs in development mode with proper warnings
+    jsxRuntime: 'automatic'
+  })],
   base: './',
   root: resolve(__dirname, 'src/renderer'),
   build: {

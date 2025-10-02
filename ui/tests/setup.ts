@@ -26,12 +26,34 @@ const mockElectron = {
   },
 }
 
-// Make Electron available globally for tests
-;(global as any).require = jest.fn((module) => {
-  if (module === 'electron') {
-    return mockElectron
-  }
-  return jest.requireActual(module)
+// Mock electron module for ES6 imports
+jest.mock('electron', () => mockElectron)
+
+// Mock electron-store
+jest.mock('electron-store', () => {
+  return jest.fn().mockImplementation(() => ({
+    get: jest.fn(),
+    set: jest.fn(),
+    delete: jest.fn(),
+    clear: jest.fn(),
+  }))
+})
+
+// Mock sharp
+jest.mock('sharp', () => {
+  return jest.fn().mockImplementation(() => ({
+    metadata: jest.fn().mockResolvedValue({
+      width: 100,
+      height: 100,
+      format: 'png',
+      size: 1024,
+    }),
+    resize: jest.fn().mockReturnThis(),
+    jpeg: jest.fn().mockReturnThis(),
+    png: jest.fn().mockReturnThis(),
+    toBuffer: jest.fn().mockResolvedValue(Buffer.from('mock-image-data')),
+    toFile: jest.fn().mockResolvedValue({}),
+  }))
 })
 
 // Mock file system operations

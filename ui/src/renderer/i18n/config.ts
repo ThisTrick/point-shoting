@@ -505,34 +505,41 @@ interface I18nProviderProps {
   children: ReactNode;
   defaultLocale?: string;
   storageKey?: string;
+  locale?: string; // Controlled locale from external source
 }
 
 export const I18nProvider: React.FC<I18nProviderProps> = ({
   children,
   defaultLocale = DEFAULT_LOCALE,
   storageKey = 'app-locale',
+  locale: controlledLocale,
 }) => {
-  const [locale, setLocaleState] = useState<string>(defaultLocale);
+  const [internalLocale, setInternalLocaleState] = useState<string>(defaultLocale);
   const [translations, setTranslations] = useState<TranslationKey>({});
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Use controlled locale if provided, otherwise use internal state
+  const locale = controlledLocale !== undefined ? controlledLocale : internalLocale;
+
   // Get locale configuration
   const localeConfig = (SUPPORTED_LOCALES[locale] || SUPPORTED_LOCALES[DEFAULT_LOCALE])!;
 
-  // Load saved locale from storage
+  // Load saved locale from storage (only when not controlled)
   useEffect(() => {
+    if (controlledLocale !== undefined) return; // Skip if controlled externally
+    
     const savedLocale = localStorage.getItem(storageKey);
     if (savedLocale && SUPPORTED_LOCALES[savedLocale]) {
-      setLocaleState(savedLocale);
+      setInternalLocaleState(savedLocale);
     } else {
       // Detect system locale
       const systemLocale = navigator.language.split('-')[0] || DEFAULT_LOCALE;
       if (SUPPORTED_LOCALES[systemLocale]) {
-        setLocaleState(systemLocale);
+        setInternalLocaleState(systemLocale);
       }
     }
-  }, [storageKey]);
+  }, [storageKey, controlledLocale]);
 
   // Load translations when locale changes
   useEffect(() => {
@@ -571,8 +578,11 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({
       throw new Error(`Unsupported locale: ${newLocale}`);
     }
 
-    setLocaleState(newLocale);
-    localStorage.setItem(storageKey, newLocale);
+    if (controlledLocale === undefined) {
+      // Only update internal state if not controlled externally
+      setInternalLocaleState(newLocale);
+      localStorage.setItem(storageKey, newLocale);
+    }
 
     // Update document attributes for styling and accessibility
     document.documentElement.lang = newLocale;
