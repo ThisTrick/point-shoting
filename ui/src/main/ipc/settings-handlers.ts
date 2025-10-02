@@ -5,14 +5,7 @@
 
 import { ipcMain, IpcMainInvokeEvent } from 'electron';
 import { SettingsManager } from '../services/SettingsManager';
-import type { UISettings, ValidationError } from '../../shared/types';
-
-// Simple validation result type
-interface ValidationResult {
-  isValid: boolean;
-  errors: ValidationError[];
-  warnings: ValidationError[];
-}
+import type { UISettings, ValidationResult, PresetInfo } from '../../shared/types';
 
 export class SettingsIpcHandlers {
   constructor(private settingsManager: SettingsManager) {

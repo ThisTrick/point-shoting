@@ -197,7 +197,7 @@ export class FileIpcHandlers {
         // Send file change event to renderer process
         _event.sender.send('file-changed', event);
       });
-      return watcher.id;
+      return (watcher.id || watcher.path) as string; // Return id or path as fallback, cast as string
     } catch (error) {
       console.error('Watch file error:', error);
       throw new Error(`Failed to watch file: ${error instanceof Error ? error.message : 'Unknown error'}`);

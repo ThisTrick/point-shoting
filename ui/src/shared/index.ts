@@ -28,5 +28,9 @@ export type {
   CallbackFunction,
   EventHandler,
   AsyncOperation,
-  ConfigValidator
+  ConfigValidator,
+  ValidationResult,
+  ValidationWarning,
+  PresetInfo,
+  BackgroundConfig
 } from './core';

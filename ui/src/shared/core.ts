@@ -154,8 +154,8 @@ export interface UISettings {
   readonly windowBounds?: { width: number; height: number; x?: number; y?: number };
   readonly accessibility?: AccessibilitySettings;
   
-  // Animation settings (nested configuration)
-  readonly animation?: {
+  // Animation settings (nested configuration) - REQUIRED with defaults
+  readonly animation: {
     readonly density: ParticleDensity;
     readonly speed: AnimationSpeed;
     readonly colorMode: ColorMappingMode;
@@ -166,24 +166,24 @@ export interface UISettings {
     readonly breathing: boolean;
   };
   
-  // Performance settings
-  readonly performance?: {
+  // Performance settings - REQUIRED with defaults
+  readonly performance: {
     readonly targetFPS: number;
     readonly particleLimit: number;
     readonly enableGPU: boolean;
     readonly lowPowerMode: boolean;
   };
   
-  // Interface/display settings
-  readonly interface?: {
+  // Interface/display settings - REQUIRED with defaults
+  readonly interface: {
     readonly showFPS: boolean;
     readonly showParticleCount: boolean;
     readonly enableAnimations: boolean;
     readonly compactMode: boolean;
   };
   
-  // Watermark configuration (separate from animation.watermark boolean)
-  readonly watermark?: {
+  // Watermark configuration (separate from animation.watermark boolean) - REQUIRED with defaults
+  readonly watermark: {
     readonly enabled: boolean;
     readonly position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
     readonly opacity: number;
@@ -413,3 +413,88 @@ export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
  * Required properties utility type
  */
 export type RequiredBy<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+
+// ============================================================================
+// ADDITIONAL TYPES FOR SETTINGS MANAGER
+// ============================================================================
+
+/**
+ * Validation result (alias for ImageValidationResult compatibility)
+ */
+export interface ValidationResult {
+  isValid: boolean;
+  errors: Array<{ field: string; message: string; code?: string }>;
+  warnings?: Array<{ field: string; message: string; code?: string }>;
+}
+
+/**
+ * Validation warning
+ */
+export interface ValidationWarning {
+  field: string;
+  message: string;
+  code?: string;
+  severity?: 'warning' | 'info';
+}
+
+/**
+ * Preset information for UI display
+ */
+export interface PresetInfo {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt: string;
+  lastModified?: string;
+  isBuiltIn: boolean;
+  thumbnail?: string;
+}
+
+/**
+ * Preset configuration stored in settings
+ */
+export interface PresetConfig {
+  id: string;
+  name: string;
+  description: string;
+  settings: UISettings;
+  createdAt: string;
+  version: string;
+}
+
+/**
+ * Preset settings (alias for UISettings for backward compatibility)
+ */
+export type PresetSettings = UISettings;
+
+/**
+ * Configuration validation result
+ */
+export interface ConfigValidationResult {
+  isValid: boolean;
+  errors: ValidationError[];
+  warnings: ValidationWarning[];
+  versionCompatible: boolean;
+}
+
+/**
+ * Background configuration for animation
+ */
+export interface BackgroundConfig {
+  type: 'solid' | 'gradient' | 'image';
+  solid?: {
+    color: string;
+  };
+  gradient?: {
+    startColor: string;
+    endColor: string;
+    direction: 'horizontal' | 'vertical' | 'radial' | 'diagonal';
+    stops?: Array<{ color: string; position: number }>;
+  };
+  image?: {
+    src: string;
+    size: 'contain' | 'cover' | 'stretch' | 'tile';
+    position: { x: number; y: number };
+    opacity: number;
+  };
+}

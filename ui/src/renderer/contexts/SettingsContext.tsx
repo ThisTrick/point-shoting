@@ -6,62 +6,19 @@
 import { createContext, useContext, useEffect, useReducer, useCallback, ReactNode } from 'react';
 import '../../types/electron'; // Import to extend Window interface
 
-// Import types - using temporary inline definitions until types are properly organized
-interface UISettings {
-  readonly theme: UITheme;
-  readonly language: string;
-  readonly showAdvancedControls: boolean;
-  readonly enableKeyboardShortcuts: boolean;
-  readonly autoSaveSettings: boolean;
-  readonly windowSize?: WindowDimensions;
-  readonly accessibility?: AccessibilitySettings;
-}
+// Import types from @shared (centralized type definitions)
+import type {
+  UISettings,
+  ValidationResult,
+  PresetInfo
+} from '@shared/types';
 
-enum UITheme {
-  LIGHT = 'light',
-  DARK = 'dark',
-  AUTO = 'auto'
-}
-
-interface WindowDimensions {
-  readonly width: number;
-  readonly height: number;
-  readonly isMaximized: boolean;
-  readonly isFullscreen: boolean;
-}
-
-interface AccessibilitySettings {
-  readonly highContrast: boolean;
-  readonly reducedMotion: boolean;
-  readonly largeText: boolean;
-  readonly screenReaderOptimizations: boolean;
-}
-
-interface ValidationResult {
-  isValid: boolean;
-  errors: ValidationError[];
-  warnings: ValidationWarning[];
-}
-
-interface ValidationError {
-  field: string;
-  message: string;
-  severity: 'error' | 'warning';
-}
-
-interface ValidationWarning {
-  field: string;
-  message: string;
-  severity: 'warning';
-}
-
-interface PresetInfo {
-  id: string;
-  name: string;
-  description: string;
-  createdAt: string;
-  version: string;
-}
+// Import enums as values (not types)
+import { 
+  ParticleDensity,
+  AnimationSpeed,
+  ColorMappingMode
+} from '@shared/types';
 
 // Settings state and actions
 interface SettingsState {
@@ -110,8 +67,8 @@ interface SettingsContextValue {
   deletePreset: (presetId: string) => Promise<void>;
   
   // Theme operations
-  applyTheme: (theme: UITheme) => Promise<void>;
-  setLanguage: (language: string) => Promise<void>;
+  applyTheme: (theme: 'light' | 'dark' | 'system') => Promise<void>;
+  setLanguage: (language: 'uk' | 'en') => Promise<void>;
   
   // Utility
   clearError: () => void;
@@ -120,7 +77,7 @@ interface SettingsContextValue {
 
 // Default settings
 const getDefaultSettings = (): UISettings => ({
-  theme: UITheme.AUTO,
+  theme: 'system',
   language: 'en',
   showAdvancedControls: false,
   enableKeyboardShortcuts: true,
@@ -136,6 +93,34 @@ const getDefaultSettings = (): UISettings => ({
     reducedMotion: false,
     largeText: false,
     screenReaderOptimizations: false
+  },
+  animation: {
+    density: ParticleDensity.MEDIUM,
+    speed: AnimationSpeed.NORMAL,
+    colorMode: ColorMappingMode.ORIGINAL,
+    watermark: true,
+    hud: true,
+    background: 'transparent',
+    blur: 0,
+    breathing: true
+  },
+  performance: {
+    targetFPS: 60,
+    particleLimit: 10000,
+    enableGPU: true,
+    lowPowerMode: false
+  },
+  interface: {
+    showFPS: false,
+    showParticleCount: false,
+    enableAnimations: true,
+    compactMode: false
+  },
+  watermark: {
+    enabled: true,
+    position: 'bottom-right',
+    opacity: 0.7,
+    scale: 1.0
   }
 });
 
@@ -315,8 +300,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         isValid: false,
         errors: [{
           field: 'general',
-          message: error instanceof Error ? error.message : 'Validation failed',
-          severity: 'error'
+          message: error instanceof Error ? error.message : 'Validation failed'
         }],
         warnings: []
       };
@@ -399,10 +383,9 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   }, []);
 
   // Apply theme
-  const applyTheme = useCallback(async (theme: UITheme) => {
+  const applyTheme = useCallback(async (theme: 'light' | 'dark' | 'system') => {
     try {
-      const themeString = theme === UITheme.LIGHT ? 'light' : theme === UITheme.DARK ? 'dark' : 'system';
-      await window.electronAPI?.settings.applyTheme(themeString);
+      await window.electronAPI?.settings.applyTheme(theme);
       dispatch({ type: 'UPDATE_SETTINGS', settings: { theme } });
     } catch (error) {
       dispatch({ type: 'SAVE_ERROR', error: error instanceof Error ? error.message : 'Failed to apply theme' });
@@ -410,9 +393,9 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   }, []);
 
   // Set language
-  const setLanguage = useCallback(async (language: string) => {
+  const setLanguage = useCallback(async (language: 'uk' | 'en') => {
     try {
-      await window.electronAPI?.settings.setLanguage(language as 'uk' | 'en');
+      await window.electronAPI?.settings.setLanguage(language);
       dispatch({ type: 'UPDATE_SETTINGS', settings: { language } });
     } catch (error) {
       dispatch({ type: 'SAVE_ERROR', error: error instanceof Error ? error.message : 'Failed to set language' });
@@ -479,4 +462,4 @@ export function useSettings() {
 }
 
 // Export types for use in components
-export type { UISettings, SettingsState, ValidationResult, PresetInfo, UITheme };
+export type { UISettings, SettingsState, ValidationResult, PresetInfo };

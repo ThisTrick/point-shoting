@@ -3,7 +3,7 @@
  * Централізоване керування користувацькими налаштуваннями з validation, persistence та synchronization
  */
 
-import Store from 'electron-store';
+import Store, { Schema } from 'electron-store';
 import { promises as fs } from 'fs';
 import { EventEmitter } from 'events';
 import { 
@@ -13,7 +13,9 @@ import {
   ValidationWarning,
   PresetInfo,
   PresetConfig,
-  BackgroundConfig 
+  ParticleDensity,
+  AnimationSpeed,
+  ColorMappingMode
 } from '@shared/types';
 
 export class SettingsManager extends EventEmitter {
@@ -24,7 +26,7 @@ export class SettingsManager extends EventEmitter {
   constructor() {
     super();
     
-    this.store = new Store({
+    this.store = new Store<{ settings: UISettings; presets: Record<string, PresetConfig> }>({
       name: 'point-shoting-ui',
       defaults: {
         settings: this.getDefaultSettings(),
@@ -46,10 +48,10 @@ export class SettingsManager extends EventEmitter {
     const validation = this.validateSettings(newSettings);
     
     if (!validation.isValid) {
-      const errors = validation.errors.filter(e => e.severity === 'error');
+      const errors = validation.errors;
       if (errors.length > 0) {
         this.emit('validationError', errors[0]);
-        throw new Error(`Settings validation failed: ${errors[0].message}`);
+        throw new Error(`Settings validation failed: ${errors[0]?.message || 'Unknown error'}`);
       }
     }
 
@@ -71,8 +73,7 @@ export class SettingsManager extends EventEmitter {
     if (settings.theme && !['light', 'dark', 'system'].includes(settings.theme)) {
       errors.push({
         field: 'theme',
-        message: 'Theme must be one of: light, dark, system',
-        severity: 'error'
+        message: 'Theme must be one of: light, dark, system'
       });
     }
 
@@ -80,8 +81,7 @@ export class SettingsManager extends EventEmitter {
     if (settings.language && !['uk', 'en'].includes(settings.language)) {
       errors.push({
         field: 'language',
-        message: 'Language must be one of: uk, en',
-        severity: 'error'
+        message: 'Language must be one of: uk, en'
       });
     }
 
@@ -91,73 +91,59 @@ export class SettingsManager extends EventEmitter {
       if (width < 800 || height < 600) {
         warnings.push({
           field: 'windowBounds',
-          message: 'Window size below recommended minimum (800x600)',
-          severity: 'warning'
+          message: 'Window size below recommended minimum (800x600)'
         });
       }
       if (width > 3840 || height > 2160) {
         warnings.push({
           field: 'windowBounds', 
-          message: 'Window size exceeds common display limits',
-          severity: 'warning'
+          message: 'Window size exceeds common display limits'
         });
       }
     }
 
     // Animation settings validation
-    if (settings.particleDensity && !['low', 'medium', 'high'].includes(settings.particleDensity)) {
+    if (settings.animation?.density && !['low', 'medium', 'high'].includes(settings.animation.density)) {
       errors.push({
-        field: 'particleDensity',
-        message: 'Particle density must be one of: low, medium, high',
-        severity: 'error'
+        field: 'animation.density',
+        message: 'Particle density must be one of: low, medium, high'
       });
     }
 
-    if (settings.animationSpeed && !['slow', 'normal', 'fast'].includes(settings.animationSpeed)) {
+    if (settings.animation?.speed && !['slow', 'normal', 'fast'].includes(settings.animation.speed)) {
       errors.push({
-        field: 'animationSpeed',
-        message: 'Animation speed must be one of: slow, normal, fast',
-        severity: 'error'
+        field: 'animation.speed',
+        message: 'Animation speed must be one of: slow, normal, fast'
       });
     }
 
-    if (settings.colorMode && !['stylish', 'precise'].includes(settings.colorMode)) {
+    if (settings.animation?.colorMode && !['stylish', 'precise'].includes(settings.animation.colorMode)) {
       errors.push({
-        field: 'colorMode',
-        message: 'Color mode must be one of: stylish, precise',
-        severity: 'error'
+        field: 'animation.colorMode',
+        message: 'Color mode must be one of: stylish, precise'
       });
     }
 
-    // Background validation
-    if (settings.backgroundType && !['solid', 'gradient', 'image'].includes(settings.backgroundType)) {
-      errors.push({
-        field: 'backgroundType',
-        message: 'Background type must be one of: solid, gradient, image',
-        severity: 'error'
-      });
+    // Interface validation - no specific validation needed for boolean flags
+    // All interface properties are boolean flags with no constraints
+
+    // Watermark validation
+    if (settings.watermark) {
+      if (settings.watermark.opacity < 0 || settings.watermark.opacity > 1) {
+        warnings.push({
+          field: 'watermark.opacity',
+          message: 'Watermark opacity must be between 0 and 1'
+        });
+      }
+      if (settings.watermark.scale < 0.1 || settings.watermark.scale > 5.0) {
+        warnings.push({
+          field: 'watermark.scale',
+          message: 'Watermark scale must be between 0.1 and 5.0'
+        });
+      }
     }
 
-    if (settings.backgroundConfig) {
-      const bgValidation = this.validateBackgroundConfig(settings.backgroundConfig);
-      errors.push(...bgValidation.errors);
-      warnings.push(...bgValidation.warnings);
-    }
-
-    // Recent files validation
-    if (settings.recentImages && settings.recentImages.length > 20) {
-      warnings.push({
-        field: 'recentImages',
-        message: 'Too many recent images, performance may be affected',
-        severity: 'warning'
-      });
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-      warnings
-    };
+    return { isValid: errors.length === 0, errors, warnings };
   }
 
   // Persistence
@@ -291,7 +277,8 @@ export class SettingsManager extends EventEmitter {
         name: preset.name,
         description: preset.description,
         createdAt: preset.createdAt,
-        version: preset.version
+        version: preset.version,
+        isBuiltIn: false
       }));
     } catch (error) {
       console.error('Failed to list presets:', error);
@@ -315,19 +302,38 @@ export class SettingsManager extends EventEmitter {
     return {
       theme: 'system',
       language: 'en',
+      showAdvancedControls: false,
+      enableKeyboardShortcuts: true,
+      autoSaveSettings: true,
       windowBounds: { width: 1200, height: 800 },
-      particleDensity: 'medium',
-      animationSpeed: 'normal',
-      colorMode: 'stylish',
-      backgroundType: 'solid',
-      backgroundConfig: {
-        solid: { color: '#000000' }
+      animation: {
+        density: ParticleDensity.MEDIUM,
+        speed: AnimationSpeed.NORMAL,
+        colorMode: ColorMappingMode.ORIGINAL,
+        watermark: false,
+        hud: true,
+        background: '#000000',
+        blur: 0,
+        breathing: true
       },
-      debugHudEnabled: false,
-      performanceWarnings: true,
-      autoSave: true,
-      recentImages: [],
-      recentPresets: []
+      performance: {
+        targetFPS: 60,
+        particleLimit: 10000,
+        enableGPU: true,
+        lowPowerMode: false
+      },
+      interface: {
+        showFPS: true,
+        showParticleCount: true,
+        enableAnimations: true,
+        compactMode: false
+      },
+      watermark: {
+        enabled: false,
+        position: 'bottom-right',
+        opacity: 0.7,
+        scale: 1.0
+      }
     };
   }
 
@@ -335,63 +341,7 @@ export class SettingsManager extends EventEmitter {
     return { ...this.getDefaultSettings(), ...stored };
   }
 
-  private validateBackgroundConfig(config: BackgroundConfig): { errors: ValidationError[], warnings: ValidationWarning[] } {
-    const errors: ValidationError[] = [];
-    const warnings: ValidationWarning[] = [];
-
-    if (config.solid?.color && !/^#[0-9a-fA-F]{6}$/.test(config.solid.color)) {
-      errors.push({
-        field: 'backgroundConfig.solid.color',
-        message: 'Color must be a valid hex color (#RRGGBB)',
-        severity: 'error'
-      });
-    }
-
-    if (config.gradient) {
-      if (config.gradient.startColor && !/^#[0-9a-fA-F]{6}$/.test(config.gradient.startColor)) {
-        errors.push({
-          field: 'backgroundConfig.gradient.startColor',
-          message: 'Start color must be a valid hex color',
-          severity: 'error'
-        });
-      }
-      if (config.gradient.endColor && !/^#[0-9a-fA-F]{6}$/.test(config.gradient.endColor)) {
-        errors.push({
-          field: 'backgroundConfig.gradient.endColor', 
-          message: 'End color must be a valid hex color',
-          severity: 'error'
-        });
-      }
-      if (config.gradient.direction && !['horizontal', 'vertical', 'radial'].includes(config.gradient.direction)) {
-        errors.push({
-          field: 'backgroundConfig.gradient.direction',
-          message: 'Gradient direction must be horizontal, vertical, or radial',
-          severity: 'error'
-        });
-      }
-    }
-
-    if (config.image) {
-      if (config.image.blurRadius < 0 || config.image.blurRadius > 25) {
-        errors.push({
-          field: 'backgroundConfig.image.blurRadius',
-          message: 'Blur radius must be between 0 and 25',
-          severity: 'error'
-        });
-      }
-      if (config.image.opacity < 0 || config.image.opacity > 1) {
-        errors.push({
-          field: 'backgroundConfig.image.opacity',
-          message: 'Opacity must be between 0 and 1',
-          severity: 'error'
-        });
-      }
-    }
-
-    return { errors, warnings };
-  }
-
-  private getStoreSchema() {
+  private getStoreSchema(): Schema<{ settings: UISettings; presets: Record<string, PresetConfig> }> {
     return {
       settings: {
         type: 'object',
@@ -408,13 +358,60 @@ export class SettingsManager extends EventEmitter {
             },
             required: ['width', 'height']
           },
-          particleDensity: { type: 'string', enum: ['low', 'medium', 'high'] },
-          animationSpeed: { type: 'string', enum: ['slow', 'normal', 'fast'] },
-          colorMode: { type: 'string', enum: ['stylish', 'precise'] },
-          backgroundType: { type: 'string', enum: ['solid', 'gradient', 'image'] },
-          debugHudEnabled: { type: 'boolean' },
-          performanceWarnings: { type: 'boolean' },
-          autoSave: { type: 'boolean' },
+          animation: {
+            type: 'object',
+            properties: {
+              density: { type: 'string', enum: ['low', 'medium', 'high'] },
+              speed: { type: 'string', enum: ['slow', 'normal', 'fast'] },
+              colorMode: { type: 'string', enum: ['stylish', 'precise'] }
+            },
+            required: ['density', 'speed', 'colorMode']
+          },
+          interface: {
+            type: 'object',
+            properties: {
+              backgroundType: { type: 'string', enum: ['solid', 'gradient', 'image'] },
+              backgroundConfig: {
+                type: 'object',
+                properties: {
+                  solid: {
+                    type: 'object',
+                    properties: { color: { type: 'string' } }
+                  },
+                  gradient: {
+                    type: 'object',
+                    properties: {
+                      colors: { type: 'array', items: { type: 'string' } },
+                      stops: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            position: { type: 'number', minimum: 0, maximum: 1 },
+                            color: { type: 'string' }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  image: {
+                    type: 'object',
+                    properties: { path: { type: 'string' } }
+                  }
+                }
+              }
+            },
+            required: ['backgroundType']
+          },
+          performance: {
+            type: 'object',
+            properties: {
+              debugHudEnabled: { type: 'boolean' },
+              performanceWarnings: { type: 'boolean' },
+              autoSave: { type: 'boolean' }
+            },
+            required: ['debugHudEnabled', 'performanceWarnings', 'autoSave']
+          },
           recentImages: {
             type: 'array',
             items: { type: 'string' },
@@ -427,9 +424,26 @@ export class SettingsManager extends EventEmitter {
           }
         },
         required: [
-          'theme', 'language', 'windowBounds', 'particleDensity', 
-          'animationSpeed', 'colorMode', 'backgroundType'
+          'theme', 'language', 'windowBounds', 'animation', 
+          'interface', 'performance', 'recentImages', 'recentPresets'
         ]
+      },
+      presets: {
+        type: 'object',
+        patternProperties: {
+          '.*': {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              description: { type: 'string' },
+              settings: { type: 'object' },
+              createdAt: { type: 'string' },
+              version: { type: 'string' }
+            },
+            required: ['id', 'name', 'settings', 'createdAt', 'version']
+          }
+        }
       }
     };
   }

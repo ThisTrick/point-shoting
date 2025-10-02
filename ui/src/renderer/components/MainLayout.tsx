@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { useSettings } from '../hooks/useSettings';
+import { useSettings } from '../contexts/SettingsContext';
 import { useAnimationState } from '../hooks/useAnimationState';
 import { useNotifications } from '../contexts/NotificationContext';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
@@ -33,13 +33,13 @@ export function MainLayout({ children }: MainLayoutProps) {
     sidebarCollapsed: false,
     notificationsPanelOpen: false,
     fullscreen: false,
-    theme: settings.currentTheme
+    theme: settings.state.settings?.theme || 'system'
   });
 
   // Sync theme with settings
   useEffect(() => {
-    setLayoutState(prev => ({ ...prev, theme: settings.currentTheme }));
-  }, [settings.currentTheme]);
+    setLayoutState(prev => ({ ...prev, theme: settings.state.settings?.theme || 'system' }));
+  }, [settings.state.settings?.theme]);
 
   // Sync notifications panel with context
   useEffect(() => {
@@ -69,7 +69,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   }, [notifications]);
 
   const handleThemeChange = useCallback((theme: 'light' | 'dark' | 'system') => {
-    settings.switchTheme(theme);
+    settings.applyTheme(theme); // Use applyTheme from context, not switchTheme
   }, [settings]);
 
   // Window control handlers
@@ -92,7 +92,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   const handleClose = useCallback(async () => {
     try {
       // Check for unsaved changes
-      if (settings.hasUnsavedChanges) {
+      if (settings.state.hasUnsavedChanges) {
         const confirmed = confirm('You have unsaved settings. Are you sure you want to close?');
         if (!confirmed) return;
       }
@@ -111,7 +111,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     } catch (error) {
       notifications.showError('Failed to close application');
     }
-  }, [settings.hasUnsavedChanges, animation, notifications]);
+  }, [settings.state.hasUnsavedChanges, animation, notifications]);
 
   // Get current status for header
   const getEngineStatus = () => {
@@ -402,8 +402,8 @@ export function MainLayout({ children }: MainLayoutProps) {
           </div>
 
           <div className="footer-right">
-            {settings.error && (
-              <div className="error-indicator" title={settings.error}>
+            {settings.state.error && (
+              <div className="error-indicator" title={settings.state.error}>
                 ⚠ Settings Error
               </div>
             )}
@@ -446,7 +446,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         isOpen={shortcuts.isHelpOverlayOpen}
         onClose={shortcuts.hideShortcutsHelp}
         shortcuts={shortcuts.getAllShortcuts()}
-        getShortcutDisplay={shortcuts.getShortcutDisplay}
+        getShortcutDisplay={shortcuts.getShortcutDisplay as any}
       />
     </div>
   );

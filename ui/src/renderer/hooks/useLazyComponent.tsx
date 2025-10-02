@@ -41,7 +41,7 @@ export const createLazyComponent = <T extends React.ComponentType<any>>(
 
     return (
       <React.Suspense fallback={<FallbackComponent />}>
-        <LazyComponent key={retryCount} {...props} />
+        <LazyComponent key={retryCount} {...(props as any)} />
       </React.Suspense>
     );
   });

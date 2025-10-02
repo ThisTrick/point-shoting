@@ -36,10 +36,10 @@ export class FileManager extends EventEmitter {
   constructor() {
     super();
     
-    this.recentFilesStore = new Store({
+    this.recentFilesStore = new Store<{ recentImages: RecentFileInfo[] }>({
       name: 'recent-files',
       defaults: {
-        recentImages: []
+        recentImages: [] as RecentFileInfo[]
       }
     });
   }
@@ -71,22 +71,26 @@ export class FileManager extends EventEmitter {
       }
 
       const filePath = result.filePaths[0];
-      const filename = path.basename(filePath);
+      if (!filePath) {
+        return null;
+      }
       
-      const [metadata, validationResult] = await Promise.all([
-        this.getImageMetadata(filePath),
-        this.validateImageFile(filePath)
-      ]);
+      const filename = path.basename(filePath);
+      const stats = await fs.stat(filePath);
+      
+      const validationResult = await this.validateImageFile(filePath);
 
       if (validationResult.isValid) {
         await this.addToRecentImages(filePath);
       }
 
       return {
+        success: true,
         path: filePath,
+        filePath: filePath,  // Backward compatibility
         filename,
-        metadata,
-        validationResult
+        fileName: filename,  // Backward compatibility
+        fileSize: stats.size
       };
 
     } catch (error) {
@@ -157,11 +161,11 @@ export class FileManager extends EventEmitter {
           });
         }
 
-        // Extract dominant colors
-        const { dominant: _dominant } = await sharpImage
-          .resize(100, 100, { fit: 'inside' })
-          .raw()
-          .toBuffer({ resolveWithObject: true });
+        // Extract dominant colors (simplified) - not implemented yet
+        // const rawBuffer = await sharpImage
+        //   .resize(100, 100, { fit: 'inside' })
+        //   .raw()
+        //   .toBuffer({ resolveWithObject: true });
         
         // Simple dominant color extraction (placeholder)
         const dominantColors = ['#FF0000', '#00FF00', '#0000FF']; // TODO: Implement proper color extraction
@@ -170,11 +174,9 @@ export class FileManager extends EventEmitter {
           width: sharpMetadata.width,
           height: sharpMetadata.height,
           format: (sharpMetadata.format || ext.slice(1)).toUpperCase(),
-          fileSize: stats.size,
-          hasTransparency: sharpMetadata.hasAlpha || false,
-          dominantColors,
-          aspectRatio: sharpMetadata.width / sharpMetadata.height,
-          colorSpace: sharpMetadata.space
+          colorSpace: sharpMetadata.space || 'srgb',
+          hasAlpha: sharpMetadata.hasAlpha || false,
+          dominantColors
         };
 
       } catch (sharpError) {
@@ -246,7 +248,7 @@ export class FileManager extends EventEmitter {
           properties: ['openFile']
         });
 
-        return result.canceled ? null : result.filePaths[0];
+        return result.canceled ? null : (result.filePaths[0] || null);
       } else {
         const result = await dialog.showSaveDialog({
           title: 'Export Configuration',
@@ -314,7 +316,7 @@ export class FileManager extends EventEmitter {
           message: 'Configuration file must be in JSON format',
           severity: 'error'
         });
-        return { isValid: false, errors };
+        return { isValid: false, errors, warnings: [], versionCompatible: true };
       }
 
       const content = await fs.readFile(filePath, 'utf-8');
@@ -348,7 +350,9 @@ export class FileManager extends EventEmitter {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
+      warnings: [],
+      versionCompatible: true
     };
   }
 
@@ -371,13 +375,19 @@ export class FileManager extends EventEmitter {
       }
 
       const filePath = result.filePaths[0];
+      if (!filePath) {
+        return null;
+      }
+      
       const filename = path.basename(filePath);
       const validationResult = await this.validateWatermarkFile(filePath);
 
       return {
+        success: validationResult.isValid,
         path: filePath,
+        filePath: filePath,  // Backward compatibility
         filename,
-        validationResult
+        fileName: filename  // Backward compatibility
       };
 
     } catch (error) {
@@ -399,7 +409,7 @@ export class FileManager extends EventEmitter {
           message: 'Watermark must be a PNG file with transparency support',
           severity: 'error'
         });
-        return { isValid: false, errors, warnings };
+        return { isValid: false, errors, warnings, minSizeMet: false, isPNG: false };
       }
 
       const sharpImage = sharp(filePath);
@@ -425,6 +435,8 @@ export class FileManager extends EventEmitter {
         isValid: errors.length === 0,
         errors,
         warnings,
+        minSizeMet: (metadata.width || 0) >= 64 && (metadata.height || 0) >= 64,
+        isPNG: true,
         metadata: metadata.width && metadata.height ? {
           width: metadata.width,
           height: metadata.height,
@@ -438,7 +450,7 @@ export class FileManager extends EventEmitter {
         message: 'File not accessible or invalid image format',
         severity: 'error'
       });
-      return { isValid: false, errors, warnings };
+      return { isValid: false, errors, warnings, minSizeMet: false, isPNG: false };
     }
   }
 
@@ -462,10 +474,10 @@ export class FileManager extends EventEmitter {
       // Sort by last used, remove inaccessible files older than 30 days
       const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
       const filtered = verifiedFiles.filter(file => 
-        file.isAccessible || file.lastUsed > thirtyDaysAgo
+        file.isAccessible || (file.lastUsed ?? 0) > thirtyDaysAgo
       );
 
-      return filtered.sort((a, b) => b.lastUsed - a.lastUsed);
+      return filtered.sort((a, b) => (b.lastUsed ?? 0) - (a.lastUsed ?? 0));
     } catch (error) {
       console.error('Failed to get recent images:', error);
       return [];
@@ -475,7 +487,7 @@ export class FileManager extends EventEmitter {
   async addToRecentImages(filePath: string): Promise<void> {
     try {
       const recentImages = await this.getRecentImages();
-      const stats = await fs.stat(filePath);
+      // const stats = await fs.stat(filePath); // Not used currently
       const filename = path.basename(filePath);
 
       // Remove existing entry if present
@@ -484,9 +496,11 @@ export class FileManager extends EventEmitter {
       // Add new entry at the beginning
       const newEntry: RecentFileInfo = {
         path: filePath,
+        name: filename,
         filename,
+        timestamp: Date.now(),
         lastUsed: Date.now(),
-        fileSize: stats.size,
+        type: 'image' as const,
         isAccessible: true
       };
 
@@ -523,10 +537,10 @@ export class FileManager extends EventEmitter {
   // File System Utilities
   watchFile(filePath: string, callback: (event: FileChangeEvent) => void): FileWatcher {
     const fs_watch = require('fs');
-    const watcher = fs_watch.watchFile(filePath, { interval: 1000 }, (curr, prev) => {
+    fs_watch.watchFile(filePath, { interval: 1000 }, (curr: any, prev: any) => {
       const event: FileChangeEvent = {
         path: filePath,
-        type: curr.mtime > prev.mtime ? 'modified' : 'deleted',
+        type: curr.mtime > prev.mtime ? 'modified' : 'delete',
         timestamp: Date.now()
       };
       callback(event);
@@ -536,7 +550,9 @@ export class FileManager extends EventEmitter {
     const fileWatcher: FileWatcher = {
       id: watcherId,
       path: filePath,
-      watcher
+      watch: () => {},
+      unwatch: () => {},
+      close: () => fs_watch.unwatchFile(filePath)
     };
 
     this.fileWatchers.set(watcherId, fileWatcher);
@@ -546,8 +562,12 @@ export class FileManager extends EventEmitter {
   unwatchFile(watcher: FileWatcher): void {
     try {
       const fs_watch = require('fs');
-      fs_watch.unwatchFile(watcher.path);
-      this.fileWatchers.delete(watcher.id);
+      if (watcher.path) {
+        fs_watch.unwatchFile(watcher.path);
+      }
+      if (watcher.id) {
+        this.fileWatchers.delete(watcher.id);
+      }
     } catch (error) {
       console.error('Failed to unwatch file:', error);
     }
@@ -560,13 +580,17 @@ export class FileManager extends EventEmitter {
       // Check permissions
       let permissions: FilePermissions = {
         read: false,
+        readable: false,
         write: false,
-        execute: false
+        writable: false,
+        execute: false,
+        executable: false
       };
 
       try {
         await fs.access(filePath, constants.R_OK);
         permissions.read = true;
+        permissions.readable = true;
       } catch {
         // Read permission not available
       }
@@ -574,6 +598,7 @@ export class FileManager extends EventEmitter {
       try {
         await fs.access(filePath, constants.W_OK);
         permissions.write = true;
+        permissions.writable = true;
       } catch {
         // Write permission not available
       }
@@ -581,6 +606,7 @@ export class FileManager extends EventEmitter {
       try {
         await fs.access(filePath, constants.X_OK);
         permissions.execute = true;
+        permissions.executable = true;
       } catch {
         // Execute permission not available
       }

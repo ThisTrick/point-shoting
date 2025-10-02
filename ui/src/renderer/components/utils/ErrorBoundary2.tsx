@@ -108,7 +108,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryCo
     return recoverablePatterns.some(pattern => pattern.test(error.message));
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const { onError, level = 'component' } = this.props;
     
     // Update state with error info
@@ -145,7 +145,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryCo
     }
   }
 
-  componentDidUpdate(prevProps: ErrorBoundaryProps) {
+  override componentDidUpdate(prevProps: ErrorBoundaryProps) {
     const { resetKeys, resetOnPropsChange } = this.props;
     const { hasError } = this.state;
     
@@ -171,7 +171,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryCo
     }
   }
 
-  componentWillUnmount() {
+  override componentWillUnmount() {
     if (this.retryTimeout) {
       clearTimeout(this.retryTimeout);
     }
@@ -245,7 +245,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryCo
     });
   };
 
-  render() {
+  override render() {
     const { hasError, error, errorInfo } = this.state;
     const { children, fallback: FallbackComponent, level = 'component', isolate = false } = this.props;
 

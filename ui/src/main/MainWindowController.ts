@@ -15,7 +15,6 @@ import type {
   NotificationMessage,
   OutgoingMessage,
   IncomingMessage,
-  WindowEvent,
   EngineStatus,
   EngineMetrics,
   EngineError
@@ -290,12 +289,6 @@ export class MainWindowController extends EventEmitter {
   // Event Handling
   onEngineMessage(handler: (message: IncomingMessage) => void): void {
     this.engineBridge.on('message', handler);
-  }
-
-  onWindowEvent(event: WindowEvent, handler: () => void): void {
-    if (this.mainWindow) {
-      this.mainWindow.on(event, handler);
-    }
   }
 
   onSettingsChanged(handler: (settings: UISettings) => void): void {

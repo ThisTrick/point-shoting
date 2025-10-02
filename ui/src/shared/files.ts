@@ -28,8 +28,10 @@ export interface ValidationError {
  */
 export interface ImageFileResult {
   success: boolean;
-  filePath?: string;
-  fileName?: string;
+  path?: string;  // Changed from filePath for consistency
+  filePath?: string;  // Keep for backward compatibility
+  filename?: string;  // Changed from fileName for consistency  
+  fileName?: string;  // Keep for backward compatibility
   fileSize?: number;
   error?: string;
 }
@@ -67,8 +69,10 @@ export interface ImageMetadata {
  */
 export interface WatermarkFileResult {
   success: boolean;
-  filePath?: string;
-  fileName?: string;
+  path?: string;  // Changed from filePath for consistency
+  filePath?: string;  // Keep for backward compatibility
+  filename?: string;  // Changed from fileName for consistency
+  fileName?: string;  // Keep for backward compatibility
   dimensions?: { width: number; height: number };
   error?: string;
 }
@@ -82,6 +86,7 @@ export interface WatermarkValidationResult {
   warnings: ValidationError[];
   minSizeMet: boolean; // ≥64px requirement
   isPNG: boolean;
+  metadata?: any;  // Add metadata field for consistency
 }
 
 // ============================================================================
@@ -94,9 +99,12 @@ export interface WatermarkValidationResult {
 export interface RecentFileInfo {
   path: string;
   name: string;
+  filename?: string;  // Alternative to name
   timestamp: number;
+  lastUsed?: number;  // Add lastUsed field for sorting
   type: 'image' | 'preset' | 'watermark';
   thumbnail?: string; // base64 or path
+  isAccessible?: boolean;  // Add accessibility check
 }
 
 // ============================================================================
@@ -111,7 +119,7 @@ export interface FileStats {
   created: number;
   modified: number;
   accessed: number;
-  isFile: boolean;
+  isFile?: boolean;  // Made optional
   isDirectory: boolean;
   permissions: FilePermissions;
 }
@@ -123,46 +131,12 @@ export interface FilePermissions {
   readable: boolean;
   writable: boolean;
   executable: boolean;
+  read?: boolean;  // Alias for readable
+  write?: boolean;  // Alias for writable
+  execute?: boolean;  // Alias for executable
 }
 
 // ============================================================================
-// PRESET/CONFIG TYPES
-// ============================================================================
-
-/**
- * Preset configuration file structure
- */
-export interface PresetConfig {
-  name: string;
-  description?: string;
-  createdAt: string;
-  settings: PresetSettings;
-  version: string;
-  engineVersion?: string;
-}
-
-/**
- * Settings stored in preset
- */
-export interface PresetSettings {
-  density?: string;
-  speed?: string;
-  colorMode?: string;
-  backgroundType?: string;
-  backgroundConfig?: any;
-  debugHudEnabled?: boolean;
-}
-
-/**
- * Preset validation result
- */
-export interface ConfigValidationResult {
-  isValid: boolean;
-  errors: ValidationError[];
-  warnings: ValidationError[];
-  versionCompatible: boolean;
-}
-
 // ============================================================================
 // FILE WATCHING TYPES
 // ============================================================================
@@ -171,7 +145,7 @@ export interface ConfigValidationResult {
  * File change event
  */
 export interface FileChangeEvent {
-  type: 'add' | 'change' | 'delete';
+  type: 'add' | 'change' | 'delete' | 'modified';  // Add 'modified' as alias
   path: string;
   timestamp: number;
 }
@@ -180,6 +154,8 @@ export interface FileChangeEvent {
  * File watcher interface
  */
 export interface FileWatcher {
+  id?: string;  // Add id field for tracking
+  path?: string;  // Add path field for reference
   watch(path: string, callback: (event: FileChangeEvent) => void): void;
   unwatch(path: string): void;
   close(): void;

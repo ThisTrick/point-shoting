@@ -147,27 +147,33 @@ export interface ImageInfo {
  * Messages from UI to Python Engine
  */
 export type OutgoingMessage = 
-  | { type: 'start_animation'; payload: StartAnimationPayload }
-  | { type: 'pause_animation'; payload: Record<string, never> }
-  | { type: 'resume_animation'; payload: Record<string, never> }
-  | { type: 'restart_animation'; payload: Record<string, never> }
-  | { type: 'stop_animation'; payload: Record<string, never> }
-  | { type: 'skip_to_final'; payload: Record<string, never> }
-  | { type: 'update_settings'; payload: EngineSettings }
-  | { type: 'load_image'; payload: { path: string; imagePath?: string } }
-  | { type: 'set_watermark'; payload: { watermark: WatermarkConfig | null } }
-  | { type: 'shutdown'; payload: Record<string, never> };
+  | { type: 'start_animation'; payload: StartAnimationPayload; id?: string; _id?: string }
+  | { type: 'pause_animation'; payload: Record<string, never>; id?: string; _id?: string }
+  | { type: 'resume_animation'; payload: Record<string, never>; id?: string; _id?: string }
+  | { type: 'restart_animation'; payload: Record<string, never>; id?: string; _id?: string }
+  | { type: 'stop_animation'; payload: Record<string, never>; id?: string; _id?: string }
+  | { type: 'skip_to_final'; payload: Record<string, never>; id?: string; _id?: string }
+  | { type: 'update_settings'; payload: EngineSettings; id?: string; _id?: string }
+  | { type: 'load_image'; payload: { path: string; imagePath?: string }; id?: string; _id?: string }
+  | { type: 'set_watermark'; payload: { watermark: WatermarkConfig | null }; id?: string; _id?: string }
+  | { type: 'shutdown'; payload: Record<string, never>; id?: string; _id?: string }
+  | { type: 'heartbeat'; payload: Record<string, never>; id?: string; _id?: string };
 
 /**
  * Messages from Python Engine to UI
  */
 export type IncomingMessage =
-  | { type: 'status_update'; payload: StatusPayload }
-  | { type: 'stage_changed'; payload: { stage: AnimationStage; timestamp: number } }
-  | { type: 'error_occurred'; payload: { error: string; details?: any } }
-  | { type: 'image_loaded'; payload: ImageValidation }
-  | { type: 'animation_complete'; payload: { finalRecognition: number } }
-  | { type: 'fps_update'; payload: { fps: number; particles: number } };
+  | { type: 'status_update'; payload: StatusPayload; id?: string; _id?: string }
+  | { type: 'stage_changed'; payload: { stage: AnimationStage; timestamp: number }; id?: string; _id?: string }
+  | { type: 'stage_change'; payload: { stage: AnimationStage; timestamp: number }; id?: string; _id?: string }  // Alias
+  | { type: 'error_occurred'; payload: { error: string; details?: any }; id?: string; _id?: string }
+  | { type: 'error'; payload: { error: string; details?: any }; id?: string; _id?: string }  // Alias
+  | { type: 'image_loaded'; payload: ImageValidation; id?: string; _id?: string }
+  | { type: 'animation_complete'; payload: { finalRecognition: number }; id?: string; _id?: string }
+  | { type: 'fps_update'; payload: { fps: number; particles: number }; id?: string; _id?: string }
+  | { type: 'metrics_update'; payload: EngineMetrics; id?: string; _id?: string }
+  | { type: 'heartbeat'; payload: Record<string, never>; id?: string; _id?: string }
+  | { type: 'ready'; payload: any; id?: string; _id?: string };
 
 /**
  * Payload for starting animation
@@ -192,6 +198,8 @@ export interface StatusPayload {
   particles: number;
   progress: number;
   elapsedTime: number;
+  isRunning?: boolean;  // Add for EngineStatus compatibility
+  isPaused?: boolean;  // Add for EngineStatus compatibility
 }
 
 /**

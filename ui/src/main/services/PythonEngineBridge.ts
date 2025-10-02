@@ -35,7 +35,8 @@ export class PythonEngineBridge extends EventEmitter {
   private readonly HEARTBEAT_INTERVAL = 5000; // 5 seconds
 
   constructor(
-    private enginePath: string = path.join(app.getAppPath(), '..', 'src', 'point_shoting', '__main__.py')
+    // @ts-ignore - enginePath is reserved for future use
+    private readonly enginePath: string = path.join(app.getAppPath(), '..', 'src', 'point_shoting', '__main__.py')
   ) {
     super();
     this.setupHealthCheck();
@@ -120,6 +121,7 @@ export class PythonEngineBridge extends EventEmitter {
       // Send graceful shutdown message
       await this.sendMessage({
         type: 'shutdown',
+        payload: {},
         id: this.getNextMessageId()
       });
 
@@ -194,13 +196,15 @@ export class PythonEngineBridge extends EventEmitter {
   async pauseAnimation(): Promise<void> {
     await this.sendMessage({
       type: 'pause_animation',
+      payload: {},
       id: this.getNextMessageId()
     });
   }
 
   async resumeAnimation(): Promise<void> {
     await this.sendMessage({
-      type: 'resume_animation', 
+      type: 'resume_animation',
+      payload: {},
       id: this.getNextMessageId()
     });
   }
@@ -208,6 +212,7 @@ export class PythonEngineBridge extends EventEmitter {
   async stopAnimation(): Promise<void> {
     await this.sendMessage({
       type: 'stop_animation',
+      payload: {},
       id: this.getNextMessageId()
     });
   }
@@ -215,6 +220,7 @@ export class PythonEngineBridge extends EventEmitter {
   async skipToFinal(): Promise<void> {
     await this.sendMessage({
       type: 'skip_to_final',
+      payload: {},
       id: this.getNextMessageId()
     });
   }
@@ -229,20 +235,19 @@ export class PythonEngineBridge extends EventEmitter {
   }
 
   async loadImage(imagePath: string): Promise<ImageLoadResult> {
-    const response = await this.sendMessage({
+    // TODO: Implement actual image loading through engine
+    return await this.sendMessage({
       type: 'load_image',
       id: this.getNextMessageId(),
-      payload: { imagePath }
+      payload: { path: imagePath, imagePath }
     });
-
-    return response.payload as ImageLoadResult;
   }
 
   async setWatermark(watermark: WatermarkConfig | null): Promise<void> {
     await this.sendMessage({
       type: 'set_watermark',
       id: this.getNextMessageId(),
-      payload: watermark
+      payload: { watermark }
     });
   }
 
@@ -336,20 +341,19 @@ export class PythonEngineBridge extends EventEmitter {
     this.lastHeartbeat = Date.now();
 
     // Handle message responses
-    if (message.id && this.pendingMessages.has(message._id)) {
+      if (message._id && this.pendingMessages.has(message._id)) {
       const pending = this.pendingMessages.get(message._id)!;
       clearTimeout(pending.timeout);
       this.pendingMessages.delete(message._id);
-
-      if (message.type === 'error') {
-        pending.reject(new Error(message.payload?.message || 'Engine error'));
+      
+      if (message.type === 'error' || message.type === 'error_occurred') {
+        const errorPayload = message.payload as any;
+        pending.reject(new Error(errorPayload?.error || errorPayload?.message || 'Engine error'));
       } else {
         pending.resolve(message);
       }
       return;
-    }
-
-    // Handle status messages
+    }    // Handle status messages
     switch (message.type) {
       case 'ready':
         this.emit('engineReady', message);
@@ -368,7 +372,15 @@ export class PythonEngineBridge extends EventEmitter {
         break;
 
       case 'error':
-        this.emit('error', message.payload as EngineError);
+      case 'error_occurred':
+        const errorPayload = message.payload as any;
+        this.emit('error', {
+          code: errorPayload?.code || 'UNKNOWN',
+          message: errorPayload?.error || errorPayload?.message || 'Unknown error',
+          details: errorPayload?.details,
+          timestamp: Date.now(),
+          fatal: errorPayload?.fatal || false
+        } as EngineError);
         break;
 
       case 'heartbeat':
@@ -386,19 +398,22 @@ export class PythonEngineBridge extends EventEmitter {
     }
 
     return new Promise((resolve, reject) => {
+      const msgId = message._id || message.id || this.getNextMessageId();
+      
       const timeout = setTimeout(() => {
-        this.pendingMessages.delete(message._id);
+        this.pendingMessages.delete(msgId);
         reject(new Error('Message timeout'));
       }, this.ENGINE_TIMEOUT);
 
-      this.pendingMessages.set(message._id, { resolve, reject, timeout });
+      this.pendingMessages.set(msgId, { resolve, reject, timeout });
 
-      const messageStr = JSON.stringify(message) + '\n';
+      const messageToSend = { ...message, _id: msgId, id: msgId };
+      const messageStr = JSON.stringify(messageToSend) + '\n';
       
       if (this.engineProcess?.stdin?.writable) {
         this.engineProcess.stdin.write(messageStr);
       } else {
-        this.pendingMessages.delete(message._id);
+        this.pendingMessages.delete(msgId);
         clearTimeout(timeout);
         reject(new Error('Engine stdin not writable'));
       }
@@ -422,6 +437,7 @@ export class PythonEngineBridge extends EventEmitter {
         // Send heartbeat
         this.sendMessage({
           type: 'heartbeat',
+          payload: {},
           id: this.getNextMessageId()
         }).catch(error => {
           console.error('Heartbeat failed:', error);

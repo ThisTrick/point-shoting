@@ -5,14 +5,7 @@
 
 import { useContext, useCallback } from 'react';
 import { SettingsContext } from '../contexts/SettingsContext';
-import type { UISettings } from '../contexts/SettingsContext';
-
-// Settings validation utilities
-interface ValidationResult {
-  isValid: boolean;
-  errors: string[];
-  warnings: string[];
-}
+import type { UISettings, ValidationResult, PresetInfo } from '@shared/types';
 
 interface SettingsHookOptions {
   autoSave?: boolean;
@@ -52,11 +45,7 @@ export function useSettings(options: SettingsHookOptions = {}) {
     const testSettings = { ...state.settings, [key]: value };
     const result = await validateSettings(testSettings);
     
-    return {
-      isValid: result.isValid,
-      errors: result.errors?.[key] || [],
-      warnings: result.warnings?.[key] || []
-    };
+    return result; // Return full ValidationResult, not transformed
   }, [state.settings, validateSettings]);
 
   // Individual setting updaters with validation
@@ -64,13 +53,14 @@ export function useSettings(options: SettingsHookOptions = {}) {
     if (validate) {
       const validation = await validateSetting(key, value);
       if (!validation.isValid) {
-        throw new Error(`Invalid ${key}: ${validation.errors.join(', ')}`);
+        const errorMessages = validation.errors.map(e => e.message).join(', ');
+        throw new Error(`Invalid ${key}: ${errorMessages}`);
       }
     }
 
     const updates = { [key]: value };
-    return updateSettings(updates, autoSave);
-  }, [validateSetting, updateSettings, validateOnChange, autoSave]);
+    return updateSettings(updates); // updateSettings doesn't take autoSave param
+  }, [validateSetting, updateSettings, validateOnChange]);
 
   // Batch setting updates
   const updateMultipleSettings = useCallback(async (updates: Partial<UISettings>, validate = validateOnChange) => {
@@ -78,12 +68,13 @@ export function useSettings(options: SettingsHookOptions = {}) {
       const testSettings = { ...state.settings, ...updates };
       const result = await validateSettings(testSettings);
       if (!result.isValid) {
-        throw new Error(`Invalid settings: ${Object.values(result.errors || {}).flat().join(', ')}`);
+        const errorMessages = result.errors.map(e => e.message).join(', ');
+        throw new Error(`Invalid settings: ${errorMessages}`);
       }
     }
 
-    return updateSettings(updates, autoSave);
-  }, [state.settings, validateSettings, updateSettings, validateOnChange, autoSave]);
+    return updateSettings(updates); // updateSettings doesn't take autoSave param
+  }, [state.settings, validateSettings, updateSettings, validateOnChange]);
 
   // Animation settings helpers
   const updateAnimationSettings = useCallback((updates: Partial<UISettings['animation']>) => {

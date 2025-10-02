@@ -106,6 +106,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
 }) => {
   const { t } = useLocalization();
   const [activeTab, setActiveTab] = useState<BackgroundConfig['type']>(background.type);
+  // @ts-ignore - setShowColorPicker is reserved for future color picker functionality
   const [_showColorPicker, setShowColorPicker] = useState(false);
   const [selectedPalette, setSelectedPalette] = useState<keyof typeof COLOR_PALETTES>('basic');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -123,7 +124,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
         if (!config.gradient) return '#ffffff';
         
         const { type, direction, stops } = config.gradient;
-        const sortedStops = [...stops].sort((a, b) => a.position - b._position);
+        const sortedStops = stops ? [...stops].sort((a, b) => a.position - b.position) : [];
         const stopsCSS = sortedStops.map(stop => `${stop.color} ${stop.position}%`).join(', ');
         
         if (type === 'linear') {
@@ -135,7 +136,8 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
       case 'image':
         if (!config.image) return '#ffffff';
         
-        const { src, size, _position, opacity } = config.image;
+        const { src, size, position: _position, opacity: _opacity } = config.image;
+        // @ts-ignore - backgroundSize is calculated but not used in basic preview
         let backgroundSize: string;
         
         switch (size) {
@@ -231,18 +233,18 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
 
   // Add gradient stop
   const addGradientStop = useCallback(() => {
-    if (!background.gradient) return;
+    if (!background.gradient || !background.gradient.stops) return;
     
     const stops = [...background.gradient.stops];
-    const position = stops.length > 0 ? Math.max(...stops.map(s => s._position)) + 10 : 50;
-    stops.push({ color: '#ffffff', position: Math.min(100, _position) });
+    const newPosition = stops.length > 0 ? Math.max(...stops.map(s => s.position)) + 10 : 50;
+    stops.push({ color: '#ffffff', position: Math.min(100, newPosition) });
     
     handleGradientChange({ stops });
   }, [background.gradient, handleGradientChange]);
 
   // Remove gradient stop
   const removeGradientStop = useCallback((index: number) => {
-    if (!background.gradient || background.gradient.stops.length <= 2) return;
+    if (!background.gradient || !background.gradient.stops || background.gradient.stops.length <= 2) return;
     
     const stops = [...background.gradient.stops];
     stops.splice(index, 1);
@@ -252,10 +254,10 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
 
   // Update gradient stop
   const updateGradientStop = useCallback((index: number, updates: Partial<{ color: string; position: number }>) => {
-    if (!background.gradient) return;
+    if (!background.gradient || !background.gradient.stops) return;
     
     const stops = [...background.gradient.stops];
-    stops[index] = { ...stops[index], ...updates };
+    stops[index] = { ...stops[index], ...updates } as { color: string; position: number };
     
     handleGradientChange({ stops });
   }, [background.gradient, handleGradientChange]);
@@ -328,7 +330,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
     };
 
     if (background.type === 'image' && background.image) {
-      const { size, _position, opacity } = background.image;
+      const { size, position, opacity } = background.image;
       
       switch (size) {
         case 'cover':
@@ -558,7 +560,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
                       className="stop-position"
                     />
                     <span className="position-value">{stop.position}%</span>
-                    {background.gradient?.stops.length > 2 && (
+                    {(background.gradient?.stops?.length || 0) > 2 && (
                       <button
                         type="button"
                         className="remove-stop-button"
@@ -640,7 +642,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
                       max="100"
                       value={background.image.position.x}
                       onChange={(e) => handleImageChange({ 
-                        position: { ...background.image?._position, x: Number(e.target.value) }
+                        position: { x: Number(e.target.value), y: background.image?.position.y ?? 50 }
                       })}
                       disabled={disabled}
                       className="position-slider"
@@ -654,7 +656,7 @@ export const BackgroundSelector: React.FC<BackgroundSelectorProps> = ({
                       max="100"
                       value={background.image.position.y}
                       onChange={(e) => handleImageChange({ 
-                        position: { ...background.image?._position, y: Number(e.target.value) }
+                        position: { x: background.image?.position.x ?? 50, y: Number(e.target.value) }
                       })}
                       disabled={disabled}
                       className="position-slider"

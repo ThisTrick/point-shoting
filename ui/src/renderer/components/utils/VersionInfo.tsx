@@ -242,6 +242,7 @@ export const VersionInfo: React.FC<VersionInfoProps> = ({
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
+    return undefined; // Return undefined when theme is not 'auto'
   }, [theme]);
 
   const actualTheme = theme === 'auto' ? detectedTheme : theme;

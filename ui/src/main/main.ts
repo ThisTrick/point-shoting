@@ -119,6 +119,7 @@ app.on('certificate-error', (event, _webContents, url, _error, _certificate, cal
 app.on('web-contents-created', (_event, contents) => {
   // @ts-expect-error - new-window event deprecated but still used
   contents.on('new-window', (event: any, navigationUrl: string) => {
+    const { shell } = require('electron');
     // Prevent opening new windows
     event.preventDefault();
     
