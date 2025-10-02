@@ -83,7 +83,11 @@
   "build": {
     "appId": "com.pointshoting.particle-ui",
     "productName": "Particle Animation UI",
-    "asar": false,
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/sharp/**/*",
+      "node_modules/@img/**/*"
+    ],
     "directories": {
       "output": "dist-packages"
     },
