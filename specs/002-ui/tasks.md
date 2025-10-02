@@ -413,6 +413,223 @@ Task: "StatusBar component in ui/src/renderer/components/StatusBar.tsx"
 2. **Type Migration Path**: Gradual migration from old types to shared types
 3. **Testing Priority**: Maintain 100% test pass rate throughout refactoring
 
+---
+
+## Phase 3.9: UI Component Testing & Debugging (11 tasks)
+
+**Goal**: Systematically test and debug each UI component to ensure full functionality before final integration
+
+### UI Foundation Testing (3 tasks)
+
+- [ ] **T086** Debug: Main layout render and structure
+  - **Path**: `ui/src/renderer/components/MainLayout.tsx`
+  - **Tests**: Verify header, sidebar, main content, footer render correctly
+  - **Check**: Console for errors, component boundaries, responsive layout
+  - **Validate**: Navigation works, collapsible sidebar, keyboard shortcuts (Ctrl+/)
+  - **Dependencies**: None (base layout)
+  - **Status**: ⏸️ PENDING
+
+- [ ] **T087** [P] Debug: Theme switching functionality
+  - **Path**: `ui/src/renderer/components/controls/ThemeToggle.tsx`
+  - **Tests**: Toggle light/dark/auto themes
+  - **Check**: CSS variables update, localStorage persists theme, system theme detection works
+  - **Validate**: All components respect theme colors
+  - **Dependencies**: T086 (layout must render first)
+  - **Status**: ⏸️ PENDING
+
+- [ ] **T088** [P] Debug: Language switching (i18n)
+  - **Path**: `ui/src/renderer/components/controls/LanguageToggle.tsx`
+  - **Tests**: Switch between uk/en languages
+  - **Check**: All labels/tooltips update, translations load correctly, fallbacks work
+  - **Validate**: Language persists on reload
+  - **Dependencies**: T086 (layout must render first)
+  - **Status**: ⏸️ PENDING
+
+### File & Image Management Testing (2 tasks)
+
+- [ ] **T089** Debug: File selection and image loading
+  - **Path**: `ui/src/renderer/components/controls/FileControls.tsx`
+  - **Tests**: File > Open Image, select `examples/test_image.png`
+  - **Check**: FileManager IPC works, image preview shows, metadata displays correctly
+  - **Validate**: Recent files list updates, invalid images show error
+  - **Dependencies**: T086 (requires main layout IPC setup)
+  - **Status**: ⏸️ PENDING
+
+- [ ] **T090** [P] Debug: Image preview and metadata display
+  - **Path**: `ui/src/renderer/components/utils/ImagePreview.tsx`
+  - **Tests**: Loaded image preview, metadata panel, full-size modal
+  - **Check**: Thumbnail generation, aspect ratio preservation, file size display
+  - **Validate**: Preview updates when new image loaded
+  - **Dependencies**: T089 (requires image loaded)
+  - **Status**: ⏸️ PENDING
+
+### Animation Controls Testing (2 tasks)
+
+- [ ] **T091** Debug: Animation control buttons
+  - **Path**: `ui/src/renderer/components/controls/AnimationControls.tsx`
+  - **Tests**: Start, Pause, Resume, Stop, Skip to Final buttons
+  - **Check**: Button states (disabled when engine not running), IPC commands sent
+  - **Validate**: UI state updates match engine status
+  - **Dependencies**: T089 (requires image loaded), Python engine must be running
+  - **Status**: ⏸️ PENDING
+
+- [ ] **T092** [P] Debug: Animation settings controls
+  - **Path**: `ui/src/renderer/components/controls/{SpeedControl,DensityControl}.tsx`
+  - **Tests**: Change speed (slow/normal/fast), density (low/medium/high)
+  - **Check**: Settings propagate to engine via IPC, UI reflects current values
+  - **Validate**: Real-time updates work, warnings show on high density
+  - **Dependencies**: T091 (requires animation system active)
+  - **Status**: ⏸️ PENDING
+
+### Settings & Configuration Testing (2 tasks)
+
+- [ ] **T093** Debug: Settings panel functionality
+  - **Path**: `ui/src/renderer/components/settings/SettingsPanel.tsx`
+  - **Tests**: Open settings, change values, save/reset buttons
+  - **Check**: All sections render (Appearance, Animation, Advanced, About)
+  - **Validate**: Settings persist on save, reset restores defaults
+  - **Dependencies**: T086 (requires main layout)
+  - **Status**: ⏸️ PENDING
+
+- [ ] **T094** [P] Debug: Accessibility settings
+  - **Path**: `ui/src/renderer/components/settings/AccessibilitySettings.tsx`
+  - **Tests**: Toggle high contrast, reduced motion, large text, screen reader mode
+  - **Check**: CSS classes applied, animations disabled when reduced motion on
+  - **Validate**: Settings affect all components globally
+  - **Dependencies**: T093 (requires settings panel open)
+  - **Status**: ⏸️ PENDING
+
+### Notifications & Error Handling Testing (2 tasks)
+
+- [ ] **T095** Debug: Notification system
+  - **Path**: `ui/src/renderer/contexts/NotificationContext.tsx`
+  - **Tests**: Trigger success, error, warning, info notifications
+  - **Check**: Toast display, auto-dismiss timing, manual close, notification stacking
+  - **Validate**: Notifications clear properly, no memory leaks
+  - **Dependencies**: T086 (requires notification container in layout)
+  - **Status**: ⏸️ PENDING
+
+- [ ] **T096** Debug: Error boundaries and recovery
+  - **Path**: `ui/src/renderer/components/utils/ErrorBoundary.tsx`
+  - **Tests**: Trigger component errors (null reference, undefined state)
+  - **Check**: ErrorBoundary catches errors, fallback UI shows, retry button works
+  - **Validate**: Error reporting (console logs), user-friendly error messages
+  - **Dependencies**: T086 (requires error boundary setup)
+  - **Status**: ⏸️ PENDING
+
+---
+
+## Phase 3.10: Python Engine Integration Testing (3 tasks)
+
+**Goal**: Validate full IPC communication between Electron UI and Python engine
+
+- [ ] **T097** Debug: Python engine startup and health
+  - **Path**: `ui/src/main/services/PythonEngineBridge.ts`
+  - **Tests**: Start engine via UI button or menu, check process spawns
+  - **Check**: Engine status changes from 'stopped' to 'running', health checks pass
+  - **Validate**: UV Python environment used, engine logs visible, IPC connection established
+  - **Dependencies**: T091 (requires animation controls)
+  - **Issue**: Currently `spawn python ENOENT` - need UV integration fix
+  - **Status**: 🔧 IN PROGRESS (UV path configured, needs testing)
+
+- [ ] **T098** Debug: Animation start and lifecycle
+  - **Path**: Full integration test (UI → Main → Python)
+  - **Tests**: Load image, start animation, monitor stage transitions
+  - **Check**: Stages progress (BURST → CHAOS → CONVERGING → FORMATION → FINAL_BREATHING)
+  - **Validate**: FPS/particle count metrics update, recognition progress increases
+  - **Dependencies**: T097 (requires running engine)
+  - **Status**: ⏸️ PENDING
+
+- [ ] **T099** Debug: Engine error handling and recovery
+  - **Path**: Error handling across IPC boundary
+  - **Tests**: Trigger engine errors (missing Python, invalid settings, crash)
+  - **Check**: UI shows error notifications, engine status reflects error state
+  - **Validate**: Restart functionality works, error messages user-friendly
+  - **Dependencies**: T097 (requires engine running)
+  - **Status**: ⏸️ PENDING
+
+---
+
+## Dependencies for UI Testing Phase
+
+### Critical Path for UI Testing
+```
+T086 (Main layout) - MUST PASS FIRST
+  ↓
+T087 [P] Theme switching      T088 [P] Language switching
+  ↓                                  ↓
+T089 (File loading) ←――――――――――――――――┘
+  ↓
+T090 [P] Image preview       T093 [P] Settings panel
+  ↓                                  ↓
+T091 (Animation controls)    T094 [P] Accessibility
+  ↓                                  ↓
+T092 [P] Settings controls   T095 [P] Notifications
+  ↓                                  ↓
+T097 (Engine startup)        T096 (Error boundaries)
+  ↓
+T098 (Animation lifecycle)
+  ↓
+T099 (Error handling)
+```
+
+### Parallel Execution Groups
+
+**Group 1: Foundation (after T086)**
+```bash
+T087 [P] Theme switching
+T088 [P] Language switching  
+```
+
+**Group 2: File System (after T089)**
+```bash
+T090 [P] Image preview
+T093 [P] Settings panel
+```
+
+**Group 3: Settings & Utilities (after T090, T093)**
+```bash
+T092 [P] Animation settings
+T094 [P] Accessibility
+T095 [P] Notifications
+T096 [P] Error boundaries
+```
+
+**Group 4: Engine Integration (after T091)**
+```bash
+T097 Engine startup
+T098 Animation lifecycle
+T099 Error handling
+```
+
+---
+
+## Current Status Summary
+
+**Completed**: 85/85 original tasks ✅  
+**New Debugging Tasks**: 14 (T086-T099)  
+**Total**: 99 tasks  
+
+**Phase 3.9 Status**: 0/11 tasks (0% UI testing complete)  
+**Phase 3.10 Status**: 0/3 tasks (0% engine integration testing complete)  
+
+**Blocking Issues**:
+1. ⚠️ React production mode in dev (need Vite config fix)
+2. ⚠️ Python engine spawn fails (UV path configured, needs testing)
+3. ⚠️ 303 TypeScript errors in main process (non-blocking for UI testing)
+
+**Next Immediate Actions**:
+1. Fix Vite dev mode to use React development build
+2. Test T086: Verify main layout renders without React errors
+3. Proceed sequentially through UI testing tasks
+4. Fix UV engine spawn and test T097
+
+```
+
+All tasks are immediately executable з sufficient context for LLM completion. Each task includes specific file paths та clear deliverables based on the comprehensive design artifacts.
+
+````
+
 ```
 
 All tasks are immediately executable з sufficient context for LLM completion. Each task includes specific file paths та clear deliverables based on the comprehensive design artifacts.

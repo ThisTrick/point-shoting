@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
 export default defineConfig({
+  mode: process.env.NODE_ENV || 'development',
   plugins: [react()],
   base: './',
   root: resolve(__dirname, 'src/renderer'),

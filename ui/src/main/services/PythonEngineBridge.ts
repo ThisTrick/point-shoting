@@ -59,12 +59,14 @@ export class PythonEngineBridge extends EventEmitter {
     const startTime = Date.now();
 
     try {
-      // Determine Python executable path (should use UV or configured Python)
-      const pythonPath = process.env.PYTHON_PATH || 'python';
+      // Use UV to run Python with project dependencies
+      // UV automatically manages the virtual environment and dependencies
+      const uvPath = process.env.UV_PATH || 'uv';
+      const projectRoot = path.join(app.getAppPath(), '..', '..');
       
-      // Start the Python engine process
-      this.engineProcess = spawn(pythonPath, ['-m', 'point_shoting.cli', '--ui-mode'], {
-        cwd: path.dirname(this.enginePath),
+      // Start the Python engine process via UV
+      this.engineProcess = spawn(uvPath, ['run', 'python', '-m', 'point_shoting.cli', '--ui-mode'], {
+        cwd: projectRoot,
         stdio: ['pipe', 'pipe', 'pipe'],
         env: {
           ...process.env,

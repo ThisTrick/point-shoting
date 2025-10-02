@@ -154,6 +154,11 @@ public
 out/
 dist_electron/
 
+# Electron builder output
+ui/dist/
+ui/dist-packages/
+ui/release/
+
 # Project specific
 *.png
 *.jpg
