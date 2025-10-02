@@ -139,9 +139,9 @@ const getDefaultSettings = (): UISettings => ({
   }
 });
 
-// Initial state
+// Initial state - use default settings to prevent null errors during first render
 const initialState: SettingsState = {
-  settings: null,
+  settings: getDefaultSettings(),
   presets: [],
   isLoading: false,
   error: null,

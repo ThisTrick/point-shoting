@@ -17,9 +17,6 @@ import { AnimationProvider } from './contexts/AnimationContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { I18nProvider } from './i18n/config';
 
-// Hooks
-import { usePerformance } from './hooks/usePerformance';
-
 // Styles
 import './styles/global.css';
 import './styles/themes.css';
@@ -49,34 +46,8 @@ const App: React.FC<AppProps> = ({
     }
   });
 
-  // Performance monitoring
-  const performanceMetrics = usePerformance({
-    componentName: 'App',
-    trackRenders: developmentMode,
-    trackMemory: developmentMode,
-    enableProfiling: developmentMode,
-    debugMode: developmentMode,
-  });
-
-  // Update app state with performance metrics
-  useEffect(() => {
-    if (!developmentMode) return;
-    
-    const interval = setInterval(() => {
-      const metrics = performanceMetrics.metrics;
-      setAppState((prev) => ({
-        ...prev,
-        performanceMetrics: {
-          fps: Math.round(1000 / (metrics.renderTime || 16)),
-          frameTime: metrics.renderTime,
-          memoryUsage: metrics.memoryUsage,
-          particleCount: prev.performanceMetrics.particleCount,
-        },
-      }));
-    }, 1000);
-    
-    return () => clearInterval(interval);
-  }, [developmentMode, performanceMetrics]);
+  // Note: Performance monitoring is done via useEffect below
+  // to avoid hooks count issues with conditional rendering
 
   // Theme initialization and system preference detection
   useEffect(() => {
@@ -230,7 +201,18 @@ const App: React.FC<AppProps> = ({
     };
   }, [developmentMode, isInitialized]);
 
-  // Loading state
+  // Error handler for application-level errors
+  // MUST be defined before any conditional returns (Rules of Hooks)
+  const handleApplicationError = React.useCallback((error: Error, errorInfo: React.ErrorInfo, report: ErrorReport) => {
+    console.error('Application error:', { error, errorInfo, report });
+    
+    // Log to external error tracking service in production
+    if (!developmentMode && typeof window !== 'undefined' && (window as any).errorTracker) {
+      (window as any).errorTracker.logError(report);
+    }
+  }, [developmentMode]);
+
+  // Loading state - NOW safe to return early after all hooks
   if (!isInitialized && !initializationError) {
     return (
       <div className="app-loading">
@@ -298,16 +280,6 @@ const App: React.FC<AppProps> = ({
       </div>
     );
   }
-
-  // Error handler for application-level errors
-  const handleApplicationError = React.useCallback((error: Error, errorInfo: React.ErrorInfo, report: ErrorReport) => {
-    console.error('Application error:', { error, errorInfo, report });
-    
-    // Log to external error tracking service in production
-    if (!developmentMode && typeof window !== 'undefined' && (window as any).errorTracker) {
-      (window as any).errorTracker.logError(report);
-    }
-  }, [developmentMode]);
 
   // Main application render
   return (

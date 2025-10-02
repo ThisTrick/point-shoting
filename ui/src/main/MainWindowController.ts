@@ -3,7 +3,7 @@
  * Головне вікно Electron app з координацією UI компонентів та IPC communication
  */
 
-import { BrowserWindow, app, ipcMain, Menu, shell } from 'electron';
+import { BrowserWindow, app, Menu, shell } from 'electron';
 import path from 'path';
 import { EventEmitter } from 'events';
 import { SettingsManager } from './services/SettingsManager';
@@ -75,8 +75,9 @@ export class MainWindowController extends EventEmitter {
       // Set up window event handlers
       this.setupWindowEventHandlers();
 
-      // Set up IPC handlers  
-      this.setupIpcHandlers();
+      // NOTE: IPC handlers are registered in main.ts via separate handler classes
+      // (SettingsIpcHandlers, FileIpcHandlers, EngineIpcHandlers, WindowIpcHandlers)
+      // Do NOT call setupIpcHandlers() here to avoid duplicate registration
 
       // Load the renderer HTML
       if (process.env.NODE_ENV === 'development') {
@@ -267,10 +268,14 @@ export class MainWindowController extends EventEmitter {
           await this.engineBridge.updateEngineSettings(command.payload);
           break;
         case 'load_image':
-          await this.engineBridge.loadImage(command.payload.imagePath);
+          if (command.payload?.imagePath) {
+            await this.engineBridge.loadImage(command.payload.imagePath);
+          }
           break;
         case 'set_watermark':
-          await this.engineBridge.setWatermark(command.payload);
+          if (command.payload?.watermark !== undefined) {
+            await this.engineBridge.setWatermark(command.payload.watermark);
+          }
           break;
         default:
           console.warn('Unknown engine command:', command.type);
@@ -400,67 +405,8 @@ export class MainWindowController extends EventEmitter {
     });
   }
 
-  private setupIpcHandlers(): void {
-    // Settings IPC handlers
-    ipcMain.handle('get-settings', () => {
-      return this.settingsManager.getCurrentSettings();
-    });
-
-    ipcMain.handle('update-settings', async (_, settings: UISettings) => {
-      await this.settingsManager.updateSettings(settings);
-    });
-
-    ipcMain.handle('reset-settings', async () => {
-      await this.settingsManager.resetToDefaults();
-    });
-
-    // File operation IPC handlers
-    ipcMain.handle('select-image-file', async () => {
-      return this.fileManager.selectImageFile();
-    });
-
-    ipcMain.handle('get-recent-images', async () => {
-      return this.fileManager.getRecentImages();
-    });
-
-    ipcMain.handle('clear-recent-images', async () => {
-      return this.fileManager.clearRecentImages();
-    });
-
-    // Engine IPC handlers
-    ipcMain.handle('start-engine', async () => {
-      return this.startEngine();
-    });
-
-    ipcMain.handle('stop-engine', async () => {
-      await this.stopEngine();
-    });
-
-    ipcMain.handle('send-engine-command', async (_, command: OutgoingMessage) => {
-      await this.sendEngineCommand(command);
-    });
-
-    ipcMain.handle('get-application-state', () => {
-      return this.getApplicationState();
-    });
-
-    // Window control handlers
-    ipcMain.handle('minimize-window', () => {
-      this.mainWindow?.minimize();
-    });
-
-    ipcMain.handle('maximize-window', () => {
-      if (this.mainWindow?.isMaximized()) {
-        this.mainWindow.unmaximize();
-      } else {
-        this.mainWindow?.maximize();
-      }
-    });
-
-    ipcMain.handle('close-window', async () => {
-      await this.closeWindow();
-    });
-  }
+  // IPC handlers are registered in main.ts via separate handler classes
+  // (SettingsIpcHandlers, FileIpcHandlers, EngineIpcHandlers, WindowIpcHandlers)
 
   private setupApplicationMenu(): void {
     const template: Electron.MenuItemConstructorOptions[] = [
