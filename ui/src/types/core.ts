@@ -47,6 +47,7 @@ export interface EngineStatus {
   readonly memoryUsage?: number;
   readonly lastUpdate: number; // timestamp
   readonly version?: string;
+  readonly stage?: string;
 }
 
 /**
@@ -57,6 +58,7 @@ export enum EngineState {
   STARTING = 'starting',
   RUNNING = 'running',
   PAUSED = 'paused',
+  COMPLETED = 'completed',
   ERROR = 'error'
 }
 

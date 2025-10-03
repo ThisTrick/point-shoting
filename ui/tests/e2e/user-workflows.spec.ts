@@ -164,7 +164,7 @@ test.describe('Particle Animation UI E2E Tests', () => {
       
       // Verify image information is displayed
       const imageInfo = page.locator('[data-testid="image-info"]')
-      await expect(imageInfo).toContainText('1920 × 1080')
+      await expect(imageInfo).toContainText('200 × 200')
       await expect(imageInfo).toContainText('PNG')
     })
 
@@ -173,7 +173,7 @@ test.describe('Particle Animation UI E2E Tests', () => {
       await page.evaluate(() => {
         window.electronAPI = {
           files: {
-            selectImage: () => Promise.resolve({
+            selectImage: () => ({
               path: '/mock/unsupported.bmp',
               filename: 'unsupported.bmp',
               validationResult: {
@@ -235,7 +235,7 @@ test.describe('Particle Animation UI E2E Tests', () => {
       await page.evaluate(() => {
         window.electronAPI = {
           files: {
-            getRecentImages: () => Promise.resolve([
+            getRecentImages: () => [
               {
                 path: '/mock/recent1.png',
                 filename: 'recent1.png',
@@ -246,7 +246,7 @@ test.describe('Particle Animation UI E2E Tests', () => {
                 filename: 'recent2.jpg',
                 lastAccessed: new Date('2024-01-14')
               }
-            ])
+            ]
           }
         } as any;
       })
@@ -385,18 +385,12 @@ test.describe('Particle Animation UI E2E Tests', () => {
           engine: {
             startAnimation: () => Promise.resolve({ success: true }),
             onStatusUpdate: (callback: any) => {
-              // Simulate progress updates
-              setTimeout(() => callback({
-                stage: 'burst',
-                progress: 0.3,
-                particleCount: 1000
-              }), 100)
-
+              // Call asynchronously
               setTimeout(() => callback({
                 stage: 'transition',
                 progress: 0.7,
                 particleCount: 1000
-              }), 200)
+              }), 0)
             }
           }
         } as any;

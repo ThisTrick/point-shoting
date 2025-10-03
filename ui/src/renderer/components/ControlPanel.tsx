@@ -111,7 +111,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <div className="status-item">
             <span className="status-label">Engine:</span>
             <span className={`status-value ${engineStatus.status.toLowerCase()}`}>
-              {engineStatus.status}
+              {engineStatus.status.charAt(0).toUpperCase() + engineStatus.status.slice(1)}
             </span>
           </div>
           <div className="status-item">
@@ -144,7 +144,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       <div className="control-section">
         <h3>Current Stage</h3>
         <div className="stage-display" data-testid="current-stage">
-          <span className="stage-name">Ready</span>
+          <span className="stage-name">{engineStatus.stage || 'Ready'}</span>
         </div>
       </div>
     </div>
