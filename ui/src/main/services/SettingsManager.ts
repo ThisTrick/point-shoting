@@ -36,7 +36,8 @@ export class SettingsManager extends EventEmitter {
       // schema: this.getStoreSchema()
     });
 
-    this.currentSettings = this.loadFromStore();
+    // Initialize with defaults, will be loaded properly when needed
+    this.currentSettings = this.getDefaultSettings();
   }
 
   // Core Settings Operations
@@ -148,7 +149,7 @@ export class SettingsManager extends EventEmitter {
   }
 
   // Persistence
-  loadFromStore(): UISettings {
+  async loadFromStore(): Promise<UISettings> {
     try {
       const stored = this.store.get('settings');
       const merged = this.mergeWithDefaults(stored);
@@ -277,7 +278,7 @@ export class SettingsManager extends EventEmitter {
         id: preset.id,
         name: preset.name,
         description: preset.description,
-        createdAt: preset.createdAt,
+        createdAt: new Date(preset.createdAt),
         version: preset.version,
         isBuiltIn: false
       }));
@@ -310,7 +311,7 @@ export class SettingsManager extends EventEmitter {
       animation: {
         density: ParticleDensity.MEDIUM,
         speed: AnimationSpeed.NORMAL,
-        colorMode: ColorMappingMode.ORIGINAL,
+        colorMode: ColorMappingMode.STYLISH,
         watermark: false,
         hud: true,
         background: '#000000',

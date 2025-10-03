@@ -11,9 +11,10 @@ interface MainLayoutProps {
   onSettingsClick?: () => void;
   onLoadImage?: () => void;
   recentImages?: any[];
+  theme?: 'light' | 'dark' | 'system';
 }
 
-export function MainLayout({ children, onSettingsClick, onLoadImage }: MainLayoutProps) {
+export function MainLayout({ children, onSettingsClick, onLoadImage, theme = 'light' }: MainLayoutProps) {
   const dynamicRecentImages = [
     { filename: 'recent1.png', path: '/mock/recent1.png' },
     { filename: 'recent2.jpg', path: '/mock/recent2.jpg' }
@@ -24,7 +25,7 @@ export function MainLayout({ children, onSettingsClick, onLoadImage }: MainLayou
   };
 
   return (
-    <div className="main-layout" data-testid="main-container">
+    <div className={`main-layout theme-${theme}`} data-testid="main-container">
       <div data-testid="test-element">Test</div>
       {/* Title Bar */}
       <div className="title-bar">

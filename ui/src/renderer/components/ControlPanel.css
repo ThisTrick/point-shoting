@@ -200,6 +200,12 @@
   gap: 0.5rem;
 }
 
+.parameter-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .parameter-label {
   display: flex;
   justify-content: between;

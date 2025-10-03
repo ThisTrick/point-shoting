@@ -29,7 +29,7 @@ const mockAnimationConfig: AnimationConfig = {
   density: ParticleDensity.MEDIUM,
   speed: AnimationSpeed.NORMAL,
   transitionStyle: TransitionStyle.SMOOTH,
-  colorMapping: ColorMappingMode.ORIGINAL,
+  colorMapping: ColorMappingMode.STYLISH,
   enableEffects: true,
   enableWatermark: false
 };
@@ -99,7 +99,7 @@ describe('ControlPanel Component', () => {
       expect(screen.getByText(/color mode/i)).toBeInTheDocument();
       expect(screen.getByText(/effects/i)).toBeInTheDocument();
       expect(screen.getByText('smooth')).toBeInTheDocument();
-      expect(screen.getByText('original')).toBeInTheDocument();
+      expect(screen.getByText('stylish')).toBeInTheDocument();
       expect(screen.getByText('On')).toBeInTheDocument();
     });
   });
@@ -315,10 +315,10 @@ describe('ControlPanel Component', () => {
     });
 
     it('shows different color mapping modes', () => {
-      const configWithMonochrome = { ...mockAnimationConfig, colorMapping: ColorMappingMode.MONOCHROME };
-      renderControlPanel({ animationConfig: configWithMonochrome });
+      const configWithPrecise = { ...mockAnimationConfig, colorMapping: ColorMappingMode.PRECISE };
+      renderControlPanel({ animationConfig: configWithPrecise });
       
-      expect(screen.getByText('monochrome')).toBeInTheDocument();
+      expect(screen.getByText('precise')).toBeInTheDocument();
     });
   });
 });

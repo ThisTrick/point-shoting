@@ -5,6 +5,7 @@
 
 import { dialog } from 'electron';
 import { promises as fs, constants } from 'fs';
+import * as fsSync from 'fs';
 import path from 'path';
 import { EventEmitter } from 'events';
 import Store from 'electron-store';
@@ -104,20 +105,20 @@ export class FileManager extends EventEmitter {
     const warnings: ValidationError[] = [];
     let metadata: ImageMetadata | undefined;
 
+    // Check file extension first (can be done without file access)
+    const ext = path.extname(filePath).toLowerCase();
+    if (!this.SUPPORTED_IMAGE_FORMATS.includes(ext)) {
+      errors.push({
+        field: 'format',
+        message: `Unsupported format. Supported: ${this.SUPPORTED_IMAGE_FORMATS.join(', ')}`,
+        severity: 'error'
+      });
+      return { isValid: false, errors, warnings };
+    }
+
     try {
       // Check file exists
       await fs.access(filePath, constants.F_OK);
-
-      // Check file extension
-      const ext = path.extname(filePath).toLowerCase();
-      if (!this.SUPPORTED_IMAGE_FORMATS.includes(ext)) {
-        errors.push({
-          field: 'format',
-          message: `Unsupported format. Supported: ${this.SUPPORTED_IMAGE_FORMATS.join(', ')}`,
-          severity: 'error'
-        });
-        return { isValid: false, errors, warnings };
-      }
 
       // Get file stats
       const stats = await fs.stat(filePath);
@@ -536,8 +537,7 @@ export class FileManager extends EventEmitter {
 
   // File System Utilities
   watchFile(filePath: string, callback: (event: FileChangeEvent) => void): FileWatcher {
-    const fs_watch = require('fs');
-    fs_watch.watchFile(filePath, { interval: 1000 }, (curr: any, prev: any) => {
+    fsSync.watchFile(filePath, { interval: 1000 }, (curr: any, prev: any) => {
       const event: FileChangeEvent = {
         path: filePath,
         type: curr.mtime > prev.mtime ? 'modified' : 'delete',
@@ -552,7 +552,7 @@ export class FileManager extends EventEmitter {
       path: filePath,
       watch: () => {},
       unwatch: () => {},
-      close: () => fs_watch.unwatchFile(filePath)
+      close: () => fsSync.unwatchFile(filePath)
     };
 
     this.fileWatchers.set(watcherId, fileWatcher);
@@ -561,9 +561,8 @@ export class FileManager extends EventEmitter {
 
   unwatchFile(watcher: FileWatcher): void {
     try {
-      const fs_watch = require('fs');
       if (watcher.path) {
-        fs_watch.unwatchFile(watcher.path);
+        fsSync.unwatchFile(watcher.path);
       }
       if (watcher.id) {
         this.fileWatchers.delete(watcher.id);

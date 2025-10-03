@@ -1,5 +1,5 @@
 /**
- * Control Panel Component for Point Shooting Animation System
+ * Contrimport { EngineState, AnimationSpeed, ParticleDensity } from '../types/core';l Panel Component for Point Shooting Animation System
  * 
  * Provides main animation control interface with:
  * - Animation start/pause/stop controls
@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { ControlPanelProps } from '../../types/components';
-import { EngineState } from '../../types/core';
+import { EngineState, AnimationSpeed, ParticleDensity } from '../../types/core';
 import './ControlPanel.css';
 
 /**
@@ -44,53 +44,45 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       <div className="control-section">
         <h3>Animation Controls</h3>
         <div className="control-buttons">
-          {!isRunning && !isPaused && (
-            <button
-              className="control-button play-button"
-              onClick={() => onStart && onStart()}
-              disabled={isDisabled}
-              data-testid="play-button"
-              aria-label="Start animation"
-            >
-              ▶ Play
-            </button>
-          )}
+          <button
+            className="control-button play-button"
+            onClick={() => onStart && onStart()}
+            disabled={isDisabled || isRunning || isPaused}
+            data-testid="play-button"
+            aria-label="Start animation"
+          >
+            {compact ? '▶' : '▶ Play'}
+          </button>
           
-          {isRunning && (
-            <button
-              className="control-button pause-button"
-              onClick={() => onPause && onPause()}
-              disabled={isDisabled}
-              data-testid="pause-button"
-              aria-label="Pause animation"
-            >
-              ⏸ Pause
-            </button>
-          )}
+          <button
+            className="control-button pause-button"
+            onClick={() => onPause && onPause()}
+            disabled={isDisabled || !isRunning}
+            data-testid="pause-button"
+            aria-label="Pause animation"
+          >
+            {compact ? '⏸' : '⏸ Pause'}
+          </button>
           
-          {isPaused && (
-            <button
-              className="control-button resume-button"
-              onClick={() => onResume && onResume()}
-              disabled={isDisabled}
-              data-testid="resume-button"
-              aria-label="Resume animation"
-            >
-              ▶ Resume
-            </button>
-          )}
+          <button
+            className="control-button resume-button"
+            onClick={() => onResume && onResume()}
+            disabled={isDisabled || !isPaused}
+            data-testid="resume-button"
+            aria-label="Resume animation"
+          >
+            {compact ? '⏯' : '▶ Resume'}
+          </button>
           
-          {(isRunning || isPaused) && (
-            <button
-              className="control-button stop-button"
-              onClick={() => onStop && onStop()}
-              disabled={isDisabled}
-              data-testid="stop-button"
-              aria-label="Stop animation"
-            >
-              ⏹ Stop
-            </button>
-          )}
+          <button
+            className="control-button stop-button"
+            onClick={() => onStop && onStop()}
+            disabled={isDisabled || (!isRunning && !isPaused)}
+            data-testid="stop-button"
+            aria-label="Stop animation"
+          >
+            {compact ? '⏹' : '⏹ Stop'}
+          </button>
           
           <button
             className="control-button skip-button"
@@ -99,8 +91,53 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             data-testid="skip-button"
             aria-label="Skip to final formation"
           >
-            ⏭ Skip
+            {compact ? '⏭' : '⏭ Skip'}
           </button>
+        </div>
+      </div>
+
+      {/* Parameter Controls */}
+      <div className="control-section">
+        <h3>Animation Parameters</h3>
+        <div className="parameters-section">
+          <div className="parameter-group">
+            <label htmlFor="speed-select" className="parameter-label">Speed:</label>
+            <div className="parameter-controls-row">
+              <select
+                id="speed-select"
+                className="parameter-select"
+                value={_animationConfig.speed}
+                onChange={(e) => _onConfigChange && _onConfigChange({ speed: e.target.value as AnimationSpeed })}
+                disabled={isDisabled}
+                data-testid="speed-select"
+              >
+                <option value={AnimationSpeed.SLOW}>Slow</option>
+                <option value={AnimationSpeed.NORMAL}>Normal</option>
+                <option value={AnimationSpeed.FAST}>Fast</option>
+                <option value={AnimationSpeed.TURBO}>Turbo</option>
+              </select>
+              <span className="parameter-value">{_animationConfig.speed}</span>
+            </div>
+          </div>
+          <div className="parameter-group">
+            <label htmlFor="density-select" className="parameter-label">Density:</label>
+            <div className="parameter-controls-row">
+              <select
+                id="density-select"
+                className="parameter-select"
+                value={_animationConfig.density}
+                onChange={(e) => _onConfigChange && _onConfigChange({ density: e.target.value as ParticleDensity })}
+                disabled={isDisabled}
+                data-testid="density-select"
+              >
+                <option value={ParticleDensity.LOW}>Low</option>
+                <option value={ParticleDensity.MEDIUM}>Medium</option>
+                <option value={ParticleDensity.HIGH}>High</option>
+                <option value={ParticleDensity.ULTRA}>Ultra</option>
+              </select>
+              <span className="parameter-value">{_animationConfig.density}</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -114,10 +151,12 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               {engineStatus.status.charAt(0).toUpperCase() + engineStatus.status.slice(1)}
             </span>
           </div>
-          <div className="status-item">
-            <span className="status-label">FPS:</span>
-            <span className="status-value">{engineStatus.fps || 0}</span>
-          </div>
+          {engineStatus.fps !== undefined && (
+            <div className="status-item">
+              <span className="status-label">FPS:</span>
+              <span className="status-value">{engineStatus.fps ? `${engineStatus.fps.toFixed(1)} FPS` : 'N/A'}</span>
+            </div>
+          )}
           <div className="status-item">
             <span className="status-label">Particles:</span>
             <span className="status-value">{engineStatus.particleCount || 0}</span>
@@ -147,6 +186,27 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
           <span className="stage-name">{engineStatus.stage || 'Ready'}</span>
         </div>
       </div>
+
+      {/* Configuration Display - only in non-compact mode */}
+      {!compact && _animationConfig && (
+        <div className="control-section">
+          <h3>Configuration</h3>
+          <div className="config-section" data-testid="config-display">
+            <div className="config-item">
+              <span className="config-label">transition</span>
+              <span className="config-value">{_animationConfig.transitionStyle.toLowerCase()}</span>
+            </div>
+            <div className="config-item">
+              <span className="config-label">color mode</span>
+              <span className="config-value">{_animationConfig.colorMapping.toLowerCase()}</span>
+            </div>
+            <div className="config-item">
+              <span className="config-label">effects</span>
+              <span className="config-value">{_animationConfig.enableEffects ? 'On' : 'Off'}</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

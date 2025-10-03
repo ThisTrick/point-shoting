@@ -1,0 +1,119 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]: "FPS:"
+    - generic [ref=e6]: "0"
+  - generic [ref=e7]:
+    - generic [ref=e8]: Test
+    - generic [ref=e9]:
+      - generic [ref=e12]: Point Shooting
+      - generic [ref=e13]:
+        - generic [ref=e16]: Engine
+        - generic [ref=e19]: Animation
+      - generic [ref=e20]:
+        - button "−" [active] [ref=e21] [cursor=pointer]:
+          - generic [ref=e22] [cursor=pointer]: −
+        - button "□" [ref=e23] [cursor=pointer]:
+          - generic [ref=e24] [cursor=pointer]: □
+        - button "×" [ref=e25] [cursor=pointer]:
+          - generic [ref=e26] [cursor=pointer]: ×
+    - generic [ref=e27]:
+      - banner [ref=e28]:
+        - button "☰" [ref=e30] [cursor=pointer]:
+          - generic [ref=e31] [cursor=pointer]: ☰
+        - button "⚙️" [ref=e33]:
+          - generic [ref=e34]: ⚙️
+      - generic [ref=e35]:
+        - complementary [ref=e36]:
+          - heading "Controls" [level=2] [ref=e38]
+          - generic [ref=e39]:
+            - generic [ref=e40]:
+              - heading "Quick Actions" [level=3] [ref=e41]
+              - button "Load Image" [ref=e42]
+            - generic [ref=e43]:
+              - heading "Recent Images" [level=3] [ref=e44]
+              - generic [ref=e45]:
+                - button "Recent Images ▼" [ref=e46]
+                - generic [ref=e47]:
+                  - generic [ref=e48]: recent1.png
+                  - generic [ref=e49]: recent2.jpg
+            - generic [ref=e50]:
+              - heading "Engine Status" [level=3] [ref=e51]
+              - generic [ref=e52]:
+                - generic [ref=e53]: "Status: stopped"
+                - generic [ref=e54]: "FPS: 0"
+                - generic [ref=e55]: "Particles: 0"
+                - generic [ref=e56]: "Memory: 0MB"
+        - main [ref=e57]:
+          - generic [ref=e58]:
+            - generic [ref=e61]:
+              - generic [ref=e62]: 📁
+              - generic [ref=e63]: No image selected
+            - generic [ref=e64]:
+              - generic [ref=e65]:
+                - heading "Animation Controls" [level=3] [ref=e66]
+                - generic [ref=e67]:
+                  - button "Start animation" [ref=e68] [cursor=pointer]: ▶ Play
+                  - button "Pause animation" [disabled] [ref=e69]: ⏸ Pause
+                  - button "Resume animation" [disabled] [ref=e70]: ▶ Resume
+                  - button "Stop animation" [disabled] [ref=e71]: ⏹ Stop
+                  - button "Skip to final formation" [ref=e72] [cursor=pointer]: ⏭ Skip
+              - generic [ref=e73]:
+                - heading "Animation Parameters" [level=3] [ref=e74]
+                - generic [ref=e75]:
+                  - generic [ref=e76]:
+                    - generic [ref=e77]: "Speed:"
+                    - generic [ref=e78]:
+                      - combobox "Speed:" [ref=e79] [cursor=pointer]:
+                        - option "Slow"
+                        - option "Normal" [selected]
+                        - option "Fast"
+                        - option "Turbo"
+                      - generic [ref=e80]: normal
+                  - generic [ref=e81]:
+                    - generic [ref=e82]: "Density:"
+                    - generic [ref=e83]:
+                      - combobox "Density:" [ref=e84] [cursor=pointer]:
+                        - option "Low"
+                        - option "Medium" [selected]
+                        - option "High"
+                        - option "Ultra"
+                      - generic [ref=e85]: medium
+              - generic [ref=e86]:
+                - heading "Status" [level=3] [ref=e87]
+                - generic [ref=e88]:
+                  - generic [ref=e89]:
+                    - generic [ref=e90]: "Engine:"
+                    - generic [ref=e91]: Stopped
+                  - generic [ref=e92]:
+                    - generic [ref=e93]: "FPS:"
+                    - generic [ref=e94]: N/A
+                  - generic [ref=e95]:
+                    - generic [ref=e96]: "Particles:"
+                    - generic [ref=e97]: "0"
+                  - generic [ref=e98]:
+                    - generic [ref=e99]: "Memory:"
+                    - generic [ref=e100]: 0MB
+              - generic [ref=e101]:
+                - heading "Progress" [level=3] [ref=e102]
+                - generic [ref=e105]: 0%
+              - generic [ref=e106]:
+                - heading "Current Stage" [level=3] [ref=e107]
+                - generic [ref=e109]: Ready
+              - generic [ref=e110]:
+                - heading "Configuration" [level=3] [ref=e111]
+                - generic [ref=e112]:
+                  - generic [ref=e113]:
+                    - generic [ref=e114]: transition
+                    - generic [ref=e115]: smooth
+                  - generic [ref=e116]:
+                    - generic [ref=e117]: color mode
+                    - generic [ref=e118]: stylish
+                  - generic [ref=e119]:
+                    - generic [ref=e120]: effects
+                    - generic [ref=e121]: "On"
+      - contentinfo [ref=e122]:
+        - button "⌨ Help" [ref=e125] [cursor=pointer]
+```

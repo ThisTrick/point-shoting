@@ -8,7 +8,7 @@
  * - Accessibility options
  */
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import { UISettings, UITheme } from '../../../types/core';
 import './AppearanceSettings.css';
 
@@ -54,6 +54,24 @@ export const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
   ) => {
     onChange({ [key]: value });
   }, [onChange]);
+
+  // Apply theme changes to DOM
+  useEffect(() => {
+    // Apply theme to document element
+    document.documentElement.setAttribute('data-theme', settings.theme);
+    
+    // Persist theme to localStorage
+    localStorage.setItem('app-theme', settings.theme);
+  }, [settings.theme]);
+
+  // Apply language changes to DOM
+  useEffect(() => {
+    // Apply language to document element
+    document.documentElement.lang = settings.language;
+    
+    // Persist language to localStorage
+    localStorage.setItem('app-locale', settings.language);
+  }, [settings.language]);
 
   // Handle accessibility setting changes
   const handleAccessibilityChange = useCallback((
@@ -436,6 +454,44 @@ export const AppearanceSettings: React.FC<AppearanceSettingsProps> = ({
                     {getCurrentThemeInfo()?.description || 'Custom theme configuration'}
                   </span>
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Language Settings */}
+        <section className="settings-section">
+          <h3 className="section-title">Language</h3>
+          
+          <div className="language-selection">
+            <div className="setting-group">
+              <label className="setting-label">Interface Language</label>
+              <div className="language-options">
+                <label className="language-option">
+                  <input
+                    type="radio"
+                    name="language"
+                    value="en"
+                    checked={settings.language === 'en'}
+                    onChange={(e) => handleSettingChange('language', e.target.value)}
+                    disabled={disabled}
+                  />
+                  <span className="language-name">English</span>
+                  <span className="language-native">English</span>
+                </label>
+                
+                <label className="language-option">
+                  <input
+                    type="radio"
+                    name="language"
+                    value="uk"
+                    checked={settings.language === 'uk'}
+                    onChange={(e) => handleSettingChange('language', e.target.value)}
+                    disabled={disabled}
+                  />
+                  <span className="language-name">Ukrainian</span>
+                  <span className="language-native">Українська</span>
+                </label>
               </div>
             </div>
           </div>

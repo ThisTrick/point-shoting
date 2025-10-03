@@ -20,9 +20,9 @@ const mockElectron = {
   },
   BrowserWindow: jest.fn(),
   dialog: {
-    showOpenDialog: jest.fn(),
-    showSaveDialog: jest.fn(),
-    showMessageBox: jest.fn(),
+    showOpenDialog: jest.fn(() => ({ canceled: false, filePaths: ['/mock/test-image.png'] })),
+    showSaveDialog: jest.fn(() => ({ canceled: false, filePath: '/mock/test-settings.json' })),
+    showMessageBox: jest.fn(() => ({ response: 0 })),
   },
 }
 
@@ -31,11 +31,20 @@ jest.mock('electron', () => mockElectron)
 
 // Mock electron-store
 jest.mock('electron-store', () => {
+  const store: { [key: string]: any } = {}
   return jest.fn().mockImplementation(() => ({
-    get: jest.fn(),
-    set: jest.fn(),
-    delete: jest.fn(),
-    clear: jest.fn(),
+    get: jest.fn((key: string, defaultValue?: any) => {
+      return store[key] !== undefined ? store[key] : defaultValue
+    }),
+    set: jest.fn((key: string, value: any) => {
+      store[key] = value
+    }),
+    delete: jest.fn((key: string) => {
+      delete store[key]
+    }),
+    clear: jest.fn(() => {
+      Object.keys(store).forEach(key => delete store[key])
+    }),
   }))
 })
 
@@ -49,24 +58,73 @@ jest.mock('sharp', () => {
       size: 1024,
     }),
     resize: jest.fn().mockReturnThis(),
-    jpeg: jest.fn().mockReturnThis(),
     png: jest.fn().mockReturnThis(),
+    jpeg: jest.fn().mockReturnThis(),
     toBuffer: jest.fn().mockResolvedValue(Buffer.from('mock-image-data')),
-    toFile: jest.fn().mockResolvedValue({}),
   }))
 })
 
-// Mock file system operations
+// Mock fs for file operations
+const mockFileSystem: { [path: string]: string } = {}
+
 jest.mock('fs', () => ({
   promises: {
-    readFile: jest.fn(),
-    writeFile: jest.fn(),
-    access: jest.fn(),
-    stat: jest.fn(),
+    readFile: jest.fn((path: string) => {
+      if (mockFileSystem[path]) {
+        return Promise.resolve(mockFileSystem[path])
+      }
+      return Promise.reject(new Error('ENOENT: no such file or directory'))
+    }),
+    writeFile: jest.fn((path: string, content: string, _encoding?: string) => {
+      mockFileSystem[path] = content
+      return Promise.resolve()
+    }),
+    access: jest.fn((path: string) => {
+      if (mockFileSystem[path] !== undefined) {
+        return Promise.resolve()
+      }
+      return Promise.reject(new Error('ENOENT: no such file or directory'))
+    }),
+    stat: jest.fn((path: string) => {
+      if (mockFileSystem[path] !== undefined) {
+        return Promise.resolve({
+          size: mockFileSystem[path].length,
+          mtime: new Date(),
+          birthtime: new Date(),
+          isDirectory: () => false,
+        })
+      }
+      return Promise.reject(new Error('ENOENT: no such file or directory'))
+    }),
+    unlink: jest.fn((path: string) => {
+      if (mockFileSystem[path] !== undefined) {
+        delete mockFileSystem[path]
+        return Promise.resolve()
+      }
+      return Promise.reject(new Error('ENOENT: no such file or directory'))
+    }),
   },
-  existsSync: jest.fn(),
-  readFileSync: jest.fn(),
-  writeFileSync: jest.fn(),
+  watchFile: jest.fn((_path: string, _options: any, callback: Function) => {
+    // Mock implementation - just call callback once
+    setTimeout(() => {
+      callback({ mtime: new Date() }, { mtime: new Date(Date.now() - 1000) })
+    }, 0)
+    return {
+      close: jest.fn()
+    }
+  }),
+  unwatchFile: jest.fn(),
+  existsSync: jest.fn((path: string) => !!mockFileSystem[path]),
+  readFileSync: jest.fn((path: string) => mockFileSystem[path] || ''),
+  writeFileSync: jest.fn((path: string, content: string) => {
+    mockFileSystem[path] = content
+  }),
+  constants: {
+    F_OK: 0,
+    R_OK: 4,
+    W_OK: 2,
+    X_OK: 1,
+  },
 }))
 
 // Mock path operations

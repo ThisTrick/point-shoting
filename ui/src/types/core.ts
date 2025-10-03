@@ -118,7 +118,9 @@ export enum ColorMappingMode {
   ORIGINAL = 'original',
   ENHANCED = 'enhanced',
   ARTISTIC = 'artistic',
-  MONOCHROME = 'monochrome'
+  MONOCHROME = 'monochrome',
+  STYLISH = 'stylish',
+  PRECISE = 'precise'
 }
 
 /**

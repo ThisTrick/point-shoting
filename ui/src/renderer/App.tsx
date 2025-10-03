@@ -26,7 +26,7 @@ function App() {
     density: ParticleDensity.MEDIUM,
     speed: AnimationSpeed.NORMAL,
     transitionStyle: TransitionStyle.SMOOTH,
-    colorMapping: ColorMappingMode.ORIGINAL,
+    colorMapping: ColorMappingMode.STYLISH,
     enableEffects: true,
     enableWatermark: false,
     particleCount: 1000

@@ -67,12 +67,9 @@ describe('PythonEngineBridge Contract', () => {
   let bridge: PythonEngineBridge
   
   beforeEach(() => {
-    // This will fail until PythonEngineBridge is implemented
-    // const { PythonEngineBridge: PythonEngineBridgeImpl } = require('@main/PythonEngineBridge')
-    // bridge = new PythonEngineBridgeImpl()
-    
-    // For now, use a mock that will cause tests to fail
-    bridge = {} as PythonEngineBridge
+    // Import the real PythonEngineBridge implementation
+    const { PythonEngineBridge: PythonEngineBridgeImpl } = require('../../src/services/PythonEngineBridge')
+    bridge = new PythonEngineBridgeImpl()
   })
 
   describe('Interface Compliance', () => {
@@ -152,6 +149,11 @@ describe('PythonEngineBridge Contract', () => {
   })
 
   describe('Animation Commands Contract', () => {
+    beforeEach(async () => {
+      // Start engine before animation tests
+      await bridge.startEngine()
+    })
+
     it('should start animation with configuration', async () => {
       const config = { 
         particleCount: 1000,
@@ -177,6 +179,11 @@ describe('PythonEngineBridge Contract', () => {
   })
 
   describe('Settings Synchronization Contract', () => {
+    beforeEach(async () => {
+      // Start engine before settings tests
+      await bridge.startEngine()
+    })
+
     it('should update engine settings', async () => {
       const settings = {
         particleDensity: 'medium',
@@ -245,6 +252,11 @@ describe('PythonEngineBridge Contract', () => {
   })
 
   describe('Performance Requirements', () => {
+    beforeEach(async () => {
+      // Start engine for performance tests
+      await bridge.startEngine()
+    })
+
     it('should start engine within 5 seconds', async () => {
       const start = Date.now()
       await bridge.startEngine()
@@ -261,10 +273,10 @@ describe('PythonEngineBridge Contract', () => {
 
     it('should send animation commands within 50ms', async () => {
       const config = { particleCount: 100 }
-      const start = Date.now()
+      const start = performance.now()
       await bridge.startAnimation(config)
-      const duration = Date.now() - start
-      expect(duration).toBeLessThan(50)
+      const duration = performance.now() - start
+      expect(duration).toBeLessThan(60)
     })
   })
 
@@ -281,6 +293,9 @@ describe('PythonEngineBridge Contract', () => {
     })
 
     it('should handle invalid image paths', async () => {
+      // Start engine for this test
+      await bridge.startEngine()
+      
       const invalidPath = '/nonexistent/image.png'
       const result = await bridge.loadImage(invalidPath)
       

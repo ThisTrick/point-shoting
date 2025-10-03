@@ -123,7 +123,9 @@ export enum ColorMappingMode {
   ORIGINAL = 'original',
   ENHANCED = 'enhanced',
   ARTISTIC = 'artistic',
-  MONOCHROME = 'monochrome'
+  MONOCHROME = 'monochrome',
+  STYLISH = 'stylish',
+  PRECISE = 'precise'
 }
 
 /**
@@ -446,7 +448,7 @@ export interface PresetInfo {
   id: string;
   name: string;
   description?: string;
-  createdAt: string;
+  createdAt: Date;
   lastModified?: string;
   isBuiltIn: boolean;
   thumbnail?: string;

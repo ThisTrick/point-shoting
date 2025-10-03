@@ -1,0 +1,162 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e4]: Animation started
+  - generic [ref=e5]:
+    - generic [ref=e6]: "FPS:"
+    - generic [ref=e7]: "0"
+  - generic [ref=e8]:
+    - generic [ref=e9]: Test
+    - generic [ref=e10]:
+      - generic [ref=e13]: Point Shooting
+      - generic [ref=e14]:
+        - generic [ref=e17]: Engine
+        - generic [ref=e20]: Animation
+      - generic [ref=e21]:
+        - button "−" [ref=e22] [cursor=pointer]:
+          - generic [ref=e23] [cursor=pointer]: −
+        - button "□" [ref=e24] [cursor=pointer]:
+          - generic [ref=e25] [cursor=pointer]: □
+        - button "×" [ref=e26] [cursor=pointer]:
+          - generic [ref=e27] [cursor=pointer]: ×
+    - generic [ref=e28]:
+      - banner [ref=e29]:
+        - button "☰" [ref=e31] [cursor=pointer]:
+          - generic [ref=e32] [cursor=pointer]: ☰
+        - button "⚙️" [active] [ref=e34]:
+          - generic [ref=e35]: ⚙️
+      - generic [ref=e36]:
+        - complementary [ref=e37]:
+          - heading "Controls" [level=2] [ref=e39]
+          - generic [ref=e40]:
+            - generic [ref=e41]:
+              - heading "Quick Actions" [level=3] [ref=e42]
+              - button "Load Image" [ref=e43]
+            - generic [ref=e44]:
+              - heading "Recent Images" [level=3] [ref=e45]
+              - generic [ref=e46]:
+                - button "Recent Images ▼" [ref=e47]
+                - generic [ref=e48]:
+                  - generic [ref=e49]: recent1.png
+                  - generic [ref=e50]: recent2.jpg
+            - generic [ref=e51]:
+              - heading "Engine Status" [level=3] [ref=e52]
+              - generic [ref=e53]:
+                - generic [ref=e54]: "Status: stopped"
+                - generic [ref=e55]: "FPS: 0"
+                - generic [ref=e56]: "Particles: 0"
+                - generic [ref=e57]: "Memory: 0MB"
+        - main [ref=e58]:
+          - generic [ref=e59]:
+            - generic [ref=e62]:
+              - generic [ref=e63]: 📁
+              - generic [ref=e64]: No image selected
+            - generic [ref=e65]:
+              - generic [ref=e66]:
+                - heading "Animation Controls" [level=3] [ref=e67]
+                - generic [ref=e68]:
+                  - button "Start animation" [disabled] [ref=e69]: ▶ Play
+                  - button "Pause animation" [ref=e70] [cursor=pointer]: ⏸ Pause
+                  - button "Resume animation" [disabled] [ref=e71]: ▶ Resume
+                  - button "Stop animation" [ref=e72] [cursor=pointer]: ⏹ Stop
+                  - button "Skip to final formation" [ref=e73] [cursor=pointer]: ⏭ Skip
+              - generic [ref=e74]:
+                - heading "Animation Parameters" [level=3] [ref=e75]
+                - generic [ref=e76]:
+                  - generic [ref=e77]:
+                    - generic [ref=e78]: "Speed:"
+                    - generic [ref=e79]:
+                      - combobox "Speed:" [ref=e80] [cursor=pointer]:
+                        - option "Slow"
+                        - option "Normal" [selected]
+                        - option "Fast"
+                        - option "Turbo"
+                      - generic [ref=e81]: normal
+                  - generic [ref=e82]:
+                    - generic [ref=e83]: "Density:"
+                    - generic [ref=e84]:
+                      - combobox "Density:" [ref=e85] [cursor=pointer]:
+                        - option "Low"
+                        - option "Medium" [selected]
+                        - option "High"
+                        - option "Ultra"
+                      - generic [ref=e86]: medium
+              - generic [ref=e87]:
+                - heading "Status" [level=3] [ref=e88]
+                - generic [ref=e89]:
+                  - generic [ref=e90]:
+                    - generic [ref=e91]: "Engine:"
+                    - generic [ref=e92]: Running
+                  - generic [ref=e93]:
+                    - generic [ref=e94]: "FPS:"
+                    - generic [ref=e95]: N/A
+                  - generic [ref=e96]:
+                    - generic [ref=e97]: "Particles:"
+                    - generic [ref=e98]: "0"
+                  - generic [ref=e99]:
+                    - generic [ref=e100]: "Memory:"
+                    - generic [ref=e101]: 0MB
+              - generic [ref=e102]:
+                - heading "Progress" [level=3] [ref=e103]
+                - generic [ref=e106]: 0%
+              - generic [ref=e107]:
+                - heading "Current Stage" [level=3] [ref=e108]
+                - generic [ref=e110]: burst
+              - generic [ref=e111]:
+                - heading "Configuration" [level=3] [ref=e112]
+                - generic [ref=e113]:
+                  - generic [ref=e114]:
+                    - generic [ref=e115]: transition
+                    - generic [ref=e116]: smooth
+                  - generic [ref=e117]:
+                    - generic [ref=e118]: color mode
+                    - generic [ref=e119]: stylish
+                  - generic [ref=e120]:
+                    - generic [ref=e121]: effects
+                    - generic [ref=e122]: "On"
+      - contentinfo [ref=e123]:
+        - button "⌨ Help" [ref=e126] [cursor=pointer]
+  - generic [ref=e128]:
+    - generic [ref=e129]:
+      - heading "Settings" [level=2] [ref=e130]
+      - button "✕" [ref=e131] [cursor=pointer]
+    - generic [ref=e132]:
+      - button "🎨 Interface" [ref=e133] [cursor=pointer]:
+        - generic [ref=e134] [cursor=pointer]: 🎨
+        - generic [ref=e135] [cursor=pointer]: Interface
+      - button "⚡ Animation" [ref=e136] [cursor=pointer]:
+        - generic [ref=e137] [cursor=pointer]: ⚡
+        - generic [ref=e138] [cursor=pointer]: Animation
+      - button "⚙️ Advanced" [ref=e139] [cursor=pointer]:
+        - generic [ref=e140] [cursor=pointer]: ⚙️
+        - generic [ref=e141] [cursor=pointer]: Advanced
+    - generic [ref=e143]:
+      - generic [ref=e144]:
+        - generic [ref=e145]: Theme
+        - combobox [ref=e146] [cursor=pointer]:
+          - option "Light" [selected]
+          - option "Dark"
+          - option "Auto"
+      - generic [ref=e147]:
+        - generic [ref=e148]: Language
+        - combobox [ref=e149] [cursor=pointer]:
+          - option "English" [selected]
+          - option "Українська"
+      - generic [ref=e151] [cursor=pointer]:
+        - checkbox "Show Advanced Controls" [ref=e152] [cursor=pointer]
+        - text: Show Advanced Controls
+      - generic [ref=e155] [cursor=pointer]:
+        - checkbox "✓ Enable Keyboard Shortcuts" [checked] [ref=e156] [cursor=pointer]
+        - generic [ref=e157] [cursor=pointer]: ✓
+        - text: Enable Keyboard Shortcuts
+      - generic [ref=e159] [cursor=pointer]:
+        - checkbox "✓ Auto-save Settings" [checked] [ref=e160] [cursor=pointer]
+        - generic [ref=e161] [cursor=pointer]: ✓
+        - text: Auto-save Settings
+    - generic [ref=e162]:
+      - button "Reset to Defaults" [ref=e163] [cursor=pointer]
+      - generic [ref=e164]:
+        - button "Cancel" [ref=e165] [cursor=pointer]
+        - button "Save" [ref=e166] [cursor=pointer]
+```
