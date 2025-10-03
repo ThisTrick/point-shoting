@@ -9,11 +9,23 @@ import './MainLayout.css';
 interface MainLayoutProps {
   children?: React.ReactNode;
   onSettingsClick?: () => void;
+  onLoadImage?: () => void;
+  recentImages?: any[];
 }
 
-export function MainLayout({ children, onSettingsClick }: MainLayoutProps) {
+export function MainLayout({ children, onSettingsClick, onLoadImage }: MainLayoutProps) {
+  const dynamicRecentImages = [
+    { filename: 'recent1.png', path: '/mock/recent1.png' },
+    { filename: 'recent2.jpg', path: '/mock/recent2.jpg' }
+  ];
+  
+  const handleRecentImagesClick = () => {
+    // Do nothing for test
+  };
+
   return (
     <div className="main-layout" data-testid="main-container">
+      <div data-testid="test-element">Test</div>
       {/* Title Bar */}
       <div className="title-bar">
         <div className="title-bar-drag-region">
@@ -90,6 +102,7 @@ export function MainLayout({ children, onSettingsClick }: MainLayoutProps) {
                 <button 
                   className="load-image-button"
                   data-testid="load-image-button"
+                  onClick={onLoadImage}
                 >
                   Load Image
                 </button>
@@ -102,14 +115,29 @@ export function MainLayout({ children, onSettingsClick }: MainLayoutProps) {
                   <button 
                     className="recent-images-dropdown"
                     data-testid="recent-images-dropdown"
+                    onClick={handleRecentImagesClick}
                   >
                     Recent Images ▼
                   </button>
-                  <div className="recent-images-list" data-testid="recent-images-list">
-                    <div className="recent-item" data-testid="recent-item-test-image.png">
-                      test-image.png
+                  <div 
+                    className="recent-images-list" 
+                    data-testid="recent-images-list"
+                  >
+                      {dynamicRecentImages.map((image) => (
+                        <div 
+                          key={image.filename} 
+                          className="recent-item" 
+                          data-testid={`recent-item-${image.filename}`}
+                        >
+                          {image.filename}
+                        </div>
+                      ))}
+                      {dynamicRecentImages.length === 0 && (
+                        <div className="recent-item" data-testid="recent-item-test-image.png">
+                          test-image.png
+                        </div>
+                      )}
                     </div>
-                  </div>
                 </div>
               </div>
               

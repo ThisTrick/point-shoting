@@ -1,9 +1,9 @@
 """Contract test for SettingsStore"""
 
-import pytest
 import tempfile
-import json
 from pathlib import Path
+
+import pytest
 
 # Import will fail until implementation exists - that's expected for TDD
 try:
@@ -23,20 +23,20 @@ class TestSettingsStoreContract:
     def test_load_method_exists(self):
         """load method should exist"""
         store = SettingsStore()
-        assert hasattr(store, 'load')
+        assert hasattr(store, "load")
 
     def test_save_method_exists(self):
         """save method should exist"""
         store = SettingsStore()
-        assert hasattr(store, 'save')
+        assert hasattr(store, "save")
 
     def test_corrupted_file_returns_defaults(self):
         """Corrupted settings file should return default settings"""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             # Write invalid JSON
             f.write('{"invalid": json content}')
             corrupted_path = f.name
-        
+
         try:
             store = SettingsStore()
             settings = store.load(Path(corrupted_path))
@@ -48,29 +48,34 @@ class TestSettingsStoreContract:
     def test_missing_file_returns_defaults(self):
         """Missing settings file should return default settings"""
         store = SettingsStore()
-        settings = store.load(Path('/nonexistent/path.json'))
+        settings = store.load(Path("/nonexistent/path.json"))
         assert settings is not None
 
     def test_round_trip_persistence(self):
         """Settings should survive save → load round trip"""
-        with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
             settings_path = Path(f.name)
-        
+
         try:
-            from point_shoting.models.settings import Settings, DensityProfile, SpeedProfile
+            from point_shoting.models.settings import (
+                DensityProfile,
+                Settings,
+                SpeedProfile,
+            )
+
             store = SettingsStore()
-            
+
             # Create test settings
             original_settings = Settings(
                 density_profile=DensityProfile.HIGH,
                 speed_profile=SpeedProfile.FAST,
                 hud_enabled=True,
-                loop_mode=True
+                loop_mode=True,
             )
-            
+
             store.save(original_settings, settings_path)
             loaded_settings = store.load(settings_path)
-            
+
             # Basic checks that round trip worked
             assert loaded_settings is not None
             assert loaded_settings.density_profile == original_settings.density_profile
@@ -85,5 +90,5 @@ class TestSettingsStoreContract:
         # Test that unknown/unsafe keys are filtered out during save/load
         store = SettingsStore()
         # Basic test that store doesn't crash with various inputs
-        result = store.load(Path('/nonexistent'))
+        result = store.load(Path("/nonexistent"))
         assert result is not None

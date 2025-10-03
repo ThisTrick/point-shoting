@@ -31,10 +31,15 @@ files:
   - "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
   - "!src/"
   - "!tests/"
+  - from: "/home/den/git/point-shoting/src/point_shoting/"
+    to: "python-engine/"
+    filter: "**/*.py"
+
+extraResources: []
   - "!*.config.*"
 
 extraResources:
-  - from: "../src/"
+  - from: "../src/point_shoting/"
     to: "python-engine/"
     filter: "**/*.py"
 

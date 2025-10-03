@@ -4,8 +4,8 @@ import pytest
 
 # Imports will fail until implementation exists - expected for TDD
 try:
-    from point_shoting.services.particle_engine import ParticleEngine
     from point_shoting.models.settings import Settings
+    from point_shoting.services.particle_engine import ParticleEngine
 except ImportError:
     ParticleEngine = None
     Settings = None
@@ -25,21 +25,21 @@ class TestFullLoopRecognition:
         # engine = ParticleEngine()
         # settings = Settings(density_profile='medium', speed_profile='normal')
         # engine.init('test_image.png', settings)
-        # 
+        #
         # simulated_time = 0.0
         # dt = 1.0 / 60.0  # 60 FPS
         # max_time = 10.0
-        # 
+        #
         # while simulated_time < max_time:
         #     engine.step(dt)
         #     metrics = engine.metrics()
-        #     
+        #
         #     if metrics['recognition'] >= 0.8:
         #         # Success - reached target recognition within time limit
         #         return
-        #     
+        #
         #     simulated_time += dt
-        # 
+        #
         # # Should not reach here
         # pytest.fail(f"Recognition target not reached within {max_time}s")
         pass

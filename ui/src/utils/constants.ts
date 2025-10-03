@@ -361,12 +361,18 @@ export const VALID_ENGINE_TRANSITIONS: Record<EngineState, EngineState[]> = {
   [EngineState.RUNNING]: [
     EngineState.PAUSED,
     EngineState.STOPPED,
+    EngineState.COMPLETED,
     EngineState.ERROR
   ],
   [EngineState.PAUSED]: [
     EngineState.RUNNING,
     EngineState.STOPPED,
+    EngineState.COMPLETED,
     EngineState.ERROR
+  ],
+  [EngineState.COMPLETED]: [
+    EngineState.STOPPED,
+    EngineState.STARTING
   ],
   [EngineState.ERROR]: [
     EngineState.STOPPED,

@@ -36,7 +36,7 @@ export class PythonEngineBridge extends EventEmitter {
 
   constructor(
     // @ts-ignore - enginePath is reserved for future use
-    private readonly enginePath: string = path.join(app.getAppPath(), '..', 'src', 'point_shoting', '__main__.py')
+    private readonly enginePath: string = path.join(app.getAppPath(), '..', 'python-engine', '__main__.py')
   ) {
     super();
     this.setupHealthCheck();

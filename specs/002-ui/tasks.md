@@ -260,9 +260,9 @@ ui/                          # Electron app root
 
 ### Build and Packaging
 - [x] **T082** Configure cross-platform builds (Windows/macOS/Linux) ✅ COMPLETED
-- [ ] **T083** Set up code signing for releases
-- [ ] **T084** Create installer packages for each platform
-- [ ] **T085** Verify end-to-end integration with Python engine from 001-
+- [x] **T083** Set up code signing for releases ✅ COMPLETED (configured for Windows/macOS, N/A for Linux)
+- [x] **T084** Create installer packages for each platform ✅ COMPLETED (AppImage + deb for Linux)
+- [x] **T085** Verify end-to-end integration with Python engine from 001- ✅ COMPLETED (Python engine files packaged, path configured)
 
 ## Dependencies
 

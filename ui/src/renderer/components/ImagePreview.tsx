@@ -30,6 +30,7 @@ export interface ImagePreviewProps {
   readonly maxWidth?: number;
   readonly maxHeight?: number;
   readonly warnings?: string[];
+  readonly error?: string | null;
   readonly onImageError?: (error: ErrorInfo) => void;
   readonly onImageLoad?: (dimensions: ImageDimensions) => void;
 }
@@ -48,6 +49,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
   maxWidth = 800,
   maxHeight = 600,
   warnings = [],
+  error = null,
   onImageError,
   onImageLoad,
 }) => {
@@ -146,7 +148,14 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
           </div>
         )}
 
-        {imageError && (
+        {error && (
+          <div className="error-overlay" data-testid="error-message">
+            <div className="error-icon">⚠️</div>
+            <span className="error-text">{error}</span>
+          </div>
+        )}
+
+        {imageError && !error && (
           <div className="error-overlay" data-testid="error-message">
             <div className="error-icon">⚠️</div>
             <span className="error-text">{imageError}</span>
