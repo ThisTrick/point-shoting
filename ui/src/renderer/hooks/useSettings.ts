@@ -5,7 +5,8 @@
 
 import { useContext, useCallback } from 'react';
 import { SettingsContext } from '../contexts/SettingsContext';
-import type { UISettings, ValidationResult, PresetInfo } from '@shared/types';
+import type { UISettings, ValidationResult } from '@shared/types';
+import { ParticleDensity, AnimationSpeed, ColorMappingMode } from '@shared/types';
 
 interface SettingsHookOptions {
   autoSave?: boolean;
@@ -36,7 +37,6 @@ export function useSettings(options: SettingsHookOptions = {}) {
   } = context;
 
   const {
-    autoSave = true,
     validateOnChange = true,
   } = options;
 
@@ -94,43 +94,44 @@ export function useSettings(options: SettingsHookOptions = {}) {
   }, [state.settings?.watermark, updateSetting]);
 
   // Quick setters for common operations
-  const setDensity = useCallback((density: number) => {
+  const setDensity = useCallback((density: ParticleDensity) => {
     return updateAnimationSettings({ density });
   }, [updateAnimationSettings]);
 
-  const setSpeed = useCallback((speed: number) => {
+  const setSpeed = useCallback((speed: AnimationSpeed) => {
     return updateAnimationSettings({ speed });
   }, [updateAnimationSettings]);
 
-  const setQuality = useCallback((quality: 'low' | 'medium' | 'high' | 'ultra') => {
-    return updatePerformanceSettings({ quality });
-  }, [updatePerformanceSettings]);
+  const setColorMode = useCallback((colorMode: ColorMappingMode) => {
+    return updateAnimationSettings({ colorMode });
+  }, [updateAnimationSettings]);
 
   const toggleWatermark = useCallback((enabled: boolean) => {
     return updateWatermarkSettings({ enabled });
   }, [updateWatermarkSettings]);
 
   const toggleHUD = useCallback((enabled: boolean) => {
-    return updateInterfaceSettings({ showHUD: enabled });
-  }, [updateInterfaceSettings]);
+    return updateAnimationSettings({ hud: enabled });
+  }, [updateAnimationSettings]);
 
-  const toggleFullscreen = useCallback((enabled: boolean) => {
-    return updateInterfaceSettings({ startFullscreen: enabled });
-  }, [updateInterfaceSettings]);
+  const toggleBreathing = useCallback((enabled: boolean) => {
+    return updateAnimationSettings({ breathing: enabled });
+  }, [updateAnimationSettings]);
 
   // Preset management helpers
   const createPreset = useCallback(async (name: string, description?: string, settings?: Partial<UISettings>) => {
     const presetSettings = settings || state.settings;
-    return savePreset(name, description, presetSettings);
-  }, [state.settings, savePreset]);
+    if (!presetSettings) return;
+    
+    // First save the settings, then create preset
+    await updateMultipleSettings(presetSettings);
+    return savePreset(name, description);
+  }, [state.settings, updateMultipleSettings, savePreset]);
 
   const applyPreset = useCallback(async (presetId: string) => {
-    const preset = await loadPreset(presetId);
-    if (preset && preset.settings) {
-      await updateMultipleSettings(preset.settings);
-    }
-    return preset;
-  }, [loadPreset, updateMultipleSettings]);
+    await loadPreset(presetId);
+    // The preset loading will update the settings through the context
+  }, [loadPreset]);
 
   // Theme and localization helpers
   const switchTheme = useCallback((theme: 'light' | 'dark' | 'system') => {
@@ -145,36 +146,26 @@ export function useSettings(options: SettingsHookOptions = {}) {
   const exportToFile = useCallback(async (filePath?: string, settingsToExport?: Partial<UISettings>) => {
     const settings = settingsToExport || state.settings;
     
+    if (!settings) return;
+    
     // Validate before export
     const validation = await validateSettings(settings);
     if (!validation.isValid) {
       throw new Error(`Cannot export invalid settings: ${Object.values(validation.errors || {}).flat().join(', ')}`);
     }
     
-    return exportSettings(filePath, settings);
+    return exportSettings(filePath);
   }, [state.settings, validateSettings, exportSettings]);
 
   const importFromFile = useCallback(async (filePath?: string) => {
-    const importedSettings = await importSettings(filePath);
-    
-    // Apply imported settings if valid
-    if (importedSettings) {
-      await updateMultipleSettings(importedSettings, true);
-    }
-    
-    return importedSettings;
-  }, [importSettings, updateMultipleSettings]);
+    await importSettings(filePath);
+    // Settings will be updated through the context
+  }, [importSettings]);
 
   // Reset helpers
   const resetToDefaults = useCallback(() => {
     return resetSettings();
   }, [resetSettings]);
-
-  const resetSection = useCallback(async (section: keyof UISettings) => {
-    // Get default value for section (would need default settings reference)
-    // For now, just clear the error and let user manually reset
-    clearError();
-  }, [clearError]);
 
   // State getters with computed values
   const isModified = state.settings !== state.originalSettings;
@@ -187,7 +178,7 @@ export function useSettings(options: SettingsHookOptions = {}) {
     performance: performanceSettings,
     interface: interfaceSettings,
     watermark: watermarkSettings
-  } = state.settings;
+  } = state.settings || {};
 
   // Loading states
   const isLoading = state.isLoading || state.isSaving || state.isExporting || state.isImporting;
@@ -220,7 +211,6 @@ export function useSettings(options: SettingsHookOptions = {}) {
     updateSetting,
     updateMultipleSettings,
     resetToDefaults,
-    resetSection,
     validateSetting,
     validateSettings,
     clearError,
@@ -234,10 +224,10 @@ export function useSettings(options: SettingsHookOptions = {}) {
     // Quick setters
     setDensity,
     setSpeed,
-    setQuality,
+    setColorMode,
     toggleWatermark,
     toggleHUD,
-    toggleFullscreen,
+    toggleBreathing,
     
     // Presets
     createPreset,

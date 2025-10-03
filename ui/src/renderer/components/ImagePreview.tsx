@@ -29,6 +29,7 @@ export interface ImagePreviewProps {
   readonly showZoomControls?: boolean;
   readonly maxWidth?: number;
   readonly maxHeight?: number;
+  readonly warnings?: string[];
   readonly onImageError?: (error: ErrorInfo) => void;
   readonly onImageLoad?: (dimensions: ImageDimensions) => void;
 }
@@ -46,6 +47,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
   showZoomControls = true,
   maxWidth = 800,
   maxHeight = 600,
+  warnings = [],
   onImageError,
   onImageLoad,
 }) => {
@@ -134,20 +136,31 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
   };
 
   return (
-    <div className="image-preview">
+    <div className="image-preview" data-testid="image-preview">
       {/* Image Container */}
       <div className="image-container">
         {isLoading && (
-          <div className="loading-overlay">
+          <div className="loading-overlay" data-testid="loading-overlay">
             <div className="loading-spinner"></div>
             <span className="loading-text">Loading image...</span>
           </div>
         )}
 
         {imageError && (
-          <div className="error-overlay">
+          <div className="error-overlay" data-testid="error-message">
             <div className="error-icon">⚠️</div>
             <span className="error-text">{imageError}</span>
+          </div>
+        )}
+
+        {warnings.length > 0 && !imageError && (
+          <div className="warning-overlay" data-testid="warning-message">
+            <div className="warning-icon">⚠️</div>
+            <div className="warning-text">
+              {warnings.map((warning, index) => (
+                <div key={index}>{warning}</div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -215,7 +228,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
 
       {/* Metadata Panel */}
       {showMetadata && (fileResults || imagePath) && (
-        <div className="metadata-panel">
+        <div className="metadata-panel" data-testid="image-info">
           <h3 className="metadata-title">Image Information</h3>
           
           <div className="metadata-grid">

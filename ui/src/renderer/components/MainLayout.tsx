@@ -3,192 +3,47 @@
  * Primary application layout with header, sidebar, main content, and footer
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { useSettings } from '../contexts/SettingsContext';
-import { useAnimationState } from '../hooks/useAnimationState';
-import { useNotifications } from '../contexts/NotificationContext';
-import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-import { ShortcutsHelpOverlay } from './utils/ShortcutsHelpOverlay';
+import React from 'react';
 import './MainLayout.css';
 
-// Layout types
 interface MainLayoutProps {
   children?: React.ReactNode;
+  onSettingsClick?: () => void;
 }
 
-interface LayoutState {
-  sidebarCollapsed: boolean;
-  notificationsPanelOpen: boolean;
-  fullscreen: boolean;
-  theme: 'light' | 'dark' | 'system';
-}
-
-export function MainLayout({ children }: MainLayoutProps) {
-  const settings = useSettings();
-  const animation = useAnimationState();
-  const notifications = useNotifications();
-  const shortcuts = useKeyboardShortcuts();
-
-  const [layoutState, setLayoutState] = useState<LayoutState>({
-    sidebarCollapsed: false,
-    notificationsPanelOpen: false,
-    fullscreen: false,
-    theme: settings.state.settings?.theme || 'system'
-  });
-
-  // Sync theme with settings
-  useEffect(() => {
-    setLayoutState(prev => ({ ...prev, theme: settings.state.settings?.theme || 'system' }));
-  }, [settings.state.settings?.theme]);
-
-  // Sync notifications panel with context
-  useEffect(() => {
-    setLayoutState(prev => ({ 
-      ...prev, 
-      notificationsPanelOpen: notifications.state.isNotificationsPanelOpen 
-    }));
-  }, [notifications.state.isNotificationsPanelOpen]);
-
-  // Layout control handlers
-  const toggleSidebar = useCallback(() => {
-    setLayoutState(prev => ({ ...prev, sidebarCollapsed: !prev.sidebarCollapsed }));
-  }, []);
-
-  const toggleNotificationsPanel = useCallback(() => {
-    notifications.toggleNotificationsPanel();
-  }, [notifications]);
-
-  const toggleFullscreen = useCallback(async () => {
-    try {
-      await window.electronAPI?.window.toggleFullscreen();
-      const isFullscreen = await window.electronAPI?.window.isFullscreen();
-      setLayoutState(prev => ({ ...prev, fullscreen: isFullscreen || false }));
-    } catch (error) {
-      notifications.showError('Failed to toggle fullscreen mode');
-    }
-  }, [notifications]);
-
-  const handleThemeChange = useCallback((theme: 'light' | 'dark' | 'system') => {
-    settings.applyTheme(theme); // Use applyTheme from context, not switchTheme
-  }, [settings]);
-
-  // Window control handlers
-  const handleMinimize = useCallback(async () => {
-    try {
-      await window.electronAPI?.window.minimize();
-    } catch (error) {
-      notifications.showError('Failed to minimize window');
-    }
-  }, [notifications]);
-
-  const handleMaximize = useCallback(async () => {
-    try {
-      await window.electronAPI?.window.maximize();
-    } catch (error) {
-      notifications.showError('Failed to maximize window');
-    }
-  }, [notifications]);
-
-  const handleClose = useCallback(async () => {
-    try {
-      // Check for unsaved changes
-      if (settings.state.hasUnsavedChanges) {
-        const confirmed = confirm('You have unsaved settings. Are you sure you want to close?');
-        if (!confirmed) return;
-      }
-      
-      // Stop animation if running
-      if (animation.state.isAnimationRunning) {
-        await animation.stop();
-      }
-      
-      // Stop engine if running
-      if (animation.state.isEngineRunning) {
-        await animation.stopEngine();
-      }
-      
-      await window.electronAPI?.window.close();
-    } catch (error) {
-      notifications.showError('Failed to close application');
-    }
-  }, [settings.state.hasUnsavedChanges, animation, notifications]);
-
-  // Get current status for header
-  const getEngineStatus = () => {
-    if (!animation.state.isEngineRunning) return 'stopped';
-    if (!animation.engineStatus.isHealthy) return 'error';
-    return 'running';
-  };
-
-  const getAnimationStatus = () => {
-    if (!animation.state.isAnimationRunning) return 'stopped';
-    if (animation.state.isPaused) return 'paused';
-    return 'playing';
-  };
-
-  // Calculate layout classes
-  const layoutClasses = [
-    'main-layout',
-    `theme-${layoutState.theme}`,
-    layoutState.sidebarCollapsed && 'sidebar-collapsed',
-    layoutState.notificationsPanelOpen && 'notifications-open',
-    layoutState.fullscreen && 'fullscreen',
-    animation.state.isAnimationRunning && 'animation-active'
-  ].filter(Boolean).join(' ');
-
+export function MainLayout({ children, onSettingsClick }: MainLayoutProps) {
   return (
-    <div className={layoutClasses}>
-      {/* Title Bar (Custom window controls for cross-platform) */}
+    <div className="main-layout" data-testid="main-container">
+      {/* Title Bar */}
       <div className="title-bar">
         <div className="title-bar-drag-region">
           <div className="app-title">
             <span className="app-name">Point Shooting</span>
-            {animation.loadedImage && (
-              <span className="current-file">- {animation.loadedImage.filename}</span>
-            )}
           </div>
         </div>
         
         {/* Status indicators */}
         <div className="status-indicators">
-          <div className={`status-indicator engine-status ${getEngineStatus()}`}>
+          <div className="status-indicator engine-status stopped">
             <span className="status-dot"></span>
             <span className="status-label">Engine</span>
           </div>
           
-          <div className={`status-indicator animation-status ${getAnimationStatus()}`}>
+          <div className="status-indicator animation-status stopped">
             <span className="status-dot"></span>
             <span className="status-label">Animation</span>
           </div>
-          
-          {notifications.state.unreadCount > 0 && (
-            <div className="notification-badge" onClick={toggleNotificationsPanel}>
-              {notifications.state.unreadCount}
-            </div>
-          )}
         </div>
 
         {/* Window controls */}
         <div className="window-controls">
-          <button 
-            className="window-control minimize"
-            onClick={handleMinimize}
-            title="Minimize"
-          >
+          <button className="window-control minimize" title="Minimize">
             <span>−</span>
           </button>
-          <button 
-            className="window-control maximize"
-            onClick={handleMaximize}
-            title="Maximize"
-          >
+          <button className="window-control maximize" title="Maximize">
             <span>□</span>
           </button>
-          <button 
-            className="window-control close"
-            onClick={handleClose}
-            title="Close"
-          >
+          <button className="window-control close" title="Close">
             <span>×</span>
           </button>
         </div>
@@ -199,74 +54,24 @@ export function MainLayout({ children }: MainLayoutProps) {
         {/* Header Bar */}
         <header className="header-bar">
           <div className="header-left">
-            <button 
-              className="sidebar-toggle"
-              onClick={toggleSidebar}
-              title="Toggle Sidebar"
-            >
+            <button className="sidebar-toggle" title="Toggle Sidebar">
               <span className="hamburger-icon">☰</span>
             </button>
-            
-            {/* Breadcrumb/Current context */}
-            <div className="breadcrumb">
-              {animation.state.currentStage && (
-                <span className="current-stage">
-                  {animation.state.currentStage.replace('_', ' ')}
-                </span>
-              )}
-            </div>
           </div>
 
           <div className="header-center">
-            {/* Progress indicator when animation is running */}
-            {animation.state.isAnimationRunning && (
-              <div className="progress-container">
-                <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
-                    style={{ width: `${animation.progress * 100}%` }}
-                  />
-                </div>
-                <span className="progress-text">
-                  {Math.round(animation.progress * 100)}%
-                </span>
-              </div>
-            )}
+            {/* Progress indicator placeholder */}
           </div>
 
           <div className="header-right">
-            {/* Theme switcher */}
-            <div className="theme-switcher">
-              <select 
-                value={layoutState.theme}
-                onChange={(e) => handleThemeChange(e.target.value as any)}
-                title="Change Theme"
-              >
-                <option value="system">System</option>
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-              </select>
-            </div>
-
-            {/* Fullscreen toggle */}
+            {/* Settings button */}
             <button 
-              className="fullscreen-toggle"
-              onClick={toggleFullscreen}
-              title="Toggle Fullscreen (F11)"
+              className="settings-button"
+              title="Settings"
+              data-testid="settings-button"
+              onClick={onSettingsClick}
             >
-              {layoutState.fullscreen ? '⛶' : '⛶'}
-            </button>
-
-            {/* Notifications toggle */}
-            <button 
-              className="notifications-toggle"
-              onClick={toggleNotificationsPanel}
-              title="Toggle Notifications (Ctrl+Tab)"
-            >
-              <span className="notification-icon">🔔</span>
-              {notifications.state.unreadCount > 0 && (
-                <span className="notification-count">{notifications.state.unreadCount}</span>
-              )}
+              <span className="settings-icon">⚙️</span>
             </button>
           </div>
         </header>
@@ -274,29 +79,47 @@ export function MainLayout({ children }: MainLayoutProps) {
         {/* Content Area */}
         <div className="content-area">
           {/* Sidebar */}
-          <aside className={`sidebar ${layoutState.sidebarCollapsed ? 'collapsed' : ''}`}>
+          <aside className="sidebar" data-testid="control-sidebar">
             <div className="sidebar-header">
               <h2>Controls</h2>
             </div>
             
             <div className="sidebar-content">
-              {/* Sidebar content will be rendered by child components */}
               <div className="sidebar-section">
                 <h3>Quick Actions</h3>
-                {/* Quick action buttons would go here */}
+                <button 
+                  className="load-image-button"
+                  data-testid="load-image-button"
+                >
+                  Load Image
+                </button>
+              </div>
+
+              {/* Recent Images Section */}
+              <div className="sidebar-section">
+                <h3>Recent Images</h3>
+                <div className="recent-images-container">
+                  <button 
+                    className="recent-images-dropdown"
+                    data-testid="recent-images-dropdown"
+                  >
+                    Recent Images ▼
+                  </button>
+                  <div className="recent-images-list" data-testid="recent-images-list">
+                    <div className="recent-item" data-testid="recent-item-test-image.png">
+                      test-image.png
+                    </div>
+                  </div>
+                </div>
               </div>
               
               <div className="sidebar-section">
                 <h3>Engine Status</h3>
-                <div className="engine-info">
-                  <div>Status: {getEngineStatus()}</div>
-                  {animation.state.metrics && (
-                    <>
-                      <div>FPS: {animation.state.metrics.fps}</div>
-                      <div>Particles: {animation.state.metrics.particleCount}</div>
-                      <div>Memory: {Math.round(animation.state.metrics.memoryUsage)}MB</div>
-                    </>
-                  )}
+                <div className="engine-info" data-testid="engine-status">
+                  <div>Status: stopped</div>
+                  <div>FPS: 0</div>
+                  <div>Particles: 0</div>
+                  <div>Memory: 0MB</div>
                 </div>
               </div>
             </div>
@@ -306,148 +129,27 @@ export function MainLayout({ children }: MainLayoutProps) {
           <main className="main-content">
             {children}
           </main>
-
-          {/* Notifications Panel */}
-          {layoutState.notificationsPanelOpen && (
-            <aside className="notifications-panel">
-              <div className="notifications-header">
-                <h2>Notifications</h2>
-                <button 
-                  className="close-notifications"
-                  onClick={toggleNotificationsPanel}
-                >
-                  ×
-                </button>
-              </div>
-              
-              <div className="notifications-content">
-                <div className="notifications-actions">
-                  <button onClick={notifications.markAllAsRead}>
-                    Mark All Read
-                  </button>
-                  <button onClick={notifications.clearAllNotifications}>
-                    Clear All
-                  </button>
-                </div>
-                
-                <div className="notifications-list">
-                  {notifications.state.notifications.map(notification => (
-                    <div 
-                      key={notification.id}
-                      className={`notification-item ${notification.type} ${!notification.isRead ? 'unread' : ''}`}
-                    >
-                      <div className="notification-header">
-                        <span className="notification-title">{notification.title}</span>
-                        <span className="notification-time">
-                          {new Date(notification.timestamp).toLocaleTimeString()}
-                        </span>
-                        <button 
-                          className="notification-close"
-                          onClick={() => notifications.removeNotification(notification.id)}
-                        >
-                          ×
-                        </button>
-                      </div>
-                      <div className="notification-message">
-                        {notification.message}
-                      </div>
-                      {notification.actions && (
-                        <div className="notification-actions">
-                          {notification.actions.map(action => (
-                            <button
-                              key={action.id}
-                              className={`notification-action ${action.variant || 'secondary'}`}
-                              onClick={action.handler}
-                            >
-                              {action.label}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                  
-                  {notifications.state.notifications.length === 0 && (
-                    <div className="empty-notifications">
-                      No notifications
-                    </div>
-                  )}
-                </div>
-              </div>
-            </aside>
-          )}
         </div>
 
         {/* Footer */}
-        <footer className="footer-bar">
+        <footer className="footer-bar" data-testid="status-bar">
           <div className="footer-left">
-            {animation.state.loadedImage && (
-              <div className="image-info">
-                <span>{animation.state.loadedImage.filename}</span>
-                <span className="image-details">
-                  {animation.state.loadedImage.dimensions.width}×{animation.state.loadedImage.dimensions.height}
-                  • {animation.state.loadedImage.format}
-                  • {Math.round(animation.state.loadedImage.fileSize / 1024)}KB
-                </span>
-              </div>
-            )}
+            {/* Image info placeholder */}
           </div>
 
           <div className="footer-center">
-            {animation.state.isAnimationRunning && animation.estimatedTimeRemaining && (
-              <div className="time-remaining">
-                {Math.round(animation.estimatedTimeRemaining / 1000)}s remaining
-              </div>
-            )}
+            {/* Time remaining placeholder */}
           </div>
 
           <div className="footer-right">
-            {settings.state.error && (
-              <div className="error-indicator" title={settings.state.error}>
-                ⚠ Settings Error
-              </div>
-            )}
-            
-            {animation.hasErrors && (
-              <div className="error-indicator" title="Animation Errors">
-                ⚠ Engine Error
-              </div>
-            )}
-            
             <div className="keyboard-help">
-              <button 
-                onClick={shortcuts.showShortcutsHelp}
-                title="Keyboard Shortcuts (Ctrl+?)"
-              >
+              <button title="Keyboard Shortcuts">
                 ⌨ Help
               </button>
             </div>
           </div>
         </footer>
       </div>
-
-      {/* Toast notifications */}
-      {notifications.state.toast && (
-        <div className={`toast toast-${notifications.state.toast.type}`}>
-          <div className="toast-content">
-            {notifications.state.toast.message}
-          </div>
-          <button 
-            className="toast-close"
-            onClick={notifications.hideToast}
-          >
-            ×
-          </button>
-        </div>
-      )}
-      
-      {/* Keyboard shortcuts help overlay */}
-      <ShortcutsHelpOverlay
-        isOpen={shortcuts.isHelpOverlayOpen}
-        onClose={shortcuts.hideShortcutsHelp}
-        shortcuts={shortcuts.getAllShortcuts()}
-        getShortcutDisplay={shortcuts.getShortcutDisplay as any}
-      />
     </div>
   );
 }

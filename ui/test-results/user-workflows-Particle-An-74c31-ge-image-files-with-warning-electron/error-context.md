@@ -1,0 +1,76 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - generic [ref=e8]: Point Shooting
+    - generic [ref=e9]:
+      - generic [ref=e12]: Engine
+      - generic [ref=e15]: Animation
+    - generic [ref=e16]:
+      - button "−" [ref=e17] [cursor=pointer]:
+        - generic [ref=e18] [cursor=pointer]: −
+      - button "□" [ref=e19] [cursor=pointer]:
+        - generic [ref=e20] [cursor=pointer]: □
+      - button "×" [ref=e21] [cursor=pointer]:
+        - generic [ref=e22] [cursor=pointer]: ×
+  - generic [ref=e23]:
+    - banner [ref=e24]:
+      - button "☰" [ref=e26] [cursor=pointer]:
+        - generic [ref=e27] [cursor=pointer]: ☰
+      - button "⚙️" [ref=e29]:
+        - generic [ref=e30]: ⚙️
+    - generic [ref=e31]:
+      - complementary [ref=e32]:
+        - heading "Controls" [level=2] [ref=e34]
+        - generic [ref=e35]:
+          - generic [ref=e36]:
+            - heading "Quick Actions" [level=3] [ref=e37]
+            - button "Load Image" [active] [ref=e38]
+          - generic [ref=e39]:
+            - heading "Recent Images" [level=3] [ref=e40]
+            - generic [ref=e41]:
+              - button "Recent Images ▼" [ref=e42]
+              - generic [ref=e44]: test-image.png
+          - generic [ref=e45]:
+            - heading "Engine Status" [level=3] [ref=e46]
+            - generic [ref=e47]:
+              - generic [ref=e48]: "Status: stopped"
+              - generic [ref=e49]: "FPS: 0"
+              - generic [ref=e50]: "Particles: 0"
+              - generic [ref=e51]: "Memory: 0MB"
+      - main [ref=e52]:
+        - generic [ref=e53]:
+          - generic [ref=e56]:
+            - generic [ref=e57]: 📁
+            - generic [ref=e58]: No image selected
+          - generic [ref=e59]:
+            - generic [ref=e60]:
+              - heading "Animation Controls" [level=3] [ref=e61]
+              - generic [ref=e62]:
+                - button "Start animation" [ref=e63] [cursor=pointer]: ▶ Play
+                - button "Skip to final formation" [ref=e64] [cursor=pointer]: ⏭ Skip
+            - generic [ref=e65]:
+              - heading "Status" [level=3] [ref=e66]
+              - generic [ref=e67]:
+                - generic [ref=e68]:
+                  - generic [ref=e69]: "Engine:"
+                  - generic [ref=e70]: stopped
+                - generic [ref=e71]:
+                  - generic [ref=e72]: "FPS:"
+                  - generic [ref=e73]: "0"
+                - generic [ref=e74]:
+                  - generic [ref=e75]: "Particles:"
+                  - generic [ref=e76]: "0"
+                - generic [ref=e77]:
+                  - generic [ref=e78]: "Memory:"
+                  - generic [ref=e79]: 0MB
+            - generic [ref=e80]:
+              - heading "Progress" [level=3] [ref=e81]
+              - generic [ref=e84]: 0%
+            - generic [ref=e85]:
+              - heading "Current Stage" [level=3] [ref=e86]
+              - generic [ref=e88]: Ready
+    - contentinfo [ref=e89]:
+      - button "⌨ Help" [ref=e92] [cursor=pointer]
+```

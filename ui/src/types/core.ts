@@ -75,6 +75,7 @@ export interface AnimationConfig {
   readonly colorMapping: ColorMappingMode;
   readonly enableEffects: boolean;
   readonly enableWatermark: boolean;
+  readonly particleCount?: number;
   readonly customSettings?: CustomAnimationSettings;
 }
 

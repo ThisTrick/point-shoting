@@ -3,7 +3,7 @@
  * Централізоване керування користувацькими налаштуваннями з validation, persistence та synchronization
  */
 
-import Store from 'electron-store';
+import Store, { Schema } from 'electron-store';
 import { promises as fs } from 'fs';
 import { EventEmitter } from 'events';
 import { 
@@ -13,6 +13,7 @@ import {
   ValidationWarning,
   PresetInfo,
   PresetConfig,
+  BackgroundConfig,
   ParticleDensity,
   AnimationSpeed,
   ColorMappingMode
@@ -31,9 +32,8 @@ export class SettingsManager extends EventEmitter {
       defaults: {
         settings: this.getDefaultSettings(),
         presets: {}
-      }
-      // Temporarily remove schema validation to allow app to start
-      // schema: this.getStoreSchema()
+      },
+      schema: this.getStoreSchema()
     });
 
     this.currentSettings = this.loadFromStore();
@@ -341,6 +341,164 @@ export class SettingsManager extends EventEmitter {
   private mergeWithDefaults(stored: Partial<UISettings>): UISettings {
     return { ...this.getDefaultSettings(), ...stored };
   }
+    const errors: ValidationError[] = [];
+    const warnings: ValidationWarning[] = [];
 
+    if (config.solid?.color && !/^#[0-9a-fA-F]{6}$/.test(config.solid.color)) {
+      errors.push({
+        field: 'backgroundConfig.solid.color',
+        message: 'Color must be a valid hex color (#RRGGBB)',
+        severity: 'error'
+      });
+    }
 
+    if (config.gradient) {
+      if (config.gradient.startColor && !/^#[0-9a-fA-F]{6}$/.test(config.gradient.startColor)) {
+        errors.push({
+          field: 'backgroundConfig.gradient.startColor',
+          message: 'Start color must be a valid hex color',
+          severity: 'error'
+        });
+      }
+      if (config.gradient.endColor && !/^#[0-9a-fA-F]{6}$/.test(config.gradient.endColor)) {
+        errors.push({
+          field: 'backgroundConfig.gradient.endColor', 
+          message: 'End color must be a valid hex color',
+          severity: 'error'
+        });
+      }
+      if (config.gradient.direction && !['horizontal', 'vertical', 'radial'].includes(config.gradient.direction)) {
+        errors.push({
+          field: 'backgroundConfig.gradient.direction',
+          message: 'Gradient direction must be horizontal, vertical, or radial',
+          severity: 'error'
+        });
+      }
+    }
+
+    if (config.image) {
+      if (config.image.opacity < 0 || config.image.opacity > 1) {
+        warnings.push({
+          field: 'backgroundConfig.image.opacity',
+          message: 'Image opacity must be between 0 and 1'
+        });
+      }
+      if (config.image.opacity < 0 || config.image.opacity > 1) {
+        errors.push({
+          field: 'backgroundConfig.image.opacity',
+          message: 'Opacity must be between 0 and 1',
+          severity: 'error'
+        });
+      }
+    }
+
+    return { errors, warnings };
+  }
+
+  private getStoreSchema(): Schema<{ settings: UISettings; presets: Record<string, PresetConfig> }> {
+    return {
+      settings: {
+        type: 'object',
+        properties: {
+          theme: { type: 'string', enum: ['light', 'dark', 'system'] },
+          language: { type: 'string', enum: ['uk', 'en'] },
+          windowBounds: {
+            type: 'object',
+            properties: {
+              width: { type: 'number', minimum: 400 },
+              height: { type: 'number', minimum: 300 },
+              x: { type: 'number' },
+              y: { type: 'number' }
+            },
+            required: ['width', 'height']
+          },
+          animation: {
+            type: 'object',
+            properties: {
+              density: { type: 'string', enum: ['low', 'medium', 'high'] },
+              speed: { type: 'string', enum: ['slow', 'normal', 'fast'] },
+              colorMode: { type: 'string', enum: ['stylish', 'precise'] }
+            },
+            required: ['density', 'speed', 'colorMode']
+          },
+          interface: {
+            type: 'object',
+            properties: {
+              backgroundType: { type: 'string', enum: ['solid', 'gradient', 'image'] },
+              backgroundConfig: {
+                type: 'object',
+                properties: {
+                  solid: {
+                    type: 'object',
+                    properties: { color: { type: 'string' } }
+                  },
+                  gradient: {
+                    type: 'object',
+                    properties: {
+                      colors: { type: 'array', items: { type: 'string' } },
+                      stops: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            position: { type: 'number', minimum: 0, maximum: 1 },
+                            color: { type: 'string' }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  image: {
+                    type: 'object',
+                    properties: { path: { type: 'string' } }
+                  }
+                }
+              }
+            },
+            required: ['backgroundType']
+          },
+          performance: {
+            type: 'object',
+            properties: {
+              debugHudEnabled: { type: 'boolean' },
+              performanceWarnings: { type: 'boolean' },
+              autoSave: { type: 'boolean' }
+            },
+            required: ['debugHudEnabled', 'performanceWarnings', 'autoSave']
+          },
+          recentImages: {
+            type: 'array',
+            items: { type: 'string' },
+            maxItems: 50
+          },
+          recentPresets: {
+            type: 'array', 
+            items: { type: 'string' },
+            maxItems: 20
+          }
+        },
+        required: [
+          'theme', 'language', 'windowBounds', 'animation', 
+          'interface', 'performance', 'recentImages', 'recentPresets'
+        ]
+      },
+      presets: {
+        type: 'object',
+        patternProperties: {
+          '.*': {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              name: { type: 'string' },
+              description: { type: 'string' },
+              settings: { type: 'object' },
+              createdAt: { type: 'string' },
+              version: { type: 'string' }
+            },
+            required: ['id', 'name', 'settings', 'createdAt', 'version']
+          }
+        }
+      }
+    };
+  }
 }

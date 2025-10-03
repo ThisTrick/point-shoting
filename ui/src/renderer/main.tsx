@@ -155,7 +155,7 @@ const renderApp = () => {
     root.render(
       <React.StrictMode>
         <GlobalErrorBoundary>
-          <App developmentMode={true} />
+          <App />
         </GlobalErrorBoundary>
       </React.StrictMode>
     );
@@ -163,7 +163,7 @@ const renderApp = () => {
     // Production render without Strict Mode
     root.render(
       <GlobalErrorBoundary>
-        <App developmentMode={false} />
+        <App />
       </GlobalErrorBoundary>
     );
   }

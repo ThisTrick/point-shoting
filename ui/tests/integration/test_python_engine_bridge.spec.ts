@@ -16,18 +16,18 @@ describe('Python Engine Bridge Integration', () => {
     // Create mock child process
     mockProcess = {
       stdout: {
-        on: jest.fn(),
-        pipe: jest.fn()
+        on: jest.fn().mockReturnThis(),
+        pipe: jest.fn().mockReturnThis()
       } as any,
       stderr: {
-        on: jest.fn(),
-        pipe: jest.fn()
+        on: jest.fn().mockReturnThis(),
+        pipe: jest.fn().mockReturnThis()
       } as any,
       stdin: {
         write: jest.fn(),
         end: jest.fn()
       } as any,
-      on: jest.fn(),
+      on: jest.fn().mockReturnThis(),
       kill: jest.fn(),
       pid: 12345
     }
@@ -55,10 +55,11 @@ describe('Python Engine Bridge Integration', () => {
       const mockOnData = jest.fn()
       
       // Mock stdout data handler
-      mockProcess.stdout!.on = jest.fn((event, _handler) => {
+      ;(mockProcess.stdout!.on as jest.Mock).mockImplementation((event, _handler) => {
         if (event === 'data') {
           mockOnData.mockImplementation(_handler)
         }
+        return mockProcess.stdout
       })
 
       mockSpawn('python', [], { stdio: 'pipe' })
@@ -84,10 +85,11 @@ describe('Python Engine Bridge Integration', () => {
     it('should handle process startup failure', (done) => {
       const mockOnError = jest.fn()
       
-      mockProcess.on = jest.fn((event, _handler) => {
+      ;(mockProcess.on as jest.Mock).mockImplementation((event, _handler) => {
         if (event === 'error') {
           mockOnError.mockImplementation(_handler)
         }
+        return mockProcess
       })
 
       mockSpawn('python', [], { stdio: 'pipe' })
@@ -119,10 +121,11 @@ describe('Python Engine Bridge Integration', () => {
     it('should handle process crash recovery', (done) => {
       const mockOnExit = jest.fn()
       
-      mockProcess.on = jest.fn((event, _handler) => {
+      ;(mockProcess.on as jest.Mock).mockImplementation((event, _handler) => {
         if (event === 'exit') {
           mockOnExit.mockImplementation(_handler)
         }
+        return mockProcess
       })
 
       mockSpawn('python', [], { stdio: 'pipe' })
@@ -210,10 +213,11 @@ describe('Python Engine Bridge Integration', () => {
     it('should parse incoming status messages correctly', (done) => {
       const mockOnData = jest.fn()
       
-      mockProcess.stdout!.on = jest.fn((event, _handler) => {
+      ;(mockProcess.stdout!.on as jest.Mock).mockImplementation((event, _handler) => {
         if (event === 'data') {
           mockOnData.mockImplementation(_handler)
         }
+        return mockProcess.stdout
       })
 
       mockSpawn('python', [], { stdio: 'pipe' })
@@ -252,12 +256,14 @@ describe('Python Engine Bridge Integration', () => {
       const mockOnData = jest.fn()
       const mockOnError = jest.fn()
       
-      mockProcess.stdout!.on = jest.fn((event, _handler) => {
+      ;(mockProcess.stdout!.on as jest.Mock).mockImplementation((event, _handler) => {
         if (event === 'data') mockOnData.mockImplementation(_handler)
+        return mockProcess.stdout
       })
       
-      mockProcess.stderr!.on = jest.fn((event, _handler) => {
+      ;(mockProcess.stderr!.on as jest.Mock).mockImplementation((event, _handler) => {
         if (event === 'data') mockOnError.mockImplementation(_handler)
+        return mockProcess.stderr
       })
 
       mockSpawn('python', [], { stdio: 'pipe' })
@@ -278,7 +284,7 @@ describe('Python Engine Bridge Integration', () => {
       const mockOnData = jest.fn()
       let buffer = ''
       
-      mockProcess.stdout!.on = jest.fn((event, _handler) => {
+      ;(mockProcess.stdout!.on as jest.Mock).mockImplementation((event, _handler) => {
         if (event === 'data') {
           mockOnData.mockImplementation((data: Buffer) => {
             buffer += data.toString()
@@ -337,10 +343,11 @@ describe('Python Engine Bridge Integration', () => {
     it('should handle engine error responses', (done) => {
       const mockOnData = jest.fn()
       
-      mockProcess.stdout!.on = jest.fn((event, _handler) => {
+      ;(mockProcess.stdout!.on as jest.Mock).mockImplementation((event, _handler) => {
         if (event === 'data') {
           mockOnData.mockImplementation(_handler)
         }
+        return mockProcess.stdout
       })
 
       mockSpawn('python', [], { stdio: 'pipe' })
@@ -394,10 +401,11 @@ describe('Python Engine Bridge Integration', () => {
     it('should monitor process memory usage', (done) => {
       const mockOnData = jest.fn()
       
-      mockProcess.stdout!.on = jest.fn((event, _handler) => {
+      ;(mockProcess.stdout!.on as jest.Mock).mockImplementation((event, _handler) => {
         if (event === 'data') {
           mockOnData.mockImplementation(_handler)
         }
+        return mockProcess.stdout
       })
 
       mockSpawn('python', [], { stdio: 'pipe' })
@@ -499,10 +507,11 @@ describe('Python Engine Bridge Integration', () => {
     it('should detect unresponsive engine', (done) => {
       const mockOnData = jest.fn()
       
-      mockProcess.stdout!.on = jest.fn((event, _handler) => {
+      ;(mockProcess.stdout!.on as jest.Mock).mockImplementation((event, _handler) => {
         if (event === 'data') {
           mockOnData.mockImplementation(_handler)
         }
+        return mockProcess.stdout
       })
 
       mockSpawn('python', [], { stdio: 'pipe' })
@@ -532,7 +541,7 @@ describe('Python Engine Bridge Integration', () => {
       expect(originalKill).toHaveBeenCalledWith('SIGTERM')
       
       // Simulate restart
-      const restartedProcess = mockSpawn('python', [], { stdio: 'pipe' })
+      mockSpawn('python', [], { stdio: 'pipe' })
       expect(mockSpawn).toHaveBeenCalledTimes(2) // Original + restart
     })
   })

@@ -99,6 +99,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           className="setting-select"
           value={uiSettings.theme}
           onChange={(e) => handleUISettingChange('theme', e.target.value as UITheme)}
+          data-testid="theme-select"
         >
           <option value={UITheme.LIGHT}>Light</option>
           <option value={UITheme.DARK}>Dark</option>
@@ -112,6 +113,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           className="setting-select"
           value={uiSettings.language}
           onChange={(e) => handleUISettingChange('language', e.target.value)}
+          data-testid="language-select"
         >
           <option value="en">English</option>
           <option value="uk">Українська</option>
@@ -217,6 +219,19 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   // Render Animation Settings
   const renderAnimationSettings = () => (
     <div className="settings-section">
+      <div className="setting-group">
+        <label className="setting-label">Particle Count</label>
+        <input
+          type="number"
+          className="setting-input"
+          value={animationConfig.particleCount || 1000}
+          onChange={(e) => handleAnimationConfigChange('particleCount', parseInt(e.target.value) || 1000)}
+          min="100"
+          max="10000"
+          data-testid="particle-count-input"
+        />
+      </div>
+
       <div className="setting-group">
         <label className="setting-label">Animation Speed</label>
         <select
@@ -406,7 +421,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
   return (
     <div className="settings-panel-overlay" onClick={() => onClose()}>
-      <div className="settings-panel" onClick={(e) => e.stopPropagation()}>
+      <div className="settings-panel" onClick={(e) => e.stopPropagation()} data-testid="settings-dialog">
         {/* Header */}
         <div className="settings-header">
           <h2 className="settings-title">Settings</h2>
@@ -440,6 +455,44 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
           {activeCategory === SettingsCategory.UI && renderUISettings()}
           {activeCategory === SettingsCategory.ANIMATION && renderAnimationSettings()}
           {activeCategory === SettingsCategory.ADVANCED && renderAdvancedSettings()}
+        </div>
+
+        {/* Validation Errors */}
+        <div className="validation-errors" data-testid="validation-error" style={{ display: 'none' }}>
+          {/* Validation errors will be shown here */}
+        </div>
+
+        {/* Footer */}
+        <div className="settings-footer">
+          <button
+            type="button"
+            className="setting-button secondary"
+            onClick={() => onReset('all')}
+            data-testid="settings-reset"
+          >
+            Reset to Defaults
+          </button>
+          <div className="footer-actions">
+            <button
+              type="button"
+              className="setting-button secondary"
+              onClick={() => onClose()}
+              data-testid="settings-close"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="setting-button primary"
+              onClick={() => {
+                // Save is handled automatically by the context
+                onClose();
+              }}
+              data-testid="settings-save"
+            >
+              Save
+            </button>
+          </div>
         </div>
 
         {/* Import Dialog */}

@@ -6,20 +6,6 @@
  */
 
 import { FileManager } from '@main/services/FileManager'
-import type { 
-  ImageFileResult, 
-  ImageValidationResult, 
-  ImageMetadata, 
-  WatermarkFileResult, 
-  WatermarkValidationResult, 
-  RecentFileInfo, 
-  FileStats, 
-  PresetConfig, 
-  ConfigValidationResult, 
-  ValidationError, 
-  FileChangeEvent, 
-  FileWatcher 
-} from '@shared/types'
 
 describe('FileManager Contract', () => {
   let fileManager: FileManager
@@ -101,7 +87,6 @@ describe('FileManager Contract', () => {
       expect(typeof metadata.height).toBe('number')
       expect(typeof metadata.format).toBe('string')
       expect(typeof metadata.hasAlpha).toBe('boolean')
-    })
     })
 
     it('should generate base64 image preview', async () => {
@@ -194,7 +179,8 @@ describe('FileManager Contract', () => {
       recentFiles.forEach(file => {
         expect(typeof file.path).toBe('string')
         expect(typeof file.filename).toBe('string')
-        expect(file.lastAccessed).toBeInstanceOf(Date)
+        expect(typeof file.timestamp).toBe('number')
+        expect(typeof file.lastUsed).toBe('number')
       })
     })
 
@@ -225,8 +211,8 @@ describe('FileManager Contract', () => {
       
       expect(watcher).toBeDefined()
       expect(typeof watcher.path).toBe('string')
-      expect(typeof watcher.isActive).toBe('boolean')
-      expect(typeof watcher.stop).toBe('function')
+      expect(typeof watcher.id).toBe('string')
+      expect(typeof watcher.close).toBe('function')
     })
 
     it('should stop file watcher', () => {
@@ -353,9 +339,11 @@ describe('FileManager Contract', () => {
     it('should maintain recent files chronological order', async () => {
       const recentFiles = await fileManager.getRecentImages()
       
-      for (let i = 1; i < recentFiles.length; i++) {
-        expect(recentFiles[i-1].timestamp)
-          .toBeGreaterThanOrEqual(recentFiles[i].timestamp)
+      if (recentFiles.length > 1) {
+        for (let i = 1; i < recentFiles.length; i++) {
+          expect(recentFiles[i-1]!.timestamp)
+            .toBeGreaterThanOrEqual(recentFiles[i]!.timestamp)
+        }
       }
     })
 

@@ -1,8 +1,24 @@
 /**
  * End-to-End Tests for Particle Animation UI
  * 
- * Tests complete user workflows including:
- * - Image loading and validation
+ * Tests complete user workfl            // Mock file dialog
+      await page.evaluate(() => {
+        // Mock electron dialog
+        window.electronAPI = {
+          files: {
+            selectImage: () => Promise.resolve({
+              path: '/mock/test-image.png',
+              filename: 'test-image.png',
+              metadata: {
+                width: 1920,
+                height: 1080,
+                size: 2048000,
+                format: 'PNG'
+              }
+            })
+          }
+        } as any;
+      })* - Image loading and validation
  * - Animation control and playback
  * - Settings management and persistence
  * - File operations and dialogs
@@ -13,18 +29,42 @@ import { test, expect, ElectronApplication, Page } from '@playwright/test'
 import { _electron as electron } from 'playwright'
 import path from 'path'
 
-describe('Particle Animation UI E2E Tests', () => {
+test.describe('Particle Animation UI E2E Tests', () => {
   let electronApp: ElectronApplication
   let page: Page
 
   test.beforeAll(async () => {
     // Launch Electron application
     electronApp = await electron.launch({
-      args: [path.join(__dirname, '../../src/main/main.ts')]
+      args: [path.join(__dirname, '../../dist/main/main.js')]
     })
     
     // Wait for the first window
     page = await electronApp.firstWindow()
+    
+    // Mock basic Electron APIs needed for initialization BEFORE page loads
+    await page.addInitScript(() => {
+      window.electronAPI = {
+        settings: {
+          get: () => Promise.resolve({
+            theme: 'dark',
+            language: 'en',
+            particleCount: 1000,
+            animationSpeed: 'normal',
+            transitionStyle: 'smooth',
+            colorMapping: 'rainbow'
+          }),
+          set: () => Promise.resolve(),
+          reset: () => Promise.resolve()
+        },
+        platform: {
+          getPlatform: () => Promise.resolve('linux')
+        },
+        errorReporting: {
+          logError: () => Promise.resolve()
+        }
+      } as any;
+    });
     
     // Wait for app to be ready
     await page.waitForLoadState('domcontentloaded')
@@ -37,11 +77,17 @@ describe('Particle Animation UI E2E Tests', () => {
   test.describe('Application Startup & Initialization', () => {
     
     test('should launch successfully and show main window', async () => {
+      // Wait for React app to fully initialize
+      await page.waitForTimeout(2000);
+      
       // Verify window is visible
       expect(await page.isVisible('body')).toBe(true)
       
       // Verify title
       expect(await page.title()).toContain('Particle Animation')
+      
+      // Wait a bit more for React to render
+      await page.waitForTimeout(1000);
       
       // Verify main UI elements are present
       await expect(page.locator('[data-testid="main-container"]')).toBeVisible()
@@ -54,15 +100,19 @@ describe('Particle Animation UI E2E Tests', () => {
       await page.click('[data-testid="settings-button"]')
       await expect(page.locator('[data-testid="settings-dialog"]')).toBeVisible()
       
-      // Verify default values
+      // Verify UI tab default values
       const themeSelect = page.locator('[data-testid="theme-select"]')
       expect(await themeSelect.inputValue()).toBe('dark')
       
-      const particleCount = page.locator('[data-testid="particle-count-input"]')
-      expect(await particleCount.inputValue()).toBe('1000')
-      
       const language = page.locator('[data-testid="language-select"]')  
       expect(await language.inputValue()).toBe('en')
+      
+      // Switch to Animation tab
+      await page.click('.tab-button:has-text("Animation")')
+      
+      // Verify Animation tab default values
+      const particleCount = page.locator('[data-testid="particle-count-input"]')
+      expect(await particleCount.inputValue()).toBe('1000')
       
       // Close dialog
       await page.click('[data-testid="settings-close"]')
@@ -72,9 +122,12 @@ describe('Particle Animation UI E2E Tests', () => {
       const statusIndicator = page.locator('[data-testid="engine-status"]')
       await expect(statusIndicator).toBeVisible()
       
-      // Engine should start automatically or show disconnected status
+      // Engine shows detailed status information
       const statusText = await statusIndicator.textContent()
-      expect(['Starting...', 'Connected', 'Disconnected']).toContain(statusText)
+      expect(statusText).toContain('Status: stopped')
+      expect(statusText).toContain('FPS: 0')
+      expect(statusText).toContain('Particles: 0')
+      expect(statusText).toContain('Memory: 0MB')
     })
   })
 
@@ -85,17 +138,19 @@ describe('Particle Animation UI E2E Tests', () => {
       await page.evaluate(() => {
         // Mock electron dialog
         window.electronAPI = {
-          selectImageFile: () => Promise.resolve({
-            path: '/mock/test-image.png',
-            filename: 'test-image.png',
-            metadata: {
-              width: 1920,
-              height: 1080,
-              size: 2048000,
-              format: 'PNG'
-            }
-          })
-        }
+          files: {
+            selectImage: () => Promise.resolve({
+              path: '/mock/test-image.png',
+              filename: 'test-image.png',
+              metadata: {
+                width: 1920,
+                height: 1080,
+                size: 2048000,
+                format: 'PNG'
+              }
+            })
+          }
+        } as any;
       })
       
       // Click load image button
@@ -117,15 +172,17 @@ describe('Particle Animation UI E2E Tests', () => {
       // Mock unsupported file selection
       await page.evaluate(() => {
         window.electronAPI = {
-          selectImageFile: () => Promise.resolve({
-            path: '/mock/unsupported.bmp',
-            filename: 'unsupported.bmp',
-            validationResult: {
-              isValid: false,
-              errors: [{ field: 'format', message: 'BMP format not supported' }]
-            }
-          })
-        }
+          files: {
+            selectImage: () => Promise.resolve({
+              path: '/mock/unsupported.bmp',
+              filename: 'unsupported.bmp',
+              validationResult: {
+                isValid: false,
+                errors: [{ field: 'format', message: 'BMP format not supported' }]
+              }
+            })
+          }
+        } as any;
       })
       
       await page.click('[data-testid="load-image-button"]')
@@ -143,21 +200,23 @@ describe('Particle Animation UI E2E Tests', () => {
       // Mock large image file
       await page.evaluate(() => {
         window.electronAPI = {
-          selectImageFile: () => Promise.resolve({
-            path: '/mock/large-image.png',
-            filename: 'large-image.png',
-            metadata: {
-              width: 8000,
-              height: 6000,
-              size: 50 * 1024 * 1024, // 50MB
-              format: 'PNG'
-            },
-            validationResult: {
-              isValid: true,
-              warnings: [{ field: 'size', message: 'Large image may affect performance' }]
-            }
-          })
-        }
+          files: {
+            selectImage: () => Promise.resolve({
+              path: '/mock/large-image.png',
+              filename: 'large-image.png',
+              metadata: {
+                width: 8000,
+                height: 6000,
+                size: 50 * 1024 * 1024, // 50MB
+                format: 'PNG'
+              },
+              validationResult: {
+                isValid: true,
+                warnings: [{ field: 'size', message: 'Large image may affect performance' }]
+              }
+            })
+          }
+        } as any;
       })
       
       await page.click('[data-testid="load-image-button"]')
@@ -175,19 +234,21 @@ describe('Particle Animation UI E2E Tests', () => {
       // Mock recent images
       await page.evaluate(() => {
         window.electronAPI = {
-          getRecentImages: () => Promise.resolve([
-            {
-              path: '/mock/recent1.png',
-              filename: 'recent1.png',
-              lastAccessed: new Date('2024-01-15')
-            },
-            {
-              path: '/mock/recent2.jpg',
-              filename: 'recent2.jpg', 
-              lastAccessed: new Date('2024-01-14')
-            }
-          ])
-        }
+          files: {
+            getRecentImages: () => Promise.resolve([
+              {
+                path: '/mock/recent1.png',
+                filename: 'recent1.png',
+                lastAccessed: new Date('2024-01-15')
+              },
+              {
+                path: '/mock/recent2.jpg',
+                filename: 'recent2.jpg',
+                lastAccessed: new Date('2024-01-14')
+              }
+            ])
+          }
+        } as any;
       })
       
       // Open recent images dropdown
@@ -208,12 +269,14 @@ describe('Particle Animation UI E2E Tests', () => {
       // Load a test image before each animation test
       await page.evaluate(() => {
         window.electronAPI = {
-          selectImageFile: () => Promise.resolve({
-            path: '/mock/test.png',
-            filename: 'test.png',
-            metadata: { width: 800, height: 600, format: 'PNG' }
-          })
-        }
+          files: {
+            selectImage: () => Promise.resolve({
+              path: '/mock/test.png',
+              filename: 'test.png',
+              metadata: { width: 800, height: 600, format: 'PNG' }
+            })
+          }
+        } as any;
       })
       await page.click('[data-testid="load-image-button"]')
       await page.waitForSelector('[data-testid="image-preview"]')
@@ -223,8 +286,10 @@ describe('Particle Animation UI E2E Tests', () => {
       // Mock engine response
       await page.evaluate(() => {
         window.electronAPI = {
-          startAnimation: () => Promise.resolve({ success: true })
-        }
+          engine: {
+            start: () => Promise.resolve({ success: true })
+          }
+        } as any;
       })
       
       // Click play button
@@ -244,10 +309,12 @@ describe('Particle Animation UI E2E Tests', () => {
       // Start animation first
       await page.evaluate(() => {
         window.electronAPI = {
-          startAnimation: () => Promise.resolve({ success: true }),
-          pauseAnimation: () => Promise.resolve(),
-          resumeAnimation: () => Promise.resolve()
-        }
+          engine: {
+            start: () => Promise.resolve({ success: true }),
+            pause: () => Promise.resolve(),
+            resume: () => Promise.resolve()
+          }
+        } as any;
       })
       
       await page.click('[data-testid="play-button"]')
@@ -271,9 +338,11 @@ describe('Particle Animation UI E2E Tests', () => {
       // Start animation first
       await page.evaluate(() => {
         window.electronAPI = {
-          startAnimation: () => Promise.resolve({ success: true }),
-          stopAnimation: () => Promise.resolve()
-        }
+          engine: {
+            start: () => Promise.resolve({ success: true }),
+            stop: () => Promise.resolve()
+          }
+        } as any;
       })
       
       await page.click('[data-testid="play-button"]')
@@ -294,9 +363,11 @@ describe('Particle Animation UI E2E Tests', () => {
       // Start animation and skip to end
       await page.evaluate(() => {
         window.electronAPI = {
-          startAnimation: () => Promise.resolve({ success: true }),
-          skipToFinal: () => Promise.resolve()
-        }
+          engine: {
+            start: () => Promise.resolve({ success: true }),
+            skipToFinal: () => Promise.resolve()
+          }
+        } as any;
       })
       
       await page.click('[data-testid="play-button"]')
@@ -311,22 +382,24 @@ describe('Particle Animation UI E2E Tests', () => {
       // Mock animation progress updates
       await page.evaluate(() => {
         window.electronAPI = {
-          startAnimation: () => Promise.resolve({ success: true }),
-          onStatusUpdate: (callback) => {
-            // Simulate progress updates
-            setTimeout(() => callback({
-              stage: 'burst',
-              progress: 0.3,
-              particleCount: 1000
-            }), 100)
-            
-            setTimeout(() => callback({
-              stage: 'transition', 
-              progress: 0.7,
-              particleCount: 1000
-            }), 200)
+          engine: {
+            startAnimation: () => Promise.resolve({ success: true }),
+            onStatusUpdate: (callback: any) => {
+              // Simulate progress updates
+              setTimeout(() => callback({
+                stage: 'burst',
+                progress: 0.3,
+                particleCount: 1000
+              }), 100)
+
+              setTimeout(() => callback({
+                stage: 'transition',
+                progress: 0.7,
+                particleCount: 1000
+              }), 200)
+            }
           }
-        }
+        } as any;
       })
       
       await page.click('[data-testid="play-button"]')
@@ -359,8 +432,10 @@ describe('Particle Animation UI E2E Tests', () => {
       // Mock save settings
       await page.evaluate(() => {
         window.electronAPI = {
-          saveSettings: (_settings) => Promise.resolve({ success: true })
-        }
+          settings: {
+            save: (_settings: any) => Promise.resolve({ success: true })
+          }
+        } as any;
       })
       
       // Save settings
@@ -426,8 +501,10 @@ describe('Particle Animation UI E2E Tests', () => {
       
       await page.evaluate(() => {
         window.electronAPI = {
-          savePreset: (_name, _description) => Promise.resolve({ success: true })
-        }
+          settings: {
+            savePreset: (_name: any, _description?: any) => Promise.resolve({ success: true })
+          }
+        } as any;
       })
       
       await page.click('[data-testid="save-preset-confirm"]')
@@ -451,14 +528,14 @@ describe('Particle Animation UI E2E Tests', () => {
       // Mock engine connection failure
       await page.evaluate(() => {
         window.electronAPI = {
-          startEngine: () => Promise.resolve({ 
-            success: false, 
-            error: 'Failed to start Python engine'
-          })
-        }
-      })
-      
-      // Try to start animation without engine
+          engine: {
+            start: () => Promise.resolve({
+              success: false,
+              error: 'Failed to start Python engine'
+            })
+          }
+        } as any;
+      })      // Try to start animation without engine
       await page.click('[data-testid="play-button"]')
       
       // Verify error notification
@@ -484,8 +561,10 @@ describe('Particle Animation UI E2E Tests', () => {
       // Mock file operation failure
       await page.evaluate(() => {
         window.electronAPI = {
-          selectImageFile: () => Promise.reject(new Error('File access denied'))
-        }
+          files: {
+            selectImage: () => Promise.reject(new Error('File access denied'))
+          }
+        } as any;
       })
       
       await page.click('[data-testid="load-image-button"]')
@@ -501,14 +580,16 @@ describe('Particle Animation UI E2E Tests', () => {
       let failCount = 0
       await page.evaluate(() => {
         window.electronAPI = {
-          startEngine: () => {
-            failCount++
-            if (failCount < 3) {
-              return Promise.reject(new Error('Network timeout'))
+          engine: {
+            start: () => {
+              failCount++
+              if (failCount < 3) {
+                return Promise.reject(new Error('Network timeout'))
+              }
+              return Promise.resolve({ success: true })
             }
-            return Promise.resolve({ success: true })
           }
-        }
+        } as any;
       })
       
       // First attempt fails
@@ -527,12 +608,16 @@ describe('Particle Animation UI E2E Tests', () => {
       // Load image and start animation
       await page.evaluate(() => {
         window.electronAPI = {
-          selectImageFile: () => Promise.resolve({
-            path: '/mock/test.png',
-            metadata: { width: 1920, height: 1080 }
-          }),
-          startAnimation: () => Promise.resolve({ success: true })
-        }
+          files: {
+            selectImage: () => Promise.resolve({
+              path: '/mock/test.png',
+              metadata: { width: 1920, height: 1080 }
+            })
+          },
+          engine: {
+            start: () => Promise.resolve({ success: true })
+          }
+        } as any;
       })
       
       await page.click('[data-testid="load-image-button"]')
@@ -554,21 +639,23 @@ describe('Particle Animation UI E2E Tests', () => {
       await page.evaluate(() => {
         let loadingProgress = 0
         window.electronAPI = {
-          selectImageFile: () => {
-            return new Promise((resolve) => {
-              const interval = setInterval(() => {
-                loadingProgress += 10
-                if (loadingProgress >= 100) {
-                  clearInterval(_interval)
-                  resolve({
-                    path: '/mock/large.png',
-                    metadata: { width: 8000, height: 6000, size: 50000000 }
-                  })
-                }
-              }, 100)
-            })
+          files: {
+            selectImage: () => {
+              return new Promise((resolve) => {
+                const interval = setInterval(() => {
+                  loadingProgress += 10
+                  if (loadingProgress >= 100) {
+                    clearInterval(interval)
+                    resolve({
+                      path: '/mock/large.png',
+                      metadata: { width: 8000, height: 6000, size: 50000000 }
+                    })
+                  }
+                }, 100)
+              })
+            }
           }
-        }
+        } as any;
       })
       
       await page.click('[data-testid="load-image-button"]')
@@ -589,18 +676,20 @@ describe('Particle Animation UI E2E Tests', () => {
       
       await page.evaluate(() => {
         window.electronAPI = {
-          startAnimation: () => Promise.resolve({ success: true }),
-          onStatusUpdate: (callback) => {
-            const interval = setInterval(() => {
-              frameCount++
-              callback({
-                stage: 'transition',
-                progress: (frameCount % 100) / 100,
-                fps: frameCount / ((Date.now() - startTime) / 1000)
-              })
-            }, 16) // ~60 FPS target
+          engine: {
+            startAnimation: () => Promise.resolve({ success: true }),
+            onStatusUpdate: (callback: any) => {
+              setInterval(() => {
+                frameCount++
+                callback({
+                  stage: 'transition',
+                  progress: (frameCount % 100) / 100,
+                  fps: frameCount / ((Date.now() - startTime) / 1000)
+                })
+              }, 16) // ~60 FPS target
+            }
           }
-        }
+        } as any;
       })
       
       await page.click('[data-testid="play-button"]')

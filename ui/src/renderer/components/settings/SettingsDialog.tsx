@@ -230,6 +230,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
       <div
         ref={dialogRef}
         className="settings-dialog"
+        data-testid="settings-dialog"
         tabIndex={-1}
         onKeyDown={handleKeyDown}
         role="document"

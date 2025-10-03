@@ -8,14 +8,10 @@ export default defineConfig({
     // Ensure React runs in development mode with proper warnings
     jsxRuntime: 'automatic'
   })],
-  base: './',
-  root: resolve(__dirname, 'src/renderer'),
+  base: process.env.NODE_ENV === 'production' ? './' : '/',
   build: {
-    outDir: 'dist/renderer',
+    outDir: resolve(__dirname, 'dist/renderer'),
     emptyOutDir: true,
-    rollupOptions: {
-      input: resolve(__dirname, 'src/renderer/index.html')
-    },
     sourcemap: true,
     minify: process.env.NODE_ENV === 'production' ? 'esbuild' : false
   },

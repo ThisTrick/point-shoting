@@ -85,7 +85,7 @@ export class MainWindowController extends EventEmitter {
         this.mainWindow.webContents.openDevTools();
       } else {
         // Production mode - load built files (Vite preserves input structure)
-        await this.mainWindow.loadFile(path.join(__dirname, '../renderer/src/renderer/index.html'));
+        await this.mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
       }
 
       // Set up application menu

@@ -23,11 +23,18 @@ import {
 // Settings state and actions
 interface SettingsState {
   settings: UISettings | null;
+  originalSettings: UISettings | null;
   presets: PresetInfo[];
   isLoading: boolean;
+  isSaving: boolean;
+  isExporting: boolean;
+  isImporting: boolean;
+  isValidating: boolean;
   error: string | null;
   validationResult: ValidationResult | null;
   hasUnsavedChanges: boolean;
+  currentTheme: 'light' | 'dark' | 'system';
+  currentLanguage: 'uk' | 'en';
 }
 
 type SettingsAction =
@@ -39,8 +46,19 @@ type SettingsAction =
   | { type: 'PRESETS_LOADED'; presets: PresetInfo[] }
   | { type: 'PRESET_ADDED'; preset: PresetInfo }
   | { type: 'PRESET_REMOVED'; presetId: string }
+  | { type: 'SAVE_START' }
   | { type: 'SAVE_SUCCESS' }
   | { type: 'SAVE_ERROR'; error: string }
+  | { type: 'EXPORT_START' }
+  | { type: 'EXPORT_SUCCESS' }
+  | { type: 'EXPORT_ERROR'; error: string }
+  | { type: 'IMPORT_START' }
+  | { type: 'IMPORT_SUCCESS' }
+  | { type: 'IMPORT_ERROR'; error: string }
+  | { type: 'VALIDATION_START' }
+  | { type: 'VALIDATION_END' }
+  | { type: 'THEME_CHANGED'; theme: 'light' | 'dark' | 'system' }
+  | { type: 'LANGUAGE_CHANGED'; language: 'uk' | 'en' }
   | { type: 'RESET_ERROR' }
   | { type: 'SET_UNSAVED_CHANGES'; hasChanges: boolean };
 
@@ -127,11 +145,18 @@ const getDefaultSettings = (): UISettings => ({
 // Initial state - use default settings to prevent null errors during first render
 const initialState: SettingsState = {
   settings: getDefaultSettings(),
+  originalSettings: getDefaultSettings(),
   presets: [],
   isLoading: false,
+  isSaving: false,
+  isExporting: false,
+  isImporting: false,
+  isValidating: false,
   error: null,
   validationResult: null,
-  hasUnsavedChanges: false
+  hasUnsavedChanges: false,
+  currentTheme: 'system',
+  currentLanguage: 'en'
 };
 
 // Settings reducer
@@ -148,6 +173,7 @@ function settingsReducer(state: SettingsState, action: SettingsAction): Settings
       return {
         ...state,
         settings: action.settings,
+        originalSettings: action.settings,
         isLoading: false,
         error: null,
         hasUnsavedChanges: false
@@ -216,7 +242,80 @@ function settingsReducer(state: SettingsState, action: SettingsAction): Settings
         ...state,
         hasUnsavedChanges: action.hasChanges
       };
-      
+
+    case 'SAVE_START':
+      return {
+        ...state,
+        isSaving: true,
+        error: null
+      };
+
+    case 'EXPORT_START':
+      return {
+        ...state,
+        isExporting: true,
+        error: null
+      };
+
+    case 'EXPORT_SUCCESS':
+      return {
+        ...state,
+        isExporting: false,
+        error: null
+      };
+
+    case 'EXPORT_ERROR':
+      return {
+        ...state,
+        isExporting: false,
+        error: action.error
+      };
+
+    case 'IMPORT_START':
+      return {
+        ...state,
+        isImporting: true,
+        error: null
+      };
+
+    case 'IMPORT_SUCCESS':
+      return {
+        ...state,
+        isImporting: false,
+        error: null
+      };
+
+    case 'IMPORT_ERROR':
+      return {
+        ...state,
+        isImporting: false,
+        error: action.error
+      };
+
+    case 'VALIDATION_START':
+      return {
+        ...state,
+        isValidating: true
+      };
+
+    case 'VALIDATION_END':
+      return {
+        ...state,
+        isValidating: false
+      };
+
+    case 'THEME_CHANGED':
+      return {
+        ...state,
+        currentTheme: action.theme
+      };
+
+    case 'LANGUAGE_CHANGED':
+      return {
+        ...state,
+        currentLanguage: action.language
+      };
+
     default:
       return state;
   }

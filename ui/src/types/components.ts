@@ -60,6 +60,7 @@ export interface ControlPanelProps {
   readonly onPause: CallbackFunction<void>;
   readonly onResume: CallbackFunction<void>;
   readonly onStop: CallbackFunction<void>;
+  readonly onSkip?: CallbackFunction<void>;
 }
 
 /**

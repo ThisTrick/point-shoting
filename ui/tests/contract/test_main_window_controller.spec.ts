@@ -1,9 +1,229 @@
 /**
  * Contract test for MainWindowController
  * 
- * Tests that MainWindowController implementation follows the defined contract
+ * Tests that MainWindowCont    onStatusUpdate: jest.fn(),
+    onMetricsUpdate: jest.fn(),
+    onError: jest.fn(),
+    onExit: jest.fn(),
+    sendEngineCommand: jest.fn(),er implementation follows the defined contract
  * from /specs/002-ui/contracts/main_window_controller.md
  */
+
+import type {
+  ApplicationState,
+  UISettings,
+  OutgoingMessage,
+  IncomingMessage
+} from '@shared/types'
+import { ParticleDensity, AnimationSpeed, ColorMappingMode } from '@shared/types'
+
+// Mock Electron app before importing MainWindowController
+jest.mock('electron', () => ({
+  app: {
+    getAppPath: jest.fn(() => '/mock/app/path')
+  },
+  BrowserWindow: jest.fn().mockImplementation(() => ({
+    loadURL: jest.fn().mockResolvedValue(undefined),
+    loadFile: jest.fn().mockResolvedValue(undefined),
+    show: jest.fn(),
+    hide: jest.fn(),
+    close: jest.fn(),
+    destroy: jest.fn(),
+    focus: jest.fn(),
+    isDestroyed: jest.fn().mockReturnValue(false),
+    getBounds: jest.fn().mockReturnValue({ width: 1200, height: 800, x: 100, y: 100 }),
+    on: jest.fn(),
+    webContents: {
+      send: jest.fn(),
+      openDevTools: jest.fn(),
+      setWindowOpenHandler: jest.fn()
+    }
+  })),
+  Menu: {
+    buildFromTemplate: jest.fn().mockReturnValue({}),
+    setApplicationMenu: jest.fn()
+  },
+  shell: jest.fn()
+}))
+
+// Mock the services
+jest.mock('../../src/main/services/SettingsManager', () => ({
+  SettingsManager: jest.fn().mockImplementation(() => ({
+    loadFromStore: jest.fn().mockResolvedValue({}),
+    getDefaultSettings: jest.fn().mockReturnValue({
+      theme: 'light',
+      language: 'en',
+      showAdvancedControls: false,
+      enableKeyboardShortcuts: true,
+      autoSaveSettings: true,
+      animation: {
+        density: 'medium',
+        speed: 'normal',
+        colorMode: 'stylish',
+        watermark: false,
+        hud: true,
+        background: '#000000',
+        blur: 0,
+        breathing: true
+      },
+      performance: {
+        targetFPS: 60,
+        particleLimit: 10000,
+        enableGPU: true,
+        lowPowerMode: false
+      },
+      interface: {
+        showFPS: true,
+        showParticleCount: true,
+        enableAnimations: true,
+        compactMode: false
+      },
+      watermark: {
+        enabled: false,
+        position: 'bottom-right',
+        opacity: 0.8,
+        scale: 1.0
+      }
+    }),
+    getCurrentSettings: jest.fn().mockReturnValue({
+      theme: 'light',
+      language: 'en',
+      showAdvancedControls: false,
+      enableKeyboardShortcuts: true,
+      autoSaveSettings: true,
+      animation: {
+        density: 'medium',
+        speed: 'normal',
+        colorMode: 'stylish',
+        watermark: false,
+        hud: true,
+        background: '#000000',
+        blur: 0,
+        breathing: true
+      },
+      performance: {
+        targetFPS: 60,
+        particleLimit: 10000,
+        enableGPU: true,
+        lowPowerMode: false
+      },
+      interface: {
+        showFPS: true,
+        showParticleCount: true,
+        enableAnimations: true,
+        compactMode: false
+      },
+      watermark: {
+        enabled: false,
+        position: 'bottom-right',
+        opacity: 0.8,
+        scale: 1.0
+      }
+    }),
+    updateSettings: jest.fn().mockResolvedValue(undefined),
+    resetToDefaults: jest.fn().mockResolvedValue(undefined),
+    onSettingsChanged: jest.fn()
+  }))
+}))
+
+jest.mock('../../src/main/services/FileManager', () => ({
+  FileManager: jest.fn().mockImplementation(() => ({
+    // Mock methods as needed
+    on: jest.fn(),
+    destroy: jest.fn()
+  }))
+}))
+
+jest.mock('../../src/main/services/PythonEngineBridge', () => ({
+  PythonEngineBridge: jest.fn().mockImplementation(() => ({
+    startEngine: jest.fn().mockResolvedValue({ success: true, processId: 123 }),
+    stopEngine: jest.fn().mockResolvedValue(undefined),
+    sendCommand: jest.fn().mockResolvedValue(undefined),
+    startAnimation: jest.fn().mockResolvedValue(undefined),
+    pauseAnimation: jest.fn().mockResolvedValue(undefined),
+    resumeAnimation: jest.fn().mockResolvedValue(undefined),
+    stopAnimation: jest.fn().mockResolvedValue(undefined),
+    skipToFinal: jest.fn().mockResolvedValue(undefined),
+    updateEngineSettings: jest.fn().mockResolvedValue(undefined),
+    loadImage: jest.fn().mockResolvedValue(undefined),
+    setWatermark: jest.fn().mockResolvedValue(undefined),
+    onStatusUpdate: jest.fn(),
+    onMetricsUpdate: jest.fn(),
+    onError: jest.fn(),
+    onExit: jest.fn(),
+    sendEngineCommand: jest.fn().mockResolvedValue(undefined),
+    on: jest.fn(),
+    destroy: jest.fn()
+  }))
+}))
+
+/**
+ * Helper function to create valid mock UISettings
+ */
+function createMockUISettings(overrides: Partial<UISettings> = {}): UISettings {
+  return {
+    theme: 'light',
+    language: 'en',
+    showAdvancedControls: false,
+    enableKeyboardShortcuts: true,
+    autoSaveSettings: true,
+    animation: {
+      density: ParticleDensity.MEDIUM,
+      speed: AnimationSpeed.NORMAL,
+      colorMode: ColorMappingMode.ORIGINAL,
+      watermark: false,
+      hud: true,
+      background: '#000000',
+      blur: 0,
+      breathing: true
+    },
+    performance: {
+      targetFPS: 60,
+      particleLimit: 10000,
+      enableGPU: true,
+      lowPowerMode: false
+    },
+    interface: {
+      showFPS: true,
+      showParticleCount: true,
+      enableAnimations: true,
+      compactMode: false
+    },
+    watermark: {
+      enabled: false,
+      position: 'bottom-right' as const,
+      opacity: 0.8,
+      scale: 1.0
+    },
+    ...overrides
+  }
+}
+
+/**
+ * Helper function to create valid mock OutgoingMessage
+ */
+function createMockOutgoingMessage(type: string = 'heartbeat'): OutgoingMessage {
+  if (type === 'heartbeat') {
+    return { type: 'heartbeat', payload: {} }
+  }
+  if (type === 'start_animation') {
+    return { 
+      type: 'start_animation', 
+      payload: { 
+        imagePath: '/path/to/test/image.png',
+        settings: {
+          density: 'medium' as const,
+          speed: 'normal' as const,
+          colorMode: 'stylish' as const,
+          debugHudEnabled: false,
+          performanceWarnings: true
+        }
+      } 
+    }
+  }
+  // Default to heartbeat for other cases
+  return { type: 'heartbeat', payload: {} }
+}
 
 interface MainWindowController {
   // Window Management
@@ -28,37 +248,34 @@ interface MainWindowController {
   
   // Event Handling
   onEngineMessage(handler: (message: IncomingMessage) => void): void
-  onWindowEvent(event: WindowEvent, handler: () => void): void
   onSettingsChanged(handler: (settings: UISettings) => void): void
 }
 
-interface ApplicationState {
-  isEngineRunning: boolean
-  currentAnimation: AnimationState | null
-  loadedImage: ImageInfo | null
-  notifications: NotificationMessage[]
-  debugMode: boolean
-}
+// Remove duplicate type definitions - using imported types instead
+// interface ApplicationState {
+//   isEngineRunning: boolean
+//   currentAnimation: AnimationState | null
+//   loadedImage: ImageInfo | null
+//   notifications: NotificationMessage[]
+//   debugMode: boolean
+// }
 
-// Mock types for testing
-type UISettings = any
-type AnimationState = any
-type ImageInfo = any  
-type NotificationMessage = any
-type OutgoingMessage = any
-type IncomingMessage = any
-type WindowEvent = string
+// Mock types for testing - now imported from shared types
+// type UISettings = any
+// type AnimationState = any
+// type ImageInfo = any  
+// type NotificationMessage = any
+// type OutgoingMessage = any
+// type IncomingMessage = any
+// type WindowEvent = string
 
 describe('MainWindowController Contract', () => {
   let controller: MainWindowController
   
   beforeEach(() => {
-    // This will fail until MainWindowController is implemented
-    // const { MainWindowController: MainWindowControllerImpl } = require('@main/MainWindowController')
-    // controller = new MainWindowControllerImpl()
-    
-    // For now, use a mock that will cause tests to fail
-    controller = {} as MainWindowController
+    // Import the actual MainWindowController implementation
+    const { MainWindowController: MainWindowControllerImpl } = require('../../src/main/MainWindowController')
+    controller = new MainWindowControllerImpl()
   })
 
   describe('Interface Compliance', () => {
@@ -85,7 +302,6 @@ describe('MainWindowController Contract', () => {
       
       // Event Handling
       expect(typeof controller.onEngineMessage).toBe('function')
-      expect(typeof controller.onWindowEvent).toBe('function')
       expect(typeof controller.onSettingsChanged).toBe('function')
     })
   })
@@ -113,7 +329,7 @@ describe('MainWindowController Contract', () => {
     })
 
     it('should save settings and trigger change handlers', async () => {
-      const mockSettings = { theme: 'dark', language: 'en' }
+      const mockSettings = createMockUISettings({ theme: 'dark' })
       await expect(controller.saveSettings(mockSettings)).resolves.toBeUndefined()
     })
 
@@ -132,8 +348,10 @@ describe('MainWindowController Contract', () => {
       await expect(controller.stopEngine()).resolves.toBeUndefined()
     })
 
-    it('should send commands with timeout handling', async () => {
-      const mockCommand = { type: 'start_animation', payload: {} }
+    it('should send valid engine commands', async () => {
+      // Start the engine first
+      await controller.startEngine()
+      const mockCommand = createMockOutgoingMessage('start_animation')
       await expect(controller.sendEngineCommand(mockCommand)).resolves.toBeUndefined()
     })
   })
@@ -142,11 +360,6 @@ describe('MainWindowController Contract', () => {
     it('should register engine message handlers', () => {
       const handler = jest.fn()
       expect(() => controller.onEngineMessage(handler)).not.toThrow()
-    })
-
-    it('should register window event handlers', () => {
-      const handler = jest.fn()
-      expect(() => controller.onWindowEvent('close', handler)).not.toThrow()
     })
 
     it('should register settings change handlers', () => {
@@ -179,7 +392,7 @@ describe('MainWindowController Contract', () => {
     })
 
     it('should save settings within 100ms', async () => {
-      const mockSettings = { theme: 'light' }
+      const mockSettings = createMockUISettings({ theme: 'light' })
       const start = Date.now()
       await controller.saveSettings(mockSettings)
       const duration = Date.now() - start

@@ -8,6 +8,8 @@
  * and provide clear contracts for communication with the Python engine.
  */
 
+import { ValidationError } from './files';
+
 // ============================================================================
 // APPLICATION STATE TYPES
 // ============================================================================
