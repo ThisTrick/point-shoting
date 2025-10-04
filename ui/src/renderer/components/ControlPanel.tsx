@@ -32,7 +32,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onSkip,
 }) => {
   // Determine if controls should be disabled
-  const isDisabled = disabled;
+  const isDisabled = disabled || engineStatus.status === EngineState.ERROR;
 
   // Determine current animation state
   const isRunning = engineStatus.status === EngineState.RUNNING;

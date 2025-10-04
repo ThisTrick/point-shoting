@@ -72,7 +72,9 @@ test.describe('Particle Animation UI E2E Tests', () => {
         engine: {
           onStatusUpdate: (callback: any) => {
             // Immediately call with stopped status to ensure proper initial state
-            setTimeout(() => callback({ status: 'stopped', fps: 0, particleCount: 0, memoryUsage: 0, stage: 'Ready' }), 0);
+            callback({ status: 'stopped', fps: 0, particleCount: 0, memoryUsage: 0, stage: 'Ready' });
+            // Return a no-op function to prevent further updates
+            return () => {};
           },
           start: () => Promise.resolve(),
           pause: () => Promise.resolve(),
