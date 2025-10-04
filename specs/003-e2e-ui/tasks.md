@@ -462,7 +462,7 @@ This feature enhances existing test infrastructure with comprehensive E2E testin
 
 ## Phase 3.5: Coverage & Reporting [P]
 
-### T017 [P]: Create coverage comparison script
+### T017 [P] [x]: Create coverage comparison script
 
 **File**: `/home/den/git/point-shoting/scripts/compare_coverage.py`
 
@@ -483,7 +483,7 @@ This feature enhances existing test infrastructure with comprehensive E2E testin
 
 ---
 
-### T018 [P]: Create coverage badge generator
+### T018 [P] [x]: Create coverage badge generator
 
 **File**: `/home/den/git/point-shoting/scripts/generate_coverage_badge.py`
 
@@ -612,7 +612,7 @@ This feature enhances existing test infrastructure with comprehensive E2E testin
 
 ---
 
-### T023: Document flaky test policy
+### T023 [x]: Document flaky test policy
 
 **File**: `/home/den/git/point-shoting/docs/FLAKY_TEST_POLICY.md`
 
