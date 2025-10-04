@@ -1,4 +1,4 @@
-.PHONY: install format lint typecheck typecheck-fix check-all test test-unit test-contract test-integration test-performance test-coverage clean run-example profile build sync help ui-build ui-test ui-test-parallel ui-test-integration ui-test-e2e ui-lint ui-typecheck test-pipeline-quick test-pipeline-ci test-sequential
+.PHONY: install format lint py-compile typecheck typecheck-fix check-all test test-unit test-contract test-integration test-performance test-coverage clean run-example profile build sync help ui-build ui-test ui-test-parallel ui-test-integration ui-test-e2e ui-lint ui-typecheck test-pipeline-quick test-pipeline-ci test-sequential
 
 # Installation targets
 install:
@@ -15,6 +15,11 @@ lint:
 format:
 	uv run ruff format .
 
+# Syntax checking
+py-compile:
+	find src/ tests/ examples/ scripts/ -name "*.py" -exec uv run python -m py_compile {} \;
+	@echo "✅ Python syntax check passed!"
+
 # Type checking
 typecheck:
 	uv run mypy src/point_shoting --show-error-codes --ignore-missing-imports
@@ -23,7 +28,7 @@ typecheck-strict:
 	uv run mypy src/point_shoting --strict --show-error-codes
 
 # All quality checks (lint only for pipeline speed)
-check-all: lint
+check-all: lint py-compile
 	@echo "All code quality checks passed!"
 
 # Testing targets
@@ -171,9 +176,10 @@ help:
 	@echo "  Code Quality:"
 	@echo "    format         - Format code with ruff"
 	@echo "    lint           - Lint code with ruff"
+	@echo "    py-compile     - Check Python syntax with py_compile"
 	@echo "    typecheck      - Run mypy type checking"
 	@echo "    typecheck-fix  - Run mypy with suggestions for quick fixes"
-	@echo "    check-all      - Run all quality checks (format, lint, typecheck)"
+	@echo "    check-all      - Run all quality checks (format, lint, py_compile, typecheck)"
 	@echo ""
 	@echo "  Testing:"
 	@echo "    test           - Run all tests (parallel)"

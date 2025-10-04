@@ -7,12 +7,11 @@ and CI integration dashboards.
 """
 
 import json
-import os
-import sys
-from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Dict, List, Any, Optional
 import subprocess
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 
 class TestReportGenerator:
@@ -23,7 +22,7 @@ class TestReportGenerator:
         self.reports_dir = base_dir / "test-results" / "reports"
         self.reports_dir.mkdir(parents=True, exist_ok=True)
 
-    def generate_comprehensive_report(self) -> Dict[str, Any]:
+    def generate_comprehensive_report(self) -> dict[str, Any]:
         """Generate a comprehensive test report with all metrics."""
         report = {
             "timestamp": datetime.now().isoformat(),
@@ -33,7 +32,7 @@ class TestReportGenerator:
             "performance": {},
             "flaky_tests": {},
             "trends": {},
-            "recommendations": []
+            "recommendations": [],
         }
 
         # Collect all test results
@@ -49,7 +48,7 @@ class TestReportGenerator:
 
         return report
 
-    def _collect_test_results(self) -> Dict[str, Any]:
+    def _collect_test_results(self) -> dict[str, Any]:
         """Collect test results from various test types."""
         results = {}
 
@@ -58,14 +57,23 @@ class TestReportGenerator:
             "unit": ["tests/unit/"],
             "integration": ["tests/integration/"],
             "contract": ["tests/contract/"],
-            "e2e": ["tests/e2e/"]
+            "e2e": ["tests/e2e/"],
         }
 
         for test_type, paths in test_types.items():
             try:
                 # Run tests with JSON report
-                cmd = [sys.executable, "-m", "pytest", "--json-report", "--json-report-file", f"/tmp/{test_type}-results.json"] + paths
-                result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.base_dir)
+                cmd = [
+                    sys.executable,
+                    "-m",
+                    "pytest",
+                    "--json-report",
+                    "--json-report-file",
+                    f"/tmp/{test_type}-results.json",
+                ] + paths
+                result = subprocess.run(
+                    cmd, capture_output=True, text=True, cwd=self.base_dir
+                )
 
                 json_file = Path(f"/tmp/{test_type}-results.json")
                 if json_file.exists():
@@ -76,19 +84,26 @@ class TestReportGenerator:
                     results[test_type] = {
                         "exitcode": result.returncode,
                         "stdout": result.stdout,
-                        "stderr": result.stderr
+                        "stderr": result.stderr,
                     }
             except Exception as e:
                 results[test_type] = {"error": str(e)}
 
         return results
 
-    def _collect_coverage_data(self) -> Dict[str, Any]:
+    def _collect_coverage_data(self) -> dict[str, Any]:
         """Collect coverage data."""
         try:
             # Run coverage
-            cmd = [sys.executable, "-m", "pytest", "--cov=src/point_shoting", "--cov-report=json", "tests/"]
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.base_dir)
+            cmd = [
+                sys.executable,
+                "-m",
+                "pytest",
+                "--cov=src/point_shoting",
+                "--cov-report=json",
+                "tests/",
+            ]
+            subprocess.run(cmd, capture_output=True, text=True, cwd=self.base_dir)
 
             coverage_file = self.base_dir / "coverage.json"
             if coverage_file.exists():
@@ -101,7 +116,7 @@ class TestReportGenerator:
         except Exception as e:
             return {"error": str(e)}
 
-    def _collect_performance_data(self) -> Dict[str, Any]:
+    def _collect_performance_data(self) -> dict[str, Any]:
         """Collect performance benchmark data."""
         performance_data = {}
 
@@ -117,7 +132,7 @@ class TestReportGenerator:
 
         return performance_data
 
-    def _collect_flaky_test_data(self) -> Dict[str, Any]:
+    def _collect_flaky_test_data(self) -> dict[str, Any]:
         """Collect flaky test detection results."""
         flaky_data = {}
 
@@ -132,19 +147,19 @@ class TestReportGenerator:
 
         return flaky_data
 
-    def _analyze_trends(self) -> Dict[str, Any]:
+    def _analyze_trends(self) -> dict[str, Any]:
         """Analyze trends from historical data."""
         trends = {
             "coverage_trend": [],
             "performance_trend": [],
-            "test_pass_rate_trend": []
+            "test_pass_rate_trend": [],
         }
 
         # This would analyze historical data from CI artifacts
         # For now, return placeholder
         return trends
 
-    def _generate_summary(self, report: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_summary(self, report: dict[str, Any]) -> dict[str, Any]:
         """Generate a summary of all test results."""
         summary = {
             "total_tests": 0,
@@ -154,11 +169,11 @@ class TestReportGenerator:
             "coverage_percentage": 0,
             "performance_score": 0,
             "flaky_tests_count": 0,
-            "overall_status": "unknown"
+            "overall_status": "unknown",
         }
 
         # Aggregate test results
-        for test_type, results in report["test_results"].items():
+        for _test_type, results in report["test_results"].items():
             if "tests" in results:
                 for test in results["tests"]:
                     summary["total_tests"] += 1
@@ -174,7 +189,7 @@ class TestReportGenerator:
             summary["coverage_percentage"] = report["coverage"]["percent_covered"]
 
         # Flaky tests
-        for flaky_type, flaky_results in report["flaky_tests"].items():
+        for _flaky_type, flaky_results in report["flaky_tests"].items():
             if "total_flaky_tests" in flaky_results:
                 summary["flaky_tests_count"] += flaky_results["total_flaky_tests"]
 
@@ -188,7 +203,7 @@ class TestReportGenerator:
 
         return summary
 
-    def _generate_recommendations(self, report: Dict[str, Any]) -> List[str]:
+    def _generate_recommendations(self, report: dict[str, Any]) -> list[str]:
         """Generate recommendations based on test results."""
         recommendations = []
 
@@ -198,17 +213,23 @@ class TestReportGenerator:
             recommendations.append(f"Fix {summary['failed_tests']} failing tests")
 
         if summary["coverage_percentage"] < 80:
-            recommendations.append(f"Improve code coverage (currently {summary['coverage_percentage']}%)")
+            recommendations.append(
+                f"Improve code coverage (currently {summary['coverage_percentage']}%)"
+            )
 
         if summary["flaky_tests_count"] > 0:
-            recommendations.append(f"Investigate {summary['flaky_tests_count']} flaky tests")
+            recommendations.append(
+                f"Investigate {summary['flaky_tests_count']} flaky tests"
+            )
 
         if not recommendations:
-            recommendations.append("All tests passing - consider adding more test coverage")
+            recommendations.append(
+                "All tests passing - consider adding more test coverage"
+            )
 
         return recommendations
 
-    def generate_html_dashboard(self, report: Dict[str, Any]) -> str:
+    def generate_html_dashboard(self, report: dict[str, Any]) -> str:
         """Generate an HTML dashboard from the report."""
         html = f"""
 <!DOCTYPE html>
@@ -229,36 +250,36 @@ class TestReportGenerator:
 </head>
 <body>
     <h1>Test Execution Dashboard</h1>
-    <p>Generated on: {report['timestamp']}</p>
+    <p>Generated on: {report["timestamp"]}</p>
 
     <div class="summary">
         <h2>Test Summary</h2>
         <div class="metric">
-            <div class="metric-value {self._get_status_class(report['summary']['overall_status'])}">{report['summary']['overall_status'].upper()}</div>
+            <div class="metric-value {self._get_status_class(report["summary"]["overall_status"])}">{report["summary"]["overall_status"].upper()}</div>
             <div>Overall Status</div>
         </div>
         <div class="metric">
-            <div class="metric-value">{report['summary']['total_tests']}</div>
+            <div class="metric-value">{report["summary"]["total_tests"]}</div>
             <div>Total Tests</div>
         </div>
         <div class="metric">
-            <div class="metric-value" style="color: green;">{report['summary']['passed_tests']}</div>
+            <div class="metric-value" style="color: green;">{report["summary"]["passed_tests"]}</div>
             <div>Passed</div>
         </div>
         <div class="metric">
-            <div class="metric-value" style="color: red;">{report['summary']['failed_tests']}</div>
+            <div class="metric-value" style="color: red;">{report["summary"]["failed_tests"]}</div>
             <div>Failed</div>
         </div>
         <div class="metric">
-            <div class="metric-value" style="color: orange;">{report['summary']['skipped_tests']}</div>
+            <div class="metric-value" style="color: orange;">{report["summary"]["skipped_tests"]}</div>
             <div>Skipped</div>
         </div>
         <div class="metric">
-            <div class="metric-value">{report['summary']['coverage_percentage']:.1f}%</div>
+            <div class="metric-value">{report["summary"]["coverage_percentage"]:.1f}%</div>
             <div>Coverage</div>
         </div>
         <div class="metric">
-            <div class="metric-value" style="color: orange;">{report['summary']['flaky_tests_count']}</div>
+            <div class="metric-value" style="color: orange;">{report["summary"]["flaky_tests_count"]}</div>
             <div>Flaky Tests</div>
         </div>
     </div>
@@ -270,49 +291,61 @@ class TestReportGenerator:
         for rec in report["recommendations"]:
             html += f"            <li>{rec}</li>\n"
 
-        html += """
+        html += (
+            """
         </ul>
     </div>
 
     <div class="section">
         <h2>Detailed Test Results</h2>
-        <pre>""" + json.dumps(report["test_results"], indent=2) + """</pre>
+        <pre>"""
+            + json.dumps(report["test_results"], indent=2)
+            + """</pre>
     </div>
 
     <div class="section">
         <h2>Coverage Details</h2>
-        <pre>""" + json.dumps(report["coverage"], indent=2) + """</pre>
+        <pre>"""
+            + json.dumps(report["coverage"], indent=2)
+            + """</pre>
     </div>
 
     <div class="section">
         <h2>Performance Metrics</h2>
-        <pre>""" + json.dumps(report["performance"], indent=2) + """</pre>
+        <pre>"""
+            + json.dumps(report["performance"], indent=2)
+            + """</pre>
     </div>
 
     <div class="section">
         <h2>Flaky Test Analysis</h2>
-        <pre>""" + json.dumps(report["flaky_tests"], indent=2) + """</pre>
+        <pre>"""
+            + json.dumps(report["flaky_tests"], indent=2)
+            + """</pre>
     </div>
 </body>
 </html>
 """
+        )
         return html
 
     def _get_status_class(self, status: str) -> str:
         """Get CSS class for status."""
         return f"status-{status}"
 
-    def save_report(self, report: Dict[str, Any], filename: str = "comprehensive-report.json"):
+    def save_report(
+        self, report: dict[str, Any], filename: str = "comprehensive-report.json"
+    ):
         """Save the report to a file."""
         report_file = self.reports_dir / filename
-        with open(report_file, 'w') as f:
+        with open(report_file, "w") as f:
             json.dump(report, f, indent=2)
         print(f"Report saved to {report_file}")
 
     def save_html_dashboard(self, html: str, filename: str = "dashboard.html"):
         """Save the HTML dashboard to a file."""
         html_file = self.reports_dir / filename
-        with open(html_file, 'w') as f:
+        with open(html_file, "w") as f:
             f.write(html)
         print(f"HTML dashboard saved to {html_file}")
 

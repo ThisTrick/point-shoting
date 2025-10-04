@@ -5,9 +5,9 @@ These tests validate that the DependencyValidator service adheres to its
 contract specification without requiring full implementation.
 """
 
-import pytest
-from typing import List
 from dataclasses import dataclass
+
+import pytest
 
 
 # Contract data structures (from data-model.md)
@@ -16,7 +16,7 @@ class DependencyInfo:
     name: str
     version: str
     ecosystem: str  # 'python' or 'npm'
-    vulnerabilities: List['Vulnerability']
+    vulnerabilities: list["Vulnerability"]
 
 
 @dataclass
@@ -29,12 +29,12 @@ class Vulnerability:
 
 @dataclass
 class DependencyValidationResult:
-    dependencies: List[DependencyInfo]
+    dependencies: list[DependencyInfo]
     total_count: int
     vulnerable_count: int
-    critical_vulnerabilities: List[Vulnerability]
+    critical_vulnerabilities: list[Vulnerability]
     has_conflicts: bool
-    conflicts: List[str]
+    conflicts: list[str]
     audit_passed: bool
 
 
@@ -53,7 +53,7 @@ class DependencyValidator:
             critical_vulnerabilities=[],
             has_conflicts=False,
             conflicts=[],
-            audit_passed=True
+            audit_passed=True,
         )
 
     def validate_npm_dependencies(self) -> DependencyValidationResult:
@@ -65,14 +65,14 @@ class DependencyValidator:
             critical_vulnerabilities=[],
             has_conflicts=False,
             conflicts=[],
-            audit_passed=True
+            audit_passed=True,
         )
 
-    def check_version_conflicts(self) -> List[str]:
+    def check_version_conflicts(self) -> list[str]:
         """Stub: Would check for version conflicts in dependency tree."""
         return []
 
-    def generate_audit_report(self, format: str = 'json') -> str:
+    def generate_audit_report(self, format: str = "json") -> str:
         """Stub: Would generate audit report in specified format."""
         return f"/test-results/dependency-audit-report.{format}"
 
@@ -125,16 +125,16 @@ class TestDependencyValidatorContract:
         # Test default format
         path = validator.generate_audit_report()
         assert isinstance(path, str)
-        assert path.endswith('.json')
+        assert path.endswith(".json")
 
         # Test specified format
-        path_html = validator.generate_audit_report('html')
+        path_html = validator.generate_audit_report("html")
         assert isinstance(path_html, str)
-        assert path_html.endswith('.html')
+        assert path_html.endswith(".html")
 
-        path_md = validator.generate_audit_report('markdown')
+        path_md = validator.generate_audit_report("markdown")
         assert isinstance(path_md, str)
-        assert path_md.endswith('.markdown')
+        assert path_md.endswith(".markdown")
 
     def test_generate_audit_report_invalid_format(self):
         """Test that generate_audit_report handles invalid formats."""
@@ -142,7 +142,7 @@ class TestDependencyValidatorContract:
 
         # This would raise ValueError in real implementation
         # For contract test, we just verify it returns a string
-        path = validator.generate_audit_report('invalid')
+        path = validator.generate_audit_report("invalid")
         assert isinstance(path, str)
 
     def test_dependency_info_structure(self):
@@ -151,7 +151,7 @@ class TestDependencyValidatorContract:
             name="example-package",
             version="1.0.0",
             ecosystem="python",
-            vulnerabilities=[]
+            vulnerabilities=[],
         )
 
         assert dep.name == "example-package"
@@ -165,7 +165,7 @@ class TestDependencyValidatorContract:
             id="CVE-2023-12345",
             severity="HIGH",
             description="Example vulnerability",
-            cvss_score=7.5
+            cvss_score=7.5,
         )
 
         assert vuln.id == "CVE-2023-12345"
@@ -182,7 +182,7 @@ class TestDependencyValidatorContract:
             critical_vulnerabilities=[],
             has_conflicts=False,
             conflicts=[],
-            audit_passed=True
+            audit_passed=True,
         )
 
         assert result.dependencies == []

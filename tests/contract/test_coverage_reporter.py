@@ -5,9 +5,9 @@ These tests validate that the CoverageReporter service adheres to its
 contract specification without requiring full implementation.
 """
 
-import pytest
-from typing import List
 from dataclasses import dataclass
+
+import pytest
 
 
 # Contract data structures (from data-model.md)
@@ -16,7 +16,7 @@ class FileCoverage:
     file_path: str
     statements: int
     covered: int
-    missing_lines: List[int]
+    missing_lines: list[int]
     percentage: float
 
 
@@ -29,7 +29,7 @@ class CoverageReport:
     total_branches: int
     covered_branches: int
     coverage_percentage: float
-    file_coverage: List[FileCoverage]
+    file_coverage: list[FileCoverage]
     threshold: float = 80.0
     meets_threshold: bool = False
 
@@ -40,8 +40,8 @@ class CoverageReport:
 @dataclass
 class CoverageDiff:
     percentage_change: float
-    new_uncovered_lines: List[str]
-    newly_covered_lines: List[str]
+    new_uncovered_lines: list[str]
+    newly_covered_lines: list[str]
     regression: bool
 
 
@@ -62,7 +62,7 @@ class CoverageReporter:
             covered_branches=300,
             coverage_percentage=80.0,
             file_coverage=[],
-            threshold=80.0
+            threshold=80.0,
         )
 
     def measure_typescript_coverage(self) -> CoverageReport:
@@ -76,21 +76,23 @@ class CoverageReporter:
             covered_branches=240,
             coverage_percentage=80.0,
             file_coverage=[],
-            threshold=80.0
+            threshold=80.0,
         )
 
     def generate_coverage_badge(self, report: CoverageReport) -> str:
         """Stub: Would generate SVG coverage badge."""
         return f"/docs/badges/coverage-{report.language}.svg"
 
-    def compare_coverage(self, baseline: CoverageReport, current: CoverageReport) -> CoverageDiff:
+    def compare_coverage(
+        self, baseline: CoverageReport, current: CoverageReport
+    ) -> CoverageDiff:
         """Stub: Would compare coverage reports."""
         change = current.coverage_percentage - baseline.coverage_percentage
         return CoverageDiff(
             percentage_change=change,
             new_uncovered_lines=[],
             newly_covered_lines=[],
-            regression=change < 0
+            regression=change < 0,
         )
 
 
@@ -130,7 +132,7 @@ class TestCoverageReporterContract:
             total_branches=20,
             covered_branches=15,
             coverage_percentage=80.0,
-            file_coverage=[]
+            file_coverage=[],
         )
 
         badge_path = reporter.generate_coverage_badge(report)
@@ -151,7 +153,7 @@ class TestCoverageReporterContract:
             total_branches=200,
             covered_branches=150,
             coverage_percentage=75.0,
-            file_coverage=[]
+            file_coverage=[],
         )
 
         current = CoverageReport(
@@ -162,7 +164,7 @@ class TestCoverageReporterContract:
             total_branches=200,
             covered_branches=160,
             coverage_percentage=80.0,
-            file_coverage=[]
+            file_coverage=[],
         )
 
         diff = reporter.compare_coverage(baseline, current)
@@ -184,7 +186,7 @@ class TestCoverageReporterContract:
             covered_branches=160,
             coverage_percentage=80.0,
             file_coverage=[],
-            threshold=80.0
+            threshold=80.0,
         )
 
         assert report.report_id == "test-report-001"
@@ -208,7 +210,7 @@ class TestCoverageReporterContract:
             covered_branches=140,
             coverage_percentage=70.0,
             file_coverage=[],
-            threshold=80.0
+            threshold=80.0,
         )
         assert failing_report.meets_threshold is False  # 70.0 < 80.0
 
@@ -219,7 +221,7 @@ class TestCoverageReporterContract:
             statements=100,
             covered=85,
             missing_lines=[15, 23, 67],
-            percentage=85.0
+            percentage=85.0,
         )
 
         assert file_cov.file_path == "src/point_shoting/engine.py"
@@ -234,7 +236,7 @@ class TestCoverageReporterContract:
             percentage_change=5.2,
             new_uncovered_lines=["src/new_file.py:10"],
             newly_covered_lines=["src/engine.py:45"],
-            regression=False
+            regression=False,
         )
 
         assert diff.percentage_change == 5.2
@@ -247,7 +249,7 @@ class TestCoverageReporterContract:
             percentage_change=-2.1,
             new_uncovered_lines=[],
             newly_covered_lines=[],
-            regression=True
+            regression=True,
         )
         assert regression_diff.regression is True
 
@@ -262,7 +264,7 @@ class TestCoverageReporterContract:
             total_branches=20,
             covered_branches=20,
             coverage_percentage=100.0,
-            file_coverage=[]
+            file_coverage=[],
         )
         assert perfect.coverage_percentage == 100.0
         assert perfect.meets_threshold is True
@@ -276,7 +278,7 @@ class TestCoverageReporterContract:
             total_branches=20,
             covered_branches=0,
             coverage_percentage=0.0,
-            file_coverage=[]
+            file_coverage=[],
         )
         assert zero.coverage_percentage == 0.0
         assert zero.meets_threshold is False

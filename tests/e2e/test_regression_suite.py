@@ -6,13 +6,13 @@ to ensure no degradation in performance or functionality.
 """
 
 import json
-import time
-import pytest
-from pathlib import Path
-from typing import Dict, Any, Optional
-
 import subprocess
 import sys
+import time
+from pathlib import Path
+from typing import Any
+
+import pytest
 
 
 @pytest.mark.e2e
@@ -83,12 +83,17 @@ class TestRegressionSuite:
             print("No coverage baseline found, saving current coverage as baseline")
             self._save_baseline_metrics("coverage-baseline.json", current_coverage)
 
-    def _measure_current_performance(self) -> Dict[str, Any]:
+    def _measure_current_performance(self) -> dict[str, Any]:
         """Measure current performance metrics."""
         # Import here to avoid import errors if engine not available
         try:
             from src.point_shoting.cli.control_interface import ControlInterface
-            from src.point_shoting.models.settings import Settings, DensityProfile, SpeedProfile, ColorMode
+            from src.point_shoting.models.settings import (
+                ColorMode,
+                DensityProfile,
+                Settings,
+                SpeedProfile,
+            )
             from src.point_shoting.services.particle_engine import ParticleEngine
         except ImportError:
             return {"error": "Engine not available"}
@@ -116,7 +121,7 @@ class TestRegressionSuite:
         start_time = time.time()
 
         try:
-            for i in range(100):
+            for _i in range(100):
                 frame_start = time.perf_counter()
                 engine.step()
                 frame_end = time.perf_counter()
@@ -131,42 +136,50 @@ class TestRegressionSuite:
                 "avg_frame_time": avg_frame_time,
                 "total_time": total_time,
                 "frame_count": len(frame_times),
-                "timestamp": time.time()
+                "timestamp": time.time(),
             }
         finally:
             control.stop()
 
-    def _run_test_suite(self) -> Dict[str, Any]:
+    def _run_test_suite(self) -> dict[str, Any]:
         """Run test suite and collect results."""
         # Run unit and integration tests
         result = subprocess.run(
-            [sys.executable, "-m", "pytest", "tests/unit/", "tests/integration/", "--tb=no", "--disable-warnings"],
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                "tests/unit/",
+                "tests/integration/",
+                "--tb=no",
+                "--disable-warnings",
+            ],
             capture_output=True,
             text=True,
-            cwd=Path(__file__).parent.parent.parent
+            cwd=Path(__file__).parent.parent.parent,
         )
 
         # Parse output to extract counts
         output = result.stdout + result.stderr
 
         # Simple parsing - look for summary line
-        lines = output.split('\n')
+        lines = output.split("\n")
         summary_line = None
         for line in lines:
-            if 'passed' in line and ('failed' in line or 'skipped' in line):
+            if "passed" in line and ("failed" in line or "skipped" in line):
                 summary_line = line
                 break
 
         # Also check for lines that just have passed/skipped
         if not summary_line:
             for line in lines:
-                if 'passed' in line or 'failed' in line or 'skipped' in line:
+                if "passed" in line or "failed" in line or "skipped" in line:
                     summary_line = line
                     break
 
         if summary_line:
             # Parse something like "10 passed, 2 failed, 1 skipped"
-            parts = summary_line.replace(',', '').split()
+            parts = summary_line.replace(",", "").split()
             passed = 0
             failed = 0
             skipped = 0
@@ -176,11 +189,11 @@ class TestRegressionSuite:
                     count = int(part)
                     if i + 1 < len(parts):
                         next_word = parts[i + 1].lower()
-                        if 'passed' in next_word:
+                        if "passed" in next_word:
                             passed = count
-                        elif 'failed' in next_word:
+                        elif "failed" in next_word:
                             failed = count
-                        elif 'skipped' in next_word or 'skipped' in next_word:
+                        elif "skipped" in next_word or "skipped" in next_word:
                             skipped = count
 
             return {
@@ -188,19 +201,29 @@ class TestRegressionSuite:
                 "failed": failed,
                 "skipped": skipped,
                 "total": passed + failed + skipped,
-                "pass_rate": passed / (passed + failed + skipped) if (passed + failed + skipped) > 0 else 0,
-                "timestamp": time.time()
+                "pass_rate": passed / (passed + failed + skipped)
+                if (passed + failed + skipped) > 0
+                else 0,
+                "timestamp": time.time(),
             }
         else:
             return {"error": "Could not parse test results", "output": output}
 
-    def _measure_current_coverage(self) -> Dict[str, Any]:
+    def _measure_current_coverage(self) -> dict[str, Any]:
         """Measure current code coverage."""
-        result = subprocess.run(
-            [sys.executable, "-m", "pytest", "--cov=src/point_shoting", "--cov-report=json", "tests/unit/", "tests/integration/"],
+        subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                "--cov=src/point_shoting",
+                "--cov-report=json",
+                "tests/unit/",
+                "tests/integration/",
+            ],
             capture_output=True,
             text=True,
-            cwd=Path(__file__).parent.parent.parent
+            cwd=Path(__file__).parent.parent.parent,
         )
 
         coverage_file = Path("coverage.json")
@@ -216,7 +239,7 @@ class TestRegressionSuite:
                     "percent_covered": totals.get("percent_covered", 0),
                     "missing_lines": totals.get("missing_lines", 0),
                     "excluded_lines": totals.get("excluded_lines", 0),
-                    "timestamp": time.time()
+                    "timestamp": time.time(),
                 }
             finally:
                 # Clean up coverage file
@@ -224,35 +247,39 @@ class TestRegressionSuite:
         else:
             return {"error": "Coverage file not generated"}
 
-    def _load_baseline_metrics(self, filename: str) -> Optional[Dict[str, Any]]:
+    def _load_baseline_metrics(self, filename: str) -> dict[str, Any] | None:
         """Load baseline metrics from file."""
         baseline_file = self.baselines_dir / filename
         if baseline_file.exists():
             try:
                 with open(baseline_file) as f:
                     return json.load(f)
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 print(f"Warning: Could not load baseline file {filename}")
                 return None
         return None
 
-    def _save_baseline_metrics(self, filename: str, metrics: Dict[str, Any]):
+    def _save_baseline_metrics(self, filename: str, metrics: dict[str, Any]):
         """Save metrics as baseline for future comparisons."""
         baseline_file = self.baselines_dir / filename
         try:
-            with open(baseline_file, 'w') as f:
+            with open(baseline_file, "w") as f:
                 json.dump(metrics, f, indent=2)
             print(f"Saved baseline metrics to {baseline_file}")
-        except IOError as e:
+        except OSError as e:
             print(f"Warning: Could not save baseline file {filename}: {e}")
 
-    def _compare_performance_metrics(self, current: Dict[str, Any], baseline: Dict[str, Any]):
+    def _compare_performance_metrics(
+        self, current: dict[str, Any], baseline: dict[str, Any]
+    ):
         """Compare current performance against baseline."""
         if "error" in current:
             pytest.skip(f"Current performance measurement failed: {current['error']}")
 
         if "error" in baseline:
-            pytest.skip(f"Baseline performance measurement invalid: {baseline['error']}")
+            pytest.skip(
+                f"Baseline performance measurement invalid: {baseline['error']}"
+            )
 
         # Compare FPS (allow 10% degradation to account for measurement variance)
         current_fps = current.get("avg_fps", 0)
@@ -276,9 +303,11 @@ class TestRegressionSuite:
                 f"(baseline: {baseline_frame_time:.4f}s, current: {current_frame_time:.4f}s)"
             )
 
-        print(f"Performance check passed - FPS: {current_fps:.1f}, Frame time: {current_frame_time:.4f}s")
+        print(
+            f"Performance check passed - FPS: {current_fps:.1f}, Frame time: {current_frame_time:.4f}s"
+        )
 
-    def _compare_test_results(self, current: Dict[str, Any], baseline: Dict[str, Any]):
+    def _compare_test_results(self, current: dict[str, Any], baseline: dict[str, Any]):
         """Compare current test results against baseline."""
         if "error" in current:
             pytest.skip(f"Current test run failed: {current['error']}")
@@ -305,9 +334,13 @@ class TestRegressionSuite:
                 f"(baseline: {baseline_pass_rate:.1%}, current: {current_pass_rate:.1%})"
             )
 
-        print(f"Test results check passed - Passed: {current.get('passed', 0)}, Failed: {current_failed}")
+        print(
+            f"Test results check passed - Passed: {current.get('passed', 0)}, Failed: {current_failed}"
+        )
 
-    def _compare_coverage_metrics(self, current: Dict[str, Any], baseline: Dict[str, Any]):
+    def _compare_coverage_metrics(
+        self, current: dict[str, Any], baseline: dict[str, Any]
+    ):
         """Compare current coverage against baseline."""
         if "error" in current:
             pytest.skip(f"Current coverage measurement failed: {current['error']}")

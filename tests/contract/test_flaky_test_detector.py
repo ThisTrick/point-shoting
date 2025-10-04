@@ -5,9 +5,9 @@ These tests validate that the FlakyTestDetector service adheres to its
 contract specification without requiring full implementation.
 """
 
-import pytest
-from typing import List
 from dataclasses import dataclass
+
+import pytest
 
 
 # Contract data structures (from data-model.md)
@@ -20,7 +20,7 @@ class FlakyTestReport:
     flake_rate: float  # percentage (0-100)
     is_flaky: bool
     failure_pattern: str  # e.g., "fails every 3rd run"
-    suggested_fixes: List[str]
+    suggested_fixes: list[str]
 
 
 class FlakyTestDetector:
@@ -29,7 +29,7 @@ class FlakyTestDetector:
     In real implementation, this would detect actual flaky tests.
     """
 
-    def detect_flaky_tests(self, runs: int = 10) -> List[FlakyTestReport]:
+    def detect_flaky_tests(self, runs: int = 10) -> list[FlakyTestReport]:
         """Stub: Would run tests multiple times to detect flakiness."""
         return [
             FlakyTestReport(
@@ -40,7 +40,7 @@ class FlakyTestDetector:
                 flake_rate=30.0,
                 is_flaky=True,
                 failure_pattern="fails approximately 30% of the time",
-                suggested_fixes=["Add explicit wait for element", "Increase timeout"]
+                suggested_fixes=["Add explicit wait for element", "Increase timeout"],
             )
         ]
 
@@ -54,20 +54,20 @@ class FlakyTestDetector:
             flake_rate=10.0,
             is_flaky=True,
             failure_pattern="fails occasionally, no clear pattern",
-            suggested_fixes=["Review timing dependencies"]
+            suggested_fixes=["Review timing dependencies"],
         )
 
     def quarantine_flaky_test(self, test_id: str, reason: str) -> None:
         """Stub: Would mark test as quarantined."""
         pass  # No return value
 
-    def suggest_fixes(self, flaky_test: FlakyTestReport) -> List[str]:
+    def suggest_fixes(self, flaky_test: FlakyTestReport) -> list[str]:
         """Stub: Would suggest fixes for flaky test."""
         return [
             "Add explicit wait conditions",
             "Increase test timeouts",
             "Mock time-dependent behavior",
-            "Add retry logic for network operations"
+            "Add retry logic for network operations",
         ]
 
 
@@ -124,7 +124,7 @@ class TestFlakyTestDetectorContract:
             flake_rate=40.0,
             is_flaky=True,
             failure_pattern="inconsistent failures",
-            suggested_fixes=[]
+            suggested_fixes=[],
         )
 
         suggestions = detector.suggest_fixes(flaky_report)
@@ -143,7 +143,7 @@ class TestFlakyTestDetectorContract:
             flake_rate=30.0,
             is_flaky=True,
             failure_pattern="fails approximately 30% of runs",
-            suggested_fixes=["Add wait condition", "Increase timeout"]
+            suggested_fixes=["Add wait condition", "Increase timeout"],
         )
 
         assert report.test_id == "test_integration_upload"
@@ -170,7 +170,7 @@ class TestFlakyTestDetectorContract:
             flake_rate=0.0,
             is_flaky=False,
             failure_pattern="never fails",
-            suggested_fixes=[]
+            suggested_fixes=[],
         )
         assert perfect.flake_rate == 0.0
         assert perfect.is_flaky is False
@@ -184,7 +184,7 @@ class TestFlakyTestDetectorContract:
             flake_rate=100.0,
             is_flaky=False,  # Not flaky, just broken
             failure_pattern="always fails",
-            suggested_fixes=[]
+            suggested_fixes=[],
         )
         assert broken.flake_rate == 100.0
         assert broken.is_flaky is False
@@ -198,7 +198,7 @@ class TestFlakyTestDetectorContract:
             flake_rate=30.0,
             is_flaky=True,
             failure_pattern="inconsistent",
-            suggested_fixes=[]
+            suggested_fixes=[],
         )
         assert flaky.flake_rate == 30.0
         assert flaky.is_flaky is True
@@ -212,7 +212,7 @@ class TestFlakyTestDetectorContract:
             flake_rate=5.0,
             is_flaky=True,
             failure_pattern="rare failures",
-            suggested_fixes=[]
+            suggested_fixes=[],
         )
         assert borderline.flake_rate == 5.0
         assert borderline.is_flaky is True
@@ -228,7 +228,7 @@ class TestFlakyTestDetectorContract:
             flake_rate=80.0,
             is_flaky=True,
             failure_pattern="very inconsistent",
-            suggested_fixes=[]
+            suggested_fixes=[],
         )
         assert high_flake.flake_rate > 20  # Should quarantine
 
@@ -241,7 +241,7 @@ class TestFlakyTestDetectorContract:
             flake_rate=5.0,
             is_flaky=True,
             failure_pattern="occasional failure",
-            suggested_fixes=[]
+            suggested_fixes=[],
         )
         assert low_flake.flake_rate <= 20  # May not quarantine
 
@@ -254,7 +254,7 @@ class TestFlakyTestDetectorContract:
             flake_rate=0.0,
             is_flaky=False,
             failure_pattern="always passes",
-            suggested_fixes=[]
+            suggested_fixes=[],
         )
         assert stable.is_flaky is False  # Definitely not quarantine
 
@@ -269,13 +269,14 @@ class TestFlakyTestDetectorContract:
             flake_rate=40.0,
             is_flaky=True,
             failure_pattern="UI timing issues",
-            suggested_fixes=[]
+            suggested_fixes=[],
         )
 
         suggestions = detector.suggest_fixes(flaky_report)
 
         # Should contain common flaky test fixes
         suggestion_text = " ".join(suggestions).lower()
-        assert any(term in suggestion_text for term in [
-            "wait", "timeout", "retry", "mock", "timing"
-        ]), f"Suggestions should address timing issues: {suggestions}"
+        assert any(
+            term in suggestion_text
+            for term in ["wait", "timeout", "retry", "mock", "timing"]
+        ), f"Suggestions should address timing issues: {suggestions}"

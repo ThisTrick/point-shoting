@@ -5,11 +5,11 @@ These tests validate that the project dependencies have no critical security
 vulnerabilities by running actual security scans.
 """
 
-import pytest
-import subprocess
 import json
-import os
+import subprocess
 from pathlib import Path
+
+import pytest
 
 
 @pytest.mark.e2e
@@ -24,11 +24,19 @@ class TestDependencyAudit:
         for known security vulnerabilities in installed packages.
         """
         # Run pip-audit
-        result = subprocess.run(
-            ["uv", "run", "pip-audit", "--format", "json", "--output", "test-results/python-audit.json"],
+        subprocess.run(
+            [
+                "uv",
+                "run",
+                "pip-audit",
+                "--format",
+                "json",
+                "--output",
+                "test-results/python-audit.json",
+            ],
             capture_output=True,
             text=True,
-            cwd=Path(__file__).parent.parent.parent
+            cwd=Path(__file__).parent.parent.parent,
         )
 
         # pip-audit returns 0 if no vulnerabilities, 1 if vulnerabilities found
@@ -42,7 +50,8 @@ class TestDependencyAudit:
 
             # Check for critical vulnerabilities
             critical_vulns = [
-                vuln for vuln in audit_data.get("vulnerabilities", [])
+                vuln
+                for vuln in audit_data.get("vulnerabilities", [])
                 if vuln.get("severity", "").upper() == "CRITICAL"
             ]
 
@@ -56,7 +65,9 @@ class TestDependencyAudit:
             elif audit_data.get("vulnerabilities"):
                 # Non-critical vulnerabilities - warn but don't fail
                 vuln_count = len(audit_data["vulnerabilities"])
-                print(f"WARNING: {vuln_count} non-critical Python vulnerabilities found")
+                print(
+                    f"WARNING: {vuln_count} non-critical Python vulnerabilities found"
+                )
                 print("See test-results/python-audit.json for details")
             else:
                 print("✅ No Python vulnerabilities found")
@@ -77,10 +88,7 @@ class TestDependencyAudit:
 
         # Run npm audit
         result = subprocess.run(
-            ["npm", "audit", "--json"],
-            capture_output=True,
-            text=True,
-            cwd=ui_dir
+            ["npm", "audit", "--json"], capture_output=True, text=True, cwd=ui_dir
         )
 
         # npm audit returns 0 if no vulnerabilities, 1 if vulnerabilities found
@@ -99,7 +107,8 @@ class TestDependencyAudit:
         vulnerabilities = audit_data.get("vulnerabilities", {})
 
         critical_vulns = [
-            name for name, vuln in vulnerabilities.items()
+            name
+            for name, vuln in vulnerabilities.items()
             if vuln.get("severity", "").upper() == "CRITICAL"
         ]
 
@@ -129,7 +138,7 @@ class TestDependencyAudit:
             ["uv", "sync", "--dry-run"],
             capture_output=True,
             text=True,
-            cwd=Path(__file__).parent.parent.parent
+            cwd=Path(__file__).parent.parent.parent,
         )
 
         # uv sync --dry-run returns 0 if no conflicts, non-zero if conflicts
@@ -147,12 +156,15 @@ class TestDependencyAudit:
                 ["npm", "install", "--dry-run"],
                 capture_output=True,
                 text=True,
-                cwd=ui_dir
+                cwd=ui_dir,
             )
 
             # npm install --dry-run shows what would be installed
             # Look for conflict warnings
-            if "conflict" in result.stderr.lower() or "conflict" in result.stdout.lower():
+            if (
+                "conflict" in result.stderr.lower()
+                or "conflict" in result.stdout.lower()
+            ):
                 pytest.fail(
                     f"npm dependency conflicts detected:\n{result.stderr}\n{result.stdout}"
                 )
@@ -176,7 +188,9 @@ class TestDependencyAudit:
 
             # Should have expected structure
             assert "dependencies" in data or "vulnerabilities" in data
-            print(f"✅ Python audit report generated with {len(data.get('dependencies', []))} dependencies scanned")
+            print(
+                f"✅ Python audit report generated with {len(data.get('dependencies', []))} dependencies scanned"
+            )
         else:
             pytest.fail("Python audit report not generated")
 
@@ -187,6 +201,6 @@ class TestDependencyAudit:
 
             # Should have expected structure
             assert isinstance(data, dict)
-            print(f"✅ npm audit report generated")
+            print("✅ npm audit report generated")
         else:
             pytest.fail("npm audit report not generated")
