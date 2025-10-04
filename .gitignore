@@ -169,3 +169,9 @@ ui/release/
 !tests/fixtures/*.png
 .point_shoting_settings.json
 .hypothesis
+
+# Test results
+test-results/
+ui/test-results/
+playwright-report/
+ui/playwright-report/
