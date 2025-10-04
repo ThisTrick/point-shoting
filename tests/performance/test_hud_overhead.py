@@ -1,8 +1,6 @@
 """Performance budget test for HUD overhead"""
 
 import pytest
-import time
-from unittest.mock import Mock
 
 # Imports will fail until implementation exists - expected for TDD
 try:
@@ -23,8 +21,7 @@ class TestHUDOverhead:
 
         # Target: 60 FPS = 16.67ms per frame
         # 5% budget = 0.83ms for HUD rendering
-        max_hud_time = 0.00083  # 0.83ms in seconds
-        
+
         # renderer = HUDRenderer()
         # mock_metrics = {
         #     'fps_avg': 60.0,
@@ -33,25 +30,25 @@ class TestHUDOverhead:
         #     'stage': 'FORMATION',
         #     'recognition': 0.85
         # }
-        # 
+        #
         # # Measure HUD render time over multiple calls
         # render_times = []
         # for _ in range(100):  # Average over multiple renders
         #     start_time = time.perf_counter()
         #     hud_output = renderer.render(mock_metrics)
         #     end_time = time.perf_counter()
-        #     
+        #
         #     render_time = end_time - start_time
         #     render_times.append(render_time)
-        # 
+        #
         # avg_render_time = sum(render_times) / len(render_times)
         # max_render_time = max(render_times)
-        # 
+        #
         # assert avg_render_time <= max_hud_time, (
         #     f"Average HUD render time {avg_render_time*1000:.2f}ms exceeds "
         #     f"budget {max_hud_time*1000:.2f}ms"
         # )
-        # 
+        #
         # # Allow some variance, but max shouldn't be too high
         # assert max_render_time <= max_hud_time * 2, (
         #     f"Max HUD render time {max_render_time*1000:.2f}ms exceeds "

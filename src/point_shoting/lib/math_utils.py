@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Tuple
-
 import numpy as np
 
 
@@ -30,12 +28,16 @@ def calculate_distances(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     - Returns (N,) float array
     """
     if a.shape != b.shape or a.ndim != 2 or a.shape[1] != 2:
-        raise ValueError(f"Expected a and b with shape (N, 2), got {a.shape} and {b.shape}")
-    diff = (a - b)
+        raise ValueError(
+            f"Expected a and b with shape (N, 2), got {a.shape} and {b.shape}"
+        )
+    diff = a - b
     return calculate_magnitudes(diff)
 
 
-def clamp_positions_inplace(positions: np.ndarray, lo: float = 0.0, hi: float = 1.0) -> None:
+def clamp_positions_inplace(
+    positions: np.ndarray, lo: float = 0.0, hi: float = 1.0
+) -> None:
     """Clamp normalized positions to [lo, hi] range in-place.
 
     Default matches project convention of [0, 1]. Extra parameters are accepted for
@@ -66,7 +68,11 @@ def calculate_recognition_score(positions: np.ndarray, targets: np.ndarray) -> f
     Based on spec: invert normalized distance to targets and aggregate with a perceptual
     power curve to emphasize late-stage progress.
     """
-    if positions.shape != targets.shape or positions.ndim != 2 or positions.shape[1] != 2:
+    if (
+        positions.shape != targets.shape
+        or positions.ndim != 2
+        or positions.shape[1] != 2
+    ):
         raise ValueError(
             f"Expected positions and targets with shape (N, 2), got {positions.shape} and {targets.shape}"
         )
@@ -75,11 +81,13 @@ def calculate_recognition_score(positions: np.ndarray, targets: np.ndarray) -> f
         return 0.0
 
     # Distances in unit square; max possible is diagonal sqrt(2)
-    distances = calculate_distances(positions.astype(np.float32, copy=False), targets.astype(np.float32, copy=False))
+    distances = calculate_distances(
+        positions.astype(np.float32, copy=False), targets.astype(np.float32, copy=False)
+    )
     max_distance = np.sqrt(2.0).astype(np.float32)
     proximity = 1.0 - np.clip(distances / max_distance, 0.0, 1.0)
     recognition = float(np.mean(proximity))
     # Perceptual mapping
-    recognition = recognition ** 0.7
+    recognition = recognition**0.7
     # Clamp numerical noise
     return float(np.clip(recognition, 0.0, 1.0))

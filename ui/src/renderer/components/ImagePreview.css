@@ -1,0 +1,423 @@
+/**
+ * ImagePreview Component Styles
+ * 
+ * Provides styling for the image preview interface including:
+ * - Image display container with zoom functionality
+ * - Loading and error states
+ * - Zoom controls
+ * - Metadata display panel
+ */
+
+.image-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  height: 100%;
+}
+
+/* Image Container */
+.image-container {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  min-height: 300px;
+}
+
+.image-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  padding: 1rem;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+  cursor: grab;
+}
+
+.preview-image:active {
+  cursor: grabbing;
+}
+
+/* Loading State */
+.loading-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-tertiary);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--accent-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error State */
+.error-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-tertiary);
+}
+
+.error-icon {
+  font-size: 2rem;
+  opacity: 0.6;
+}
+
+.error-text {
+  color: var(--text-error);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-tertiary);
+}
+
+.empty-icon {
+  font-size: 3rem;
+  opacity: 0.4;
+}
+
+.empty-text {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+/* Zoom Controls */
+.zoom-controls {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 20px;
+  padding: 0.5rem;
+  backdrop-filter: blur(8px);
+}
+
+.zoom-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.zoom-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.zoom-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.zoom-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.zoom-button.reset {
+  font-size: 0.875rem;
+}
+
+.zoom-level {
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 500;
+  min-width: 48px;
+  text-align: center;
+}
+
+/* Metadata Panel */
+.metadata-panel {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  flex-shrink: 0;
+}
+
+.metadata-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.metadata-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem;
+}
+
+.metadata-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+
+.metadata-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.metadata-value {
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  text-align: right;
+  word-break: break-word;
+  max-width: 60%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .image-container {
+    min-height: 250px;
+  }
+
+  .zoom-controls {
+    bottom: 0.5rem;
+    right: 0.5rem;
+    padding: 0.375rem;
+  }
+
+  .zoom-button {
+    width: 28px;
+    height: 28px;
+    font-size: 0.875rem;
+  }
+
+  .metadata-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metadata-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .metadata-value {
+    text-align: left;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .image-preview {
+    gap: 0.75rem;
+  }
+
+  .image-container {
+    min-height: 200px;
+  }
+
+  .metadata-panel {
+    padding: 0.75rem;
+  }
+}
+
+/* Dark Mode Adjustments */
+@media (prefers-color-scheme: dark) {
+  .preview-image {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .zoom-controls {
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid var(--border-color);
+  }
+
+  .zoom-button {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .preview-image,
+  .zoom-button,
+  .loading-spinner {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* Modal Styles */
+.image-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.image-modal-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal-close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  transition: background-color 0.2s ease;
+}
+
+.modal-close-button:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+/* Modal mode adjustments */
+.image-preview.modal-mode {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.image-preview.modal-mode .image-container {
+  min-height: auto;
+  height: 100%;
+}
+
+.image-preview.modal-mode .metadata-panel {
+  margin-top: 1rem;
+}
+
+/* Clickable image cursor */
+.preview-image.clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.preview-image.clickable:hover {
+  transform: scale(1.02);
+}
+
+/* Thumbnail mode styles */
+.image-preview.thumbnail-mode {
+  gap: 0.5rem;
+}
+
+.image-preview.thumbnail-mode .image-container {
+  min-height: auto;
+  border: none;
+  background: transparent;
+}
+
+.image-preview.thumbnail-mode .image-wrapper {
+  padding: 0.25rem;
+}
+
+.image-preview.thumbnail-mode .preview-image {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.image-preview.thumbnail-mode .metadata-panel {
+  display: none;
+}
+
+.image-preview.thumbnail-mode .zoom-controls {
+  display: none;
+}

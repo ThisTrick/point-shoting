@@ -10,6 +10,10 @@ from __future__ import annotations
 
 import os
 import sys
+from unittest.mock import Mock
+
+import numpy as np
+import pytest
 
 
 def _add_repo_root_to_syspath() -> None:
@@ -22,35 +26,33 @@ def _add_repo_root_to_syspath() -> None:
 _add_repo_root_to_syspath()
 
 
-import pytest
-import numpy as np
-from unittest.mock import Mock, patch
-
-
 @pytest.fixture
 def mock_pil_image():
     """Create a mock PIL Image that works properly with numpy.array()"""
-    def _create_mock_image(width=100, height=100, mode='RGB'):
+
+    def _create_mock_image(width=100, height=100, mode="RGB"):
         mock_img = Mock()
         mock_img.size = (width, height)
         mock_img.mode = mode
         mock_img.convert.return_value = mock_img
         mock_img.resize.return_value = mock_img
-        
+
         # Create a numpy array that represents the image
-        if mode == 'RGB':
+        if mode == "RGB":
             channels = 3
-        elif mode == 'RGBA':
+        elif mode == "RGBA":
             channels = 4
         else:
             channels = 1
-            
+
         # Create fake image data
-        image_array = np.random.randint(0, 255, (height, width, channels), dtype=np.uint8)
-        
+        image_array = np.random.randint(
+            0, 255, (height, width, channels), dtype=np.uint8
+        )
+
         # Mock __array__ method so np.array(mock_img) works
         mock_img.__array__ = lambda: image_array
-        
+
         return mock_img, image_array
-    
+
     return _create_mock_image

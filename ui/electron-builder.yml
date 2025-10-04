@@ -1,0 +1,102 @@
+appId: com.pointshoting.particle-ui
+productName: "Particle Animation UI"
+copyright: "Copyright © 2025 Point-Shoting Team"
+
+directories:
+  output: dist-packages/
+
+asar: true
+asarUnpack:
+  - node_modules/sharp/**/*
+  - node_modules/@img/**/*
+
+files:
+  - dist/
+  - package.json
+  - node_modules/sharp/**/*
+  - node_modules/@img/**/*
+  - node_modules/color/**/*
+  - node_modules/detect-libc/**/*
+  - node_modules/semver/**/*
+  - "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}"
+  - "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}"
+  - "!**/node_modules/*.d.ts"
+  - "!**/node_modules/.bin"
+  - "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}"
+  - "!.editorconfig"
+  - "!**/._*"
+  - "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}"
+  - "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}"
+  - "!**/{appveyor.yml,.travis.yml,circle.yml}"
+  - "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
+  - "!src/"
+  - "!tests/"
+  - from: "/home/den/git/point-shoting/src/point_shoting/"
+    to: "python-engine/"
+    filter: "**/*.py"
+
+extraResources: []
+  - "!*.config.*"
+
+extraResources:
+  - from: "../src/point_shoting/"
+    to: "python-engine/"
+    filter: "**/*.py"
+
+mac:
+  category: public.app-category.graphics-design
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  
+win:
+  target:
+    - target: nsis
+      arch: [x64, ia32]
+  publisherName: "Point-Shoting Team"
+  
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]
+    - target: rpm
+      arch: [x64]
+  category: Graphics
+  desktop:
+    Name: "Particle Animation UI"
+    Comment: "Create stunning particle animations"
+    Categories: "Graphics;Photography;"
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: "Particle Animation UI"
+
+dmg:
+  title: "Particle Animation UI ${version}"
+  window:
+    width: 540
+    height: 380
+  contents:
+    - x: 410
+      y: 150
+      type: link
+      path: /Applications
+    - x: 130
+      y: 150
+      type: file
+
+deb:
+  packageCategory: graphics
+  priority: optional
+
+rpm:
+  packageCategory: Applications/Graphics
+
+publish:
+  provider: github
+  owner: point-shoting
+  repo: point-shoting

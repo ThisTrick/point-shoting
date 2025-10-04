@@ -1,64 +1,19 @@
 # GitHub Copilot Instructions
 
-## Project Overview
-This is a Python particle animation system that creates burst effects transitioning to recognizable image formation. The project uses a test-driven development approach with comprehensive testing strategies.
-
 ## Development Workflow & Tools
-
-### Package Management
-- **Use UV exclusively** for dependency management, not pip or conda
-- Commands: `uv sync`, `uv add package-name`, `uv run command`
-- Never suggest `pip install` - always use `uv add`
-
-### Make Commands
-- **Use Makefile targets** for common development tasks
-- Quality checks: `make typecheck`, `make lint`, `make format`, `make check-all`
-- Testing: `make test`, `make test-unit`, `make test-contract`, `make test-integration`
-- Setup: `make install`, `make clean`, `make help`
-- **Prefer make targets** over direct UV commands for consistency
 
 ### Testing Framework
 - **Use runTests tool** for executing tests, not terminal commands
-- Test structure: `tests/contract/`, `tests/integration/`, `tests/unit/`, `tests/performance/`
+- **Use Makefile targets** for comprehensive test execution and CI pipelines
 - VS Code Testing View is configured and preferred for development
 - Property-based testing with hypothesis framework
 
-### Code Style & Standards
-- Python 3.11+ with **strict type hints** (mypy configured)
-- Use dataclasses for data structures
-- NumPy arrays for particle data (performance critical)
-- Rich console for output formatting
-- PIL/Pillow for image processing
-- **Type checking**: Run `make typecheck` before commits
-- **Code formatting**: Use `make format` for consistent style
-
-### Architecture Patterns
-- **Contract-first development**: All services have contract tests
-- **Phase-based implementation**: Follow the task phases in `specs/001-/tasks.md`
-- **Array-based particle storage**: Use `ParticleArrays` dataclass with NumPy
-- **Service layer pattern**: Separate services in `src/point_shoting/services/`
-
-### Testing Strategy
-1. **Contract tests**: Verify interface compliance and invariants
-2. **Unit tests**: Test individual components with edge cases
-3. **Integration tests**: Test component interactions
-4. **Property-based tests**: Use hypothesis for invariant testing
-5. **Performance tests**: Mock timing for deterministic benchmarks
-
-### File Organization
-```
-src/point_shoting/
-├── models/          # Data structures (Stage, Settings, ParticleArrays, Metrics)
-├── services/        # Business logic services
-├── cli/            # Command-line interface
-└── lib/            # Utilities (logging, timing)
-
-tests/
-├── contract/       # Interface compliance tests
-├── integration/    # Cross-component tests
-├── unit/          # Component-specific tests
-└── performance/   # Performance benchmarks
-```
+#### Test Execution Strategies:
+- **Quick development**: Use quick pipeline commands for fast feedback
+- **CI pipeline**: Use comprehensive pipeline commands for full validation
+- **Debug pipeline**: Use sequential execution for debugging
+- **Parallel execution**: Use parallel execution for better performance
+- **Coverage**: Use coverage reporting for comprehensive validation
 
 ### Common Patterns
 
@@ -68,49 +23,36 @@ tests/
 - Focus searches on specific topics (e.g., "array operations", "image processing", "test fixtures")
 
 #### When creating tests:
-- Use `runTests(files=["/absolute/path/to/test.py"])` to execute
+- Use `runTests(files=["/absolute/path/to/test.py"])` for individual test execution
+- Use Makefile targets for comprehensive testing
 - Include proper pytest markers: `@pytest.mark.unit`, `@pytest.mark.contract`
 - Follow arrange-act-assert pattern
 - Use descriptive test names that explain the scenario
 
-#### When working with particles:
-- Always use `ParticleArrays` dataclass for particle storage
-- Positions and targets in normalized [0,1]² coordinate space
-- Use `allocate_particle_arrays(count)` for initialization
-- Apply bounds checking with `clamp_positions()`
+#### When running tests:
+- **Development feedback**: Use quick pipeline commands (fast, skips E2E)
+- **CI validation**: Use comprehensive pipeline commands (includes all tests)
+- **Debug issues**: Use sequential execution (step-by-step, shows failures early)
+- **Individual test types**: Use specific test commands for targeted testing
 
 #### When implementing services:
-- Follow contract specifications in `specs/001-/contracts/`
+- Follow contract specifications
 - Implement contract test first, then service
 - Use dependency injection pattern
 - Handle edge cases and validation
 
 #### When fixing type checking errors:
-- Use `make typecheck` to run mypy with proper configuration
-- Add return type annotations (`-> None`, `-> int`, etc.) to all functions
+- Use type checking tools to run static analysis
+- Add return type annotations to all functions
 - Use proper type hints for function parameters
-- Import required types: `from typing import Dict, Any, Optional, List`
+- Import required types from typing module
 - Fix union type issues with proper None checks
-- Use `# type: ignore` sparingly and only when necessary
+- Use type ignore sparingly and only when necessary
 
 ### Git Workflow
-- Work on branch `001-` for this feature
 - Use GitKraken MCP tools for git operations when available
 - Commit frequently with descriptive messages
-- Update `specs/001-/tasks.md` to track progress
-
-### Performance Considerations
-- Particle operations use NumPy for vectorization
-- HUD rendering has 5% frame budget constraint
-- Memory usage target: ≤300MB RSS
-- Target performance: ≥55 FPS for medium density
-
-### Key Dependencies
-- **numpy**: Particle array operations
-- **pillow**: Image processing and loading
-- **rich**: Console output formatting
-- **pytest**: Testing framework
-- **hypothesis**: Property-based testing
+- Update task tracking documents to track progress
 
 ### Documentation & Research Tools
 
@@ -121,16 +63,78 @@ tests/
   - `mcp_context7_get-library-docs`: Get comprehensive documentation for libraries
 - **Usage pattern**:
   ```
-  1. First resolve library ID: mcp_context7_resolve-library-id(libraryName="numpy")
-  2. Then get docs: mcp_context7_get-library-docs(context7CompatibleLibraryID="/numpy/numpy")
+  1. First resolve library ID: mcp_context7_resolve-library-id(libraryName="library-name")
+  2. Then get docs: mcp_context7_get-library-docs(context7CompatibleLibraryID="/org/library")
   ```
 - **When to use**: When you need current API documentation, usage examples, or best practices for external libraries
-- **Examples**: NumPy array operations, PIL/Pillow image processing, pytest fixtures, hypothesis strategies
+
+### Mandatory Documentation & Tools
+
+#### Makefile Usage (MANDATORY)
+- **ALWAYS use Makefile targets** for all development, build, test, and deployment operations
+- **NEVER run raw commands** like `pytest`, `ruff`, `mypy`, `npm` directly - always use corresponding Makefile targets
+- **Key mandatory targets** (from `make help`):
+
+  **Setup & Dependencies:**
+  - `make install` - Install dependencies using UV
+  - `make dev-install` - Install dependencies with all extras using UV (not in help)
+  - `make sync` - Sync dependencies using UV sync script
+
+  **Code Quality:**
+  - `make check-all` - Run all quality checks (format, lint, typecheck)
+  - `make lint` - Lint code with ruff
+  - `make format` - Format code with ruff
+  - `make typecheck` - Run mypy type checking
+  - `make typecheck-fix` - Run mypy with suggestions for quick fixes
+  - `make typecheck-strict` - Run strict mypy type checking (not in help)
+
+  **Testing Pipelines:**
+  - `make test-pipeline-quick` - Run quick pipeline (quality + unit + integration, skip E2E) - for development
+  - `make test-sequential` - Run sequential testing pipeline (build → unit → UI → contract → integration → performance → E2E) - for development debugging
+  - `make test-pipeline-ci` - Run CI pipeline (install + quality + coverage + UI unit+contract + UI build + E2E)
+
+  **Individual Test Types:**
+  - `make test` - Run all tests (parallel)
+  - `make test-unit` - Run unit tests only (parallel)
+  - `make test-contract` - Run contract tests only (parallel)
+  - `make test-integration` - Run integration tests only (parallel)
+  - `make test-performance` - Run performance tests only (parallel)
+  - `make test-coverage` - Run tests with coverage report (parallel)
+
+  **UI Development:**
+  - `make ui-build` - Build UI application
+  - `make ui-test` - Run all UI tests (unit + contract + integration)
+  - `make ui-test-parallel` - Run UI unit and contract tests in parallel
+  - `make ui-test-contract` - Run UI contract tests
+  - `make ui-test-integration` - Run UI integration tests
+  - `make ui-test-e2e` - Run UI E2E tests
+  - `make ui-lint` - Lint UI code
+  - `make ui-typecheck` - Type check UI code
+
+  **Build & Development:**
+  - `make build` - Build the package
+  - `make build-all` - Build both Python and UI components (not in help)
+  - `make run-example` - Run minimal example
+  - `make profile` - Run performance profiling
+  - `make clean` - Remove build artifacts and cache files
+  - `make help` - Show all available targets
+
+- **Before any code changes**: Run `make check-all` to ensure code quality
+- **Before committing**: Run `make test-pipeline-quick` for validation
+- **For CI/CD setup**: Use `make test-pipeline-ci` as the reference pipeline
+
+#### CI/CD Documentation (MANDATORY)
+- **ALWAYS consult `CI_DOCUMENTATION.md`** before making changes to testing or CI/CD processes
+- **Understanding test levels**: Refer to CI_DOCUMENTATION.md for the complete testing pyramid and execution order
+- **Pipeline configuration**: Use CI_DOCUMENTATION.md as the authoritative source for pipeline setup
+- **Performance targets**: Check CI_DOCUMENTATION.md for expected test execution times and resource usage
+- **Test categories**: Understand the 8 levels of testing (Unit → UI Unit → Contract → UI Contract → Integration → UI Integration → Performance → E2E)
+- **Failure debugging**: Use CI_DOCUMENTATION.md guidance for troubleshooting test failures by category
 
 ### Error Handling Patterns
 - Use descriptive error messages with context
 - Validate inputs at service boundaries
-- Graceful degradation for optional features (HUD, watermarks)
+- Graceful degradation for optional features
 - Proper exception types for different error categories
 
 ### Documentation Standards
@@ -138,12 +142,5 @@ tests/
 - Type hints for all function signatures
 - Inline comments for complex algorithms
 - README updates for user-facing changes
-
-## Current Project Status
-- **Phase 3.7 COMPLETED**: Integration Wiring & Additional Tests (56/100 tasks done)
-- **Next Phase**: 3.8 Performance & Polish
-- All core services implemented and tested
-- 37 contract tests passing, 42 unit tests added
-- Property-based testing framework established
 
 When suggesting code changes or new features, always consider the existing architecture patterns and testing strategy.
