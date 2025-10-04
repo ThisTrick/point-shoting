@@ -3,7 +3,7 @@
  * IPC handlers for communication with the Python particle animation engine
  */
 
-import { ipcMain, IpcMainInvokeEvent } from 'electron';
+import { ipcMain, IpcMainInvokeEvent, BrowserWindow } from 'electron';
 import { PythonEngineBridge } from '../services/PythonEngineBridge';
 import {
   EngineStartResult,
@@ -238,7 +238,6 @@ export class EngineIpcHandlers {
   // Utility Methods
   private broadcastToRenderers(channel: string, data: any): void {
     // Get all BrowserWindow instances and send to each
-    const { BrowserWindow } = require('electron');
     const windows = BrowserWindow.getAllWindows();
     
     windows.forEach((window: any) => {

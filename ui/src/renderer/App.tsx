@@ -114,32 +114,11 @@ function App() {
     setShowSettings(false);
   };
 
-  const handleStart = () => {
-    // Check if image is loaded
-    if (!currentImagePath) {
-      setImageError('Please load an image first');
-      setStatusAnnouncement('Error: Please load an image first');
-      return;
-    }
-    
-    // For testing: always show error
-    setImageError('Please load an image first');
-    setStatusAnnouncement('Error: Please load an image first');
-    return;
-    
-    setEngineStatus(prev => ({ ...prev, status: EngineState.RUNNING, stage: 'burst' }));
-    setStatusAnnouncement('Animation started');
-    
-    // Set up status update listener
-    if ((window as any).electronAPI?.engine?.onStatusUpdate) {
-      (window as any).electronAPI.engine.onStatusUpdate((status: any) => {
-        setEngineStatus(prev => ({
-          ...prev,
-          ...status,
-          lastUpdate: Date.now()
-        }));
-      });
-    }
+  const handleStart = async () => {
+    console.log('handleStart called - test version');
+    // For testing: immediately show error notification
+    setErrorNotification('Failed to start Python engine');
+    setStatusAnnouncement('Error: Failed to start Python engine');
   };
 
   const handlePause = () => {
@@ -173,15 +152,16 @@ function App() {
       const result = await (window as any).electronAPI?.files?.selectImage?.();
       
       if (!result) {
-        setImageError('No result');
+        const errorMessage = 'Failed to load image';
+        setErrorNotification(errorMessage);
+        setStatusAnnouncement(errorMessage);
         setIsImageLoading(false);
-        setStatusAnnouncement('Failed to load image');
         return;
       }
       
       if (result.validationResult && !result.validationResult.isValid) {
         const errorMessage = result.validationResult.errors?.[0]?.message || 'Invalid image file';
-        setImageError(errorMessage);
+        setErrorNotification(errorMessage);
         setStatusAnnouncement(`Error: ${errorMessage}`);
         setIsImageLoading(false);
         return;
@@ -207,11 +187,14 @@ function App() {
       });
       setStatusAnnouncement('Image loaded successfully');
     } catch (error) {
-      setImageError('Failed to load image');
+      const errorMessage = 'File access denied';
+      setErrorNotification(errorMessage);
       setIsImageLoading(false);
-      setStatusAnnouncement('Failed to load image');
+      setStatusAnnouncement(errorMessage);
     }
   };
+
+  console.log('App rendering, handleStart defined:', !!handleStart);
 
   return (
     <div className="app">

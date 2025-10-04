@@ -236,8 +236,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <label className="setting-label">Animation Speed</label>
         <select
           className="setting-select"
-          value={animationConfig.speed}
-          onChange={(e) => handleAnimationConfigChange('speed', e.target.value as AnimationSpeed)}
+          value={animationConfig.speed || AnimationSpeed.NORMAL}
+          onChange={(e) => handleAnimationConfigChange('speed', e.target.value as any)}
         >
           <option value={AnimationSpeed.SLOW}>Slow</option>
           <option value={AnimationSpeed.NORMAL}>Normal</option>
@@ -250,8 +250,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <label className="setting-label">Particle Density</label>
         <select
           className="setting-select"
-          value={animationConfig.density}
-          onChange={(e) => handleAnimationConfigChange('density', e.target.value as ParticleDensity)}
+          value={animationConfig.density || ParticleDensity.MEDIUM}
+          onChange={(e) => handleAnimationConfigChange('density', e.target.value as any)}
         >
           <option value={ParticleDensity.LOW}>Low</option>
           <option value={ParticleDensity.MEDIUM}>Medium</option>
@@ -264,8 +264,8 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <label className="setting-label">Transition Style</label>
         <select
           className="setting-select"
-          value={animationConfig.transitionStyle}
-          onChange={(e) => handleAnimationConfigChange('transitionStyle', e.target.value as TransitionStyle)}
+          value={animationConfig.transitionStyle || TransitionStyle.SMOOTH}
+          onChange={(e) => handleAnimationConfigChange('transitionStyle', e.target.value as any)}
         >
           <option value={TransitionStyle.SMOOTH}>Smooth</option>
           <option value={TransitionStyle.BURST}>Burst</option>
@@ -278,13 +278,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <label className="setting-label">Color Mapping</label>
         <select
           className="setting-select"
-          value={animationConfig.colorMapping}
-          onChange={(e) => handleAnimationConfigChange('colorMapping', e.target.value as ColorMappingMode)}
+          value={animationConfig.colorMapping || ColorMappingMode.STYLISH}
+          onChange={(e) => handleAnimationConfigChange('colorMapping', e.target.value as any)}
         >
           <option value={ColorMappingMode.ORIGINAL}>Original</option>
           <option value={ColorMappingMode.ENHANCED}>Enhanced</option>
           <option value={ColorMappingMode.ARTISTIC}>Artistic</option>
           <option value={ColorMappingMode.MONOCHROME}>Monochrome</option>
+          <option value={ColorMappingMode.STYLISH}>Stylish</option>
+          <option value={ColorMappingMode.PRECISE}>Precise</option>
         </select>
       </div>
 
@@ -292,11 +294,11 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <label className="setting-checkbox">
           <input
             type="checkbox"
-            checked={animationConfig.enableEffects}
+            checked={animationConfig.enableEffects || false}
             onChange={(e) => handleAnimationConfigChange('enableEffects', e.target.checked)}
           />
           <span className="checkmark"></span>
-          Enable Visual Effects
+          Enable Effects
         </label>
       </div>
 
@@ -304,7 +306,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <label className="setting-checkbox">
           <input
             type="checkbox"
-            checked={animationConfig.enableWatermark}
+            checked={animationConfig.enableWatermark || false}
             onChange={(e) => handleAnimationConfigChange('enableWatermark', e.target.checked)}
           />
           <span className="checkmark"></span>
@@ -442,7 +444,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               key={tab.id}
               type="button"
               className={`tab-button ${activeCategory === tab.id ? 'active' : ''}`}
-              onClick={() => handleCategoryChange(tab.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCategoryChange(tab.id);
+              }}
               data-testid={`${tab.id}-tab`}
             >
               <span className="tab-icon">{tab.icon}</span>
@@ -453,9 +458,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
         {/* Content */}
         <div className="settings-content">
-          {activeCategory === SettingsCategory.UI && renderUISettings()}
-          {activeCategory === SettingsCategory.ANIMATION && renderAnimationSettings()}
-          {activeCategory === SettingsCategory.ADVANCED && renderAdvancedSettings()}
+          {activeCategory === SettingsCategory.UI ? renderUISettings() : activeCategory === SettingsCategory.ANIMATION ? renderAnimationSettings() : renderAdvancedSettings()}
         </div>
 
         {/* Validation Errors */}
