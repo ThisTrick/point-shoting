@@ -116,6 +116,47 @@ test-sequential: build-all test-unit ui-test-parallel test-contract test-integra
 	@echo "   Build → Unit → UI Unit+Contract (parallel) → Contract → Integration → Performance → E2E"
 	@echo "   Note: UI Integration tests require Electron environment (currently skipped)"
 
+# E2E Testing Targets
+test-e2e-engine:
+	@echo "Running Python E2E tests..."
+	uv run pytest tests/e2e/ -v -m "e2e" --tb=short
+	@echo "✅ Python E2E tests completed!"
+
+test-e2e-ui:
+	@echo "Running UI E2E tests..."
+	cd ui && npm run test:e2e
+	@echo "✅ UI E2E tests completed!"
+
+test-e2e-all: test-e2e-engine test-e2e-ui
+	@echo "✅ All E2E tests completed!"
+
+# Audit and Regression Testing
+audit-dependencies:
+	@echo "Running dependency audit..."
+	uv run pip-audit
+	@echo "✅ Dependency audit completed!"
+
+test-regression:
+	@echo "Running regression test suite..."
+	uv run pytest tests/e2e/test_regression_suite.py -v --tb=short
+	@echo "✅ Regression tests completed!"
+
+detect-flaky:
+	@echo "Running flaky test detection..."
+	uv run pytest tests/e2e/test_flaky_detection.py -v --tb=short
+	@echo "✅ Flaky test detection completed!"
+
+# Complete testing pipeline including all E2E and audit targets
+test-pipeline-complete: install check-all test-coverage ui-test-parallel ui-build test-e2e-all audit-dependencies test-regression detect-flaky
+	@echo "✅ Complete testing pipeline completed!"
+	@echo "   Install → Quality → Coverage → UI Unit+Contract → UI Build → E2E All → Audit → Regression → Flaky Detection"
+
+# Create test execution reports and dashboards - Generate comprehensive test reports with trends, flaky test detection, and CI integration
+test-reports:
+	@echo "Generating comprehensive test reports..."
+	python scripts/generate_test_reports.py
+	@echo "✅ Test reports generated!"
+
 # Sync dependencies
 sync:
 	./scripts/uv_sync.sh
@@ -142,8 +183,16 @@ help:
 	@echo "    test-performance - Run performance tests only (parallel)"
 	@echo "    test-coverage  - Run tests with coverage report (parallel)"
 	@echo "    test-verbose   - Run all tests with verbose output for debugging"
+	@echo "    test-e2e-engine - Run Python E2E tests (dependency audit, engine pipeline, regression suite, flaky detection)"
+	@echo "    test-e2e-ui    - Run UI E2E tests"
+	@echo "    test-e2e-all   - Run all E2E tests (both Python and UI)"
+	@echo "    audit-dependencies - Run dependency audit (pip-audit)"
+	@echo "    test-regression - Run regression test suite"
+	@echo "    detect-flaky   - Run flaky test detection"
 	@echo "    test-pipeline-quick - Run quick pipeline (quality + unit + integration, skip E2E) - for development"
 	@echo "    test-pipeline-ci - Run CI pipeline (install + quality + coverage + UI unit+contract + UI build + E2E)"
+	@echo "    test-pipeline-complete - Run complete testing pipeline including all E2E and audit targets"
+	@echo "    test-reports    - Generate comprehensive test reports and dashboards"
 	@echo "    test-sequential - Run sequential testing pipeline (build → unit → UI → contract → integration → performance → E2E) - for development debugging"
 	@echo ""
 	@echo "  UI Development:"

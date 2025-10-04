@@ -670,6 +670,7 @@ dependencies = [
 [package.optional-dependencies]
 dev = [
     { name = "hypothesis" },
+    { name = "pip-audit" },
     { name = "pytest" },
     { name = "ruff" },
 ]
@@ -690,6 +691,7 @@ requires-dist = [
     { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6.0.0" },
     { name = "numpy", specifier = ">=1.24.0" },
     { name = "pillow", specifier = ">=10.0.0" },
+    { name = "pip-audit", marker = "extra == 'dev'", specifier = ">=2.0.0" },
     { name = "psutil", specifier = ">=7.1.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.0" },
     { name = "rich", specifier = ">=13.0.0" },

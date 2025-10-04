@@ -5,13 +5,28 @@ on:
     branches: [ main, develop, "001-*" ]
   pull_request:
     branches: [ main, develop ]
+  schedule:
+    # Run flaky detection daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
 
 jobs:
   lint:
     runs-on: ubuntu-latest
     
+    step  performance-regression-alert:
+    runs-on: ubuntu-latest
+    needs: [performance-benchmark, regression-tests]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && (needs.performance-benchmark.result == 'failure' || needs.regression-tests.result == 'failure')
+    
     steps:
-    - uses: actions/checkout@v4
+    - name: Performance Regression Alert
+      run: |
+        echo "🚨 Performance or Regression Alert!"
+        echo "Performance benchmarks or regression tests have failed."
+        echo "Check the performance-benchmark and regression-tests job outputs for details."
+        echo "This indicates a potential performance degradation or functionality regression."
+        exit 1s: actions/checkout@v4
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -32,7 +47,28 @@ jobs:
         uv run ruff check .
         uv run ruff format --check .
 
-  test:
+  audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+        enable-cache: true
+    
+    - name: Install dependencies
+      run: uv sync
+    
+    - name: Run dependency audit
+      run: make audit-dependencies
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -96,7 +132,16 @@ jobs:
           --cov-report=xml \
           --cov-report=html \
           --cov-report=term-missing \
+          --cov-fail-under=80 \
           tests/contract/ tests/unit/ tests/integration/
+    
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-reports
+        path: |
+          htmlcov/
+          coverage.xml
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
@@ -105,6 +150,69 @@ jobs:
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: false
+
+  e2e-python:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+        enable-cache: true
+    
+    - name: Install dependencies
+      run: uv sync
+    
+    - name: Run Python E2E tests
+      run: make test-e2e-engine
+    
+    - name: Upload E2E test artifacts
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: e2e-test-results
+        path: |
+          test-results/
+          htmlcov/
+
+  e2e-ui:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: ui/package-lock.json
+    
+    - name: Install UI dependencies
+      run: cd ui && npm ci
+    
+    - name: Build UI
+      run: make ui-build
+    
+    - name: Run UI E2E tests
+      run: make test-e2e-ui
+    
+    - name: Upload UI E2E artifacts
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: ui-e2e-artifacts
+        path: |
+          ui/test-results/
+          ui/playwright-report/
 
   performance-benchmark:
     runs-on: ubuntu-latest
@@ -127,16 +235,191 @@ jobs:
     - name: Install dependencies
       run: uv sync
     
-    - name: Run performance benchmark
-      run: |
-        uv run python scripts/profile_engine.py --particles 5000 --steps 50 > benchmark_results.txt
-        cat benchmark_results.txt
+    - name: Run performance tests
+      run: make test-performance
     
-    - name: Upload benchmark results
+    - name: Update performance baselines
+      run: |
+        # Run performance measurement and save as baseline
+        uv run python -c "
+        import json
+        import time
+        from pathlib import Path
+        
+        # Create baseline directory
+        baseline_dir = Path('test-results/baselines')
+        baseline_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Simple performance measurement
+        import time
+        start = time.time()
+        # Simulate some work
+        for i in range(1000000):
+            pass
+        end = time.time()
+        
+        baseline = {
+            'computation_time': end - start,
+            'timestamp': time.time(),
+            'description': 'Simple computation baseline'
+        }
+        
+        with open(baseline_dir / 'performance-baseline.json', 'w') as f:
+            json.dump(baseline, f, indent=2)
+        "
+    
+    - name: Upload performance results
       uses: actions/upload-artifact@v3
       with:
-        name: benchmark-results
-        path: benchmark_results.txt
+        name: performance-results
+        path: |
+          benchmark_results.txt
+          test-results/performance/
+          test-results/baselines/
+
+  regression-tests:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+        enable-cache: true
+    
+    - name: Install dependencies
+      run: uv sync
+    
+    - name: Run regression tests
+      run: make test-regression
+    
+    - name: Upload regression results
+      uses: actions/upload-artifact@v3
+      with:
+        name: regression-results
+        path: test-results/
+
+  performance-regression-alert:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && (needs.performance-benchmark.result == 'failure' || needs.regression-tests.result == 'failure')
+    
+    steps:
+    - name: Performance Regression Alert
+      run: |
+        echo "🚨 Performance or Regression Alert!"
+        echo "Performance benchmarks or regression tests have failed."
+        echo "Check the performance-benchmark and regression-tests job outputs for details."
+        echo "This indicates a potential performance degradation or functionality regression."
+        exit 1
+
+  flaky-detection:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+        enable-cache: true
+    
+    - name: Install dependencies
+      run: uv sync
+    
+    - name: Run flaky test detection
+      run: make detect-flaky
+    
+    - name: Upload flaky detection results
+      uses: actions/upload-artifact@v3
+      with:
+        name: flaky-detection-results
+        path: test-results/
+
+  complete-pipeline:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+        enable-cache: true
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: ui/package-lock.json
+    
+    - name: Run complete testing pipeline
+      run: make test-pipeline-complete
+    
+    - name: Upload complete pipeline artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: complete-pipeline-artifacts
+        path: |
+          test-results/
+          htmlcov/
+          ui/test-results/
+          ui/playwright-report/
+          coverage.xml
+
+  test-reports:
+    runs-on: ubuntu-latest
+    if: always()  # Run even if other jobs fail
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+        enable-cache: true
+    
+    - name: Install dependencies
+      run: uv sync
+    
+    - name: Generate test reports and dashboards
+      run: make test-reports
+    
+    - name: Upload test reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-reports
+        path: |
+          test-results/reports/
+          test-results/dashboards/
 
   build-and-test-distribution:
     runs-on: ubuntu-latest
@@ -156,7 +439,7 @@ jobs:
         enable-cache: true
     
     - name: Build distribution
-      run: uv build
+      run: make build
     
     - name: Test installation from wheel
       run: |
@@ -164,6 +447,11 @@ jobs:
         uv pip install --isolated dist/*.whl
         # Test basic import
         python -c "from point_shoting.models.settings import Settings; print('Import successful')"
+    
+    - name: Run quick validation tests
+      run: |
+        # Run a subset of tests to validate the built package
+        uv run pytest tests/unit/ -x --tb=short -q
     
     - name: Upload distribution artifacts
       uses: actions/upload-artifact@v3

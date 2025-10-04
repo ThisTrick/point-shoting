@@ -24,6 +24,7 @@ dev = [
     "pytest>=7.0.0",
     "hypothesis>=6.0.0",
     "ruff>=0.1.0",
+    "pip-audit>=2.0.0",
 ]
 
 [project.scripts]
@@ -42,6 +43,10 @@ dev = [
     "pip-audit>=2.0.0",
     "pytest>=8.4.2",
     "pytest-cov>=4.0.0",
+    "pytest-rerunfailures>=12.0.0",
+    "pytest-random-order>=1.1.0",
+    "pytest-timeout>=2.1.0",
+    "pytest-repeat>=0.9.0",
     "pytest-xdist>=3.0.0",
     "ruff>=0.13.0",
 ]
@@ -50,6 +55,7 @@ dev = [
 testpaths = ["tests"]
 markers = [
     "contract: Contract/interface tests",
+    "e2e: End-to-end tests",
     "integration: Integration tests", 
     "performance: Performance benchmark tests",
     "unit: Unit tests"

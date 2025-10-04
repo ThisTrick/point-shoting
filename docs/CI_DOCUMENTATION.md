@@ -8,12 +8,15 @@ Point Shooting is a Python particle animation system with a TypeScript/Electron 
 
 ### Testing Pyramid
 
-The project follows a comprehensive testing strategy with 7 levels of testing:
+The project follows a comprehensive testing strategy with 8 levels of testing:
 
 ```
 ┌─────────────────────────────────────┐
 │         E2E Tests (UI)              │ ← Most Complex
 │         1 test file, ~26 tests      │
+├─────────────────────────────────────┤
+│         E2E Tests (Python)          │
+│         4 test files, ~15 tests     │
 ├─────────────────────────────────────┤
 │         Performance Tests           │
 │         3 test files, ~10 tests     │
@@ -87,7 +90,13 @@ Tests are executed sequentially from simplest to most complex:
    - Memory usage validation
    - FPS and latency measurements
 
-8. **E2E Tests** (Slowest, ~2-5 minutes)
+8. **Python E2E Tests** (Medium, ~2-3 minutes)
+   - Full backend workflow testing
+   - Dependency audit validation
+   - Engine pipeline verification
+   - Regression testing against baselines
+
+9. **UI E2E Tests** (Slowest, ~2-5 minutes)
    - Full UI workflow testing
    - Electron app integration
    - User interaction scenarios
