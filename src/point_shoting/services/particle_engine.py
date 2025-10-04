@@ -99,7 +99,9 @@ class ParticleEngine:
         self._cached_chaos_energy = 0.0
         self._recognition_cache_frame = -1
         self._chaos_cache_frame = -1
-        self._metrics_cache_interval = 5  # Recalculate every 5 frames
+        self._metrics_cache_interval = (
+            1  # Recalculate every frame for responsive metrics
+        )
 
     def init(self, settings: Settings, image_path: str) -> None:
         """
@@ -368,35 +370,15 @@ class ParticleEngine:
             return
 
         # Get current metrics and evaluate transition
-        current_time = time.time() - self._start_time
+        current_time = time.time()
         recognition_score = self._calculate_recognition_score()
         chaos_energy = self._calculate_chaos_energy()
 
-        # Debug: force quick transitions for testing - MODIFIED for E2E tests
-        # Use slower transitions to allow proper E2E validation
         if self._manual_stage_override:
             # Skip automatic transitions if stage was manually set
             return
         elif self._stage_state.current_stage == Stage.FINAL_BREATHING:
             # Don't transition away from FINAL_BREATHING if manually set
-            return
-        elif self._frame_count > 50 and self._stage_state.current_stage == Stage.BURST:
-            self._transition_to_stage(Stage.CHAOS)
-            return
-        elif self._frame_count > 100 and self._stage_state.current_stage == Stage.CHAOS:
-            self._transition_to_stage(Stage.CONVERGING)
-            return
-        elif (
-            self._frame_count > 150
-            and self._stage_state.current_stage == Stage.CONVERGING
-        ):
-            self._transition_to_stage(Stage.FORMATION)
-            return
-        elif (
-            self._frame_count > 200
-            and self._stage_state.current_stage == Stage.FORMATION
-        ):
-            self._transition_to_stage(Stage.FINAL_BREATHING)
             return
 
         next_stage = self._transition_policy.evaluate(
@@ -417,10 +399,15 @@ class ParticleEngine:
 
     def _transition_to_stage(self, new_stage: Stage) -> None:
         """Transition to a new stage"""
+        current_time = time.time()
         self._stage_state.current_stage = new_stage
-        self._stage_state.stage_start_time = time.time()
+        self._stage_state.stage_start_time = current_time
         self._stage_state.stage_elapsed = 0.0
         self._stage_state.stage_progress = 0.0
+
+        # Update transition policy state
+        if self._transition_policy is not None:
+            self._transition_policy._transition_to_stage(new_stage, current_time)
 
         # Stage-specific initialization
         if new_stage == Stage.BURST:

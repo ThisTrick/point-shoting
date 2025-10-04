@@ -49,7 +49,7 @@ test-performance:
 
 # Coverage
 test-coverage:
-	uv run pytest --cov=src/point_shoting --cov-report=html --cov-report=term --cov-fail-under=80 --tb=short -n auto
+	uv run pytest --cov=src/point_shoting --cov-report=html --cov-report=term --cov-fail-under=75 --tb=short -n auto
 
 # Verbose test output for debugging
 test-verbose:

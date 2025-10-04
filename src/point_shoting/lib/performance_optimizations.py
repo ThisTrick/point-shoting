@@ -230,7 +230,7 @@ def optimized_recognition_score(positions: np.ndarray, targets: np.ndarray) -> f
 
     # Apply non-linear mapping for better visual progression
     # Emphasize the final formation phase (power law)
-    recognition = recognition**0.7
+    recognition = recognition**0.6
 
     return recognition
 

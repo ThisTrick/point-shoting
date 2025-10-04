@@ -114,7 +114,7 @@ class StageTransitionPolicy:
             return Stage.CHAOS
 
         # Fallback: transition after minimum time in stage (for tests)
-        if elapsed >= 0.5:  # Require at least 0.5 seconds in BURST
+        if elapsed >= 0.1:  # Require at least 0.1 seconds in BURST
             return Stage.CHAOS
 
         return None
