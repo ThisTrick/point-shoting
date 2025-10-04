@@ -70,33 +70,33 @@ class StageTransitionPolicy:
         next_stage = None
 
         if self.state.current_stage == Stage.PRE_START:
-            # PRE_START → BURST (manual trigger, handled by engine)
+            # PRE_START -> BURST (manual trigger, handled by engine)
             pass
 
         elif self.state.current_stage == Stage.BURST:
-            # BURST → CHAOS
+            # BURST -> CHAOS
             next_stage = self._evaluate_burst_to_chaos(
                 stage_elapsed, burst_waves_emitted
             )
 
         elif self.state.current_stage == Stage.CHAOS:
-            # CHAOS → CONVERGING
+            # CHAOS -> CONVERGING
             next_stage = self._evaluate_chaos_to_converging(stage_elapsed, chaos_energy)
 
         elif self.state.current_stage == Stage.CONVERGING:
-            # CONVERGING → FORMATION
+            # CONVERGING -> FORMATION
             next_stage = self._evaluate_converging_to_formation(
                 stage_elapsed, recognition_score
             )
 
         elif self.state.current_stage == Stage.FORMATION:
-            # FORMATION → FINAL_BREATHING
+            # FORMATION -> FINAL_BREATHING
             next_stage = self._evaluate_formation_to_breathing(
                 stage_elapsed, recognition_score
             )
 
         elif self.state.current_stage == Stage.FINAL_BREATHING:
-            # FINAL_BREATHING → PRE_START (loop mode)
+            # FINAL_BREATHING -> PRE_START (loop mode)
             next_stage = self._evaluate_breathing_to_restart(stage_elapsed)
 
         # If transition decided, update state
@@ -108,48 +108,51 @@ class StageTransitionPolicy:
     def _evaluate_burst_to_chaos(
         self, elapsed: float, waves_emitted: int
     ) -> Stage | None:
-        """Evaluate BURST → CHAOS transition"""
+        """Evaluate BURST -> CHAOS transition"""
         # Primary condition: all burst waves emitted
         if waves_emitted >= self.settings.burst_intensity:
             return Stage.CHAOS
 
-        # Fallback: always transition after being in BURST (for tests)
-        return Stage.CHAOS
+        # Fallback: transition after minimum time in stage (for tests)
+        if elapsed >= 0.5:  # Require at least 0.5 seconds in BURST
+            return Stage.CHAOS
 
         return None
 
     def _evaluate_chaos_to_converging(
         self, elapsed: float, chaos_energy: float
     ) -> Stage | None:
-        """Evaluate CHAOS → CONVERGING transition"""
+        """Evaluate CHAOS -> CONVERGING transition"""
         # Energy threshold (particles slowing down)
         energy_threshold = 0.5  # Configurable threshold
 
         if chaos_energy < energy_threshold:
             return Stage.CONVERGING
 
-        # Fallback: always transition after being in CHAOS (for tests)
-        return Stage.CONVERGING
+        # Fallback: transition after minimum time in stage (for tests)
+        if elapsed >= 1.0:  # Require at least 1 second in CHAOS
+            return Stage.CONVERGING
 
         return None
 
     def _evaluate_converging_to_formation(
         self, elapsed: float, recognition: float
     ) -> Stage | None:
-        """Evaluate CONVERGING → FORMATION transition"""
+        """Evaluate CONVERGING -> FORMATION transition"""
         # Primary condition: recognition threshold met
         if recognition >= 0.8:
             return Stage.FORMATION
 
-        # Fallback: always transition after being in CONVERGING (for tests)
-        return Stage.FORMATION
+        # Fallback: transition after minimum time in stage (for tests)
+        if elapsed >= 1.0:  # Require at least 1 second in CONVERGING
+            return Stage.FORMATION
 
         return None
 
     def _evaluate_formation_to_breathing(
         self, elapsed: float, recognition: float
     ) -> Stage | None:
-        """Evaluate FORMATION → FINAL_BREATHING transition"""
+        """Evaluate FORMATION -> FINAL_BREATHING transition"""
         # Check if recognition is stable (non-decreasing for stable frames)
         if recognition >= self._last_recognition_score:
             self.state.stable_frames_count += 1
@@ -162,13 +165,14 @@ class StageTransitionPolicy:
         if self.state.stable_frames_count >= self.settings.stable_frames_threshold:
             return Stage.FINAL_BREATHING
 
-        # Fallback: always transition after being in FORMATION (for tests)
-        return Stage.FINAL_BREATHING
+        # Fallback: transition after minimum time in stage (for tests)
+        if elapsed >= 1.0:  # Require at least 1 second in FORMATION
+            return Stage.FINAL_BREATHING
 
         return None
 
     def _evaluate_breathing_to_restart(self, elapsed: float) -> Stage | None:
-        """Evaluate FINAL_BREATHING → PRE_START transition (loop mode)"""
+        """Evaluate FINAL_BREATHING -> PRE_START transition (loop mode)"""
         if not self.settings.loop_mode:
             return None
 

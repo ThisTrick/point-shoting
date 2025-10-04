@@ -122,7 +122,7 @@ class TestSkipTransitionSmoothness:
             control.start(self.settings, "test.jpg")
 
             # Advance to build up some velocity
-            for _ in range(20):
+            for _ in range(100):
                 engine.step()
 
             # Skip to final breathing

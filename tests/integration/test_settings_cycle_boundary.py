@@ -47,11 +47,14 @@ class TestSettingsCycleBoundary:
             control.start(self.initial_settings, "test.jpg")
 
             # Advance to mid-cycle (CHAOS stage)
-            for _ in range(50):
+            for i in range(200):
                 engine.step()
+                if i % 50 == 0:
+                    print(f"Frame {i}: Stage {engine.get_current_stage()}")
                 if engine.get_current_stage() == Stage.CHAOS:
                     break
 
+            print(f"Final stage after 200 frames: {engine.get_current_stage()}")
             assert engine.get_current_stage() == Stage.CHAOS
 
             # These settings should be safe to change mid-cycle
