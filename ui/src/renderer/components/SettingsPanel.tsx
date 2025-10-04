@@ -1,12 +1,6 @@
 /**
- * SettingsPanel Component for Point Shooting Anima  // Handle UI settings changes
-  const handleUISettingChange = useCallback(<K extends keyof UISettings>(
-    key: K,
-    value: UISettings[K]
-  ) => {
-    onUISettingsChange({ [key]: value });
-  }, [onUISettingsChange]);stem
- * 
+ * SettingsPanel Component for Point Shooting Animation System
+ *
  * Provides comprehensive settings interface including:
  * - UI appearance and behavior settings
  * - Animation configuration options
@@ -16,12 +10,12 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { SettingsPanelProps } from '../../types/components';
-import { 
-  UITheme, 
-  AnimationSpeed, 
-  ParticleDensity, 
-  TransitionStyle, 
-  ColorMappingMode 
+import {
+  UITheme,
+  AnimationSpeed,
+  ParticleDensity,
+  TransitionStyle,
+  ColorMappingMode
 } from '../../types/core';
 import './SettingsPanel.css';
 
@@ -36,7 +30,7 @@ enum SettingsCategory {
 
 /**
  * SettingsPanel Component
- * 
+ *
  * Modal-style settings panel with tabbed interface for different setting categories.
  */
 export const SettingsPanel: React.FC<SettingsPanelProps> = ({
@@ -60,9 +54,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   }, []);
 
   // Handle UI settings changes
-  const handleUISettingChange = useCallback(<K extends keyof typeof uiSettings>(
+  const handleUISettingChange = useCallback(<K extends keyof UISettings>(
     key: K,
-    value: typeof uiSettings[K]
+    value: UISettings[K]
   ) => {
     onUISettingsChange({ [key]: value });
   }, [onUISettingsChange]);

@@ -181,21 +181,6 @@ export interface RecentFilesListProps {
 // ============================================================================
 
 /**
- * Settings Panel Component Props
- */
-export interface SettingsPanelProps {
-  readonly uiSettings: UISettings;
-  readonly animationConfig: AnimationConfig;
-  readonly isVisible: boolean;
-  readonly onUISettingsChange: CallbackFunction<Partial<UISettings>>;
-  readonly onAnimationConfigChange: CallbackFunction<Partial<AnimationConfig>>;
-  readonly onClose: CallbackFunction<void>;
-  readonly onReset: CallbackFunction<'ui' | 'animation' | 'all'>;
-  readonly onExport: CallbackFunction<void>;
-  readonly onImport: CallbackFunction<string>;
-}
-
-/**
  * UI Settings Section Component Props
  */
 export interface UISettingsSectionProps {
