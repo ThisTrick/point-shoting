@@ -94,6 +94,13 @@ class ParticleEngine:
         self._step_times = []
         self._step_time_history_size = 100
 
+        # Cached expensive calculations (for HUD performance)
+        self._cached_recognition = 0.0
+        self._cached_chaos_energy = 0.0
+        self._recognition_cache_frame = -1
+        self._chaos_cache_frame = -1
+        self._metrics_cache_interval = 5  # Recalculate every 5 frames
+
     def init(self, settings: Settings, image_path: str) -> None:
         """
         Initialize particle engine with settings and target image
@@ -180,6 +187,12 @@ class ParticleEngine:
         self._fps_history.clear()
         self._step_times.clear()
         self._manual_stage_override = False  # Reset manual override on init
+
+        # Reset cached calculations
+        self._cached_recognition = 0.0
+        self._cached_chaos_energy = 0.0
+        self._recognition_cache_frame = -1
+        self._chaos_cache_frame = -1
 
         # Initialize particles to burst positions
         initialize_burst_positions(self._particles)
@@ -359,27 +372,28 @@ class ParticleEngine:
         recognition_score = self._calculate_recognition_score()
         chaos_energy = self._calculate_chaos_energy()
 
-        # Debug: force quick transitions for testing (skip if manually overridden)
+        # Debug: force quick transitions for testing - MODIFIED for E2E tests
+        # Use slower transitions to allow proper E2E validation
         if self._manual_stage_override:
             # Skip automatic transitions if stage was manually set
             return
         elif self._stage_state.current_stage == Stage.FINAL_BREATHING:
             # Don't transition away from FINAL_BREATHING if manually set
             return
-        elif self._frame_count > 10 and self._stage_state.current_stage == Stage.BURST:
+        elif self._frame_count > 50 and self._stage_state.current_stage == Stage.BURST:
             self._transition_to_stage(Stage.CHAOS)
             return
-        elif self._frame_count > 20 and self._stage_state.current_stage == Stage.CHAOS:
+        elif self._frame_count > 100 and self._stage_state.current_stage == Stage.CHAOS:
             self._transition_to_stage(Stage.CONVERGING)
             return
         elif (
-            self._frame_count > 30
+            self._frame_count > 150
             and self._stage_state.current_stage == Stage.CONVERGING
         ):
             self._transition_to_stage(Stage.FORMATION)
             return
         elif (
-            self._frame_count > 40
+            self._frame_count > 200
             and self._stage_state.current_stage == Stage.FORMATION
         ):
             self._transition_to_stage(Stage.FINAL_BREATHING)
@@ -477,9 +491,18 @@ class ParticleEngine:
         # Particle count
         particle_count = len(self._particles.position) if self._particles else 0
 
-        # Calculate recognition and chaos
-        recognition = self._calculate_recognition_score()
-        chaos_energy = self._calculate_chaos_energy()
+        # Calculate recognition and chaos with caching for performance
+        # Only recalculate every N frames to reduce HUD overhead
+        if (
+            self._frame_count - self._recognition_cache_frame
+            >= self._metrics_cache_interval
+        ):
+            self._cached_recognition = self._calculate_recognition_score()
+            self._recognition_cache_frame = self._frame_count
+
+        if self._frame_count - self._chaos_cache_frame >= self._metrics_cache_interval:
+            self._cached_chaos_energy = self._calculate_chaos_energy()
+            self._chaos_cache_frame = self._frame_count
 
         return Metrics(
             fps_avg=fps_avg,
@@ -488,8 +511,8 @@ class ParticleEngine:
             particle_count=particle_count,
             active_particle_count=particle_count,
             stage=self._stage_state.current_stage,
-            recognition=recognition,
-            chaos_energy=chaos_energy,
+            recognition=self._cached_recognition,
+            chaos_energy=self._cached_chaos_energy,
             stage_elapsed_time=self._stage_state.stage_elapsed,
             total_elapsed_time=time.time() - self._start_time
             if self._start_time > 0

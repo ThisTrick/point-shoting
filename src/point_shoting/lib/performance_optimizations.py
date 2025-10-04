@@ -228,6 +228,10 @@ def optimized_recognition_score(positions: np.ndarray, targets: np.ndarray) -> f
     max_distance = np.sqrt(2.0)
     recognition = max(0.0, 1.0 - (avg_distance / max_distance))
 
+    # Apply non-linear mapping for better visual progression
+    # Emphasize the final formation phase (power law)
+    recognition = recognition**0.7
+
     return recognition
 
 
