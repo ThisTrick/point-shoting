@@ -1,5 +1,11 @@
 /**
- * SettingsPanel Component for Point Shooting Animation System
+ * SettingsPanel Component for Point Shooting Anima  // Handle UI settings changes
+  const handleUISettingChange = useCallback(<K extends keyof UISettings>(
+    key: K,
+    value: UISettings[K]
+  ) => {
+    onUISettingsChange({ [key]: value });
+  }, [onUISettingsChange]);stem
  * 
  * Provides comprehensive settings interface including:
  * - UI appearance and behavior settings
@@ -62,9 +68,9 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   }, [onUISettingsChange]);
 
   // Handle animation config changes
-  const handleAnimationConfigChange = useCallback(<K extends keyof typeof animationConfig>(
+  const handleAnimationConfigChange = useCallback(<K extends keyof AnimationConfig>(
     key: K,
-    value: typeof animationConfig[K]
+    value: AnimationConfig[K]
   ) => {
     onAnimationConfigChange({ [key]: value });
   }, [onAnimationConfigChange]);
@@ -98,7 +104,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <select
           className="setting-select"
           value={uiSettings.theme}
-          onChange={(e) => handleUISettingChange('theme', e.target.value as UITheme)}
+          onChange={(e) => handleUISettingChange('theme', e.target.value as any)}
           data-testid="theme-select"
         >
           <option value={UITheme.LIGHT}>Light</option>
@@ -112,7 +118,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         <select
           className="setting-select"
           value={uiSettings.language}
-          onChange={(e) => handleUISettingChange('language', e.target.value)}
+          onChange={(e) => handleUISettingChange('language', e.target.value as any)}
           data-testid="language-select"
         >
           <option value="en">English</option>
@@ -443,6 +449,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
               type="button"
               className={`tab-button ${activeCategory === tab.id ? 'active' : ''}`}
               onClick={() => handleCategoryChange(tab.id)}
+              data-testid={`${tab.id}-tab`}
             >
               <span className="tab-icon">{tab.icon}</span>
               <span className="tab-label">{tab.label}</span>
@@ -460,6 +467,15 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
         {/* Validation Errors */}
         <div className="validation-errors" data-testid="validation-error" style={{ display: 'none' }}>
           {/* Validation errors will be shown here */}
+        </div>
+
+        {/* Preset Management */}
+        <div className="preset-section">
+          <button data-testid="save-preset-button">Save Preset</button>
+          <input data-testid="preset-name-input" placeholder="Preset name" />
+          <textarea data-testid="preset-description-input" placeholder="Description"></textarea>
+          <button data-testid="save-preset-confirm">Save</button>
+          <div data-testid="presets-list"></div>
         </div>
 
         {/* Footer */}

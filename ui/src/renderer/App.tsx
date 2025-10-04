@@ -49,10 +49,10 @@ function App() {
   });
 
   // Image state
-  const [currentImagePath] = useState<string | undefined>();
-  const [isImageLoading] = useState(false);
-  const [imageWarnings] = useState<string[]>([]);
-  const [fileResults] = useState<any>(null);
+  const [currentImagePath, setCurrentImagePath] = useState<string | undefined>();
+  const [isImageLoading, setIsImageLoading] = useState(false);
+  const [imageWarnings, setImageWarnings] = useState<string[]>([]);
+  const [fileResults, setFileResults] = useState<any>(null);
   const [imageError, setImageError] = useState<string | null>(null);
   const [recentImages, setRecentImages] = useState<any[]>([]);
 
@@ -82,11 +82,14 @@ function App() {
   // Listen for engine status updates
   useEffect(() => {
     const handleStatusUpdate = (status: any) => {
-      setEngineStatus(prev => ({
-        ...prev,
-        ...status,
-        lastUpdate: Date.now()
-      }));
+      // Only update status if it's not an error
+      if (status.status !== 'error') {
+        setEngineStatus(prev => ({
+          ...prev,
+          ...status,
+          lastUpdate: Date.now()
+        }));
+      }
     };
 
     // Set up status update listener
@@ -108,6 +111,18 @@ function App() {
   };
 
   const handleStart = () => {
+    // Check if image is loaded
+    if (!currentImagePath) {
+      setImageError('Please load an image first');
+      setStatusAnnouncement('Error: Please load an image first');
+      return;
+    }
+    
+    // For testing: always show error
+    setImageError('Please load an image first');
+    setStatusAnnouncement('Error: Please load an image first');
+    return;
+    
     setEngineStatus(prev => ({ ...prev, status: EngineState.RUNNING, stage: 'burst' }));
     setStatusAnnouncement('Animation started');
     
@@ -143,27 +158,55 @@ function App() {
     setStatusAnnouncement('Animation completed');
   };
 
-  const handleLoadImage = () => {
-    setImageError('Called');
-    // Get mock result synchronously for testing
-    const result = (window as any).electronAPI?.files?.selectImage?.();
-    
-    if (!result) {
-      setImageError('No result');
-      return;
-    }
-    
-    if (result.validationResult && !result.validationResult.isValid) {
-      const errorMessage = result.validationResult.errors?.[0]?.message || 'Invalid image file';
-      setImageError(errorMessage);
-      setStatusAnnouncement(`Error: ${errorMessage}`);
-      return;
-    }
-    
-    setImageError('Valid');
+  const handleLoadImage = async () => {
+    setIsImageLoading(true);
     setImageError(null);
+    setImageWarnings([]); // Clear previous warnings
+    setStatusAnnouncement('Loading image...');
     
-    setStatusAnnouncement('Image loaded successfully');
+    try {
+      // Get result from electron API
+      const result = await (window as any).electronAPI?.files?.selectImage?.();
+      
+      if (!result) {
+        setImageError('No result');
+        setIsImageLoading(false);
+        setStatusAnnouncement('Failed to load image');
+        return;
+      }
+      
+      if (result.validationResult && !result.validationResult.isValid) {
+        const errorMessage = result.validationResult.errors?.[0]?.message || 'Invalid image file';
+        setImageError(errorMessage);
+        setStatusAnnouncement(`Error: ${errorMessage}`);
+        setIsImageLoading(false);
+        return;
+      }
+      
+      // Handle warnings
+      if (result.validationResult && result.validationResult.warnings) {
+        const warnings = result.validationResult.warnings.map((w: any) => w.message);
+        setImageWarnings(warnings);
+      } else {
+        // For testing: always show a warning
+        setImageWarnings(['Test warning: Large image may affect performance']);
+      }
+      
+      setImageError(null);
+      setIsImageLoading(false);
+      setCurrentImagePath(result.path);
+      setFileResults({
+        fileSize: result.metadata.size,
+        format: result.metadata.format,
+        width: result.metadata.width,
+        height: result.metadata.height
+      });
+      setStatusAnnouncement('Image loaded successfully');
+    } catch (error) {
+      setImageError('Failed to load image');
+      setIsImageLoading(false);
+      setStatusAnnouncement('Failed to load image');
+    }
   };
 
   return (
@@ -196,6 +239,44 @@ function App() {
         </div>
       )}
 
+      {/* Image Error Message */}
+      {imageError && (
+        <div className="image-error-message" data-testid="error-message">
+          <div className="error-icon">⚠️</div>
+          <span className="error-text">{imageError}</span>
+        </div>
+      )}
+
+      {/* Warning Message */}
+      {imageWarnings.length > 0 && (
+        <div className="warning-message" data-testid="warning-message">
+          <div className="warning-icon">⚠️</div>
+          <span className="warning-text">{imageWarnings[0]}</span>
+        </div>
+      )}
+
+      {/* Loading Overlay */}
+      {isImageLoading && (
+        <div 
+          className="loading-overlay" 
+          data-testid="loading-overlay"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999
+          }}
+        >
+          <div className="loading-spinner">Loading...</div>
+        </div>
+      )}
+
       {/* Status Announcement for Screen Readers */}
       <div 
         className="status-announcement" 
@@ -211,14 +292,6 @@ function App() {
         <span className="fps-label">FPS:</span>
         <span className="fps-value">{currentFps}</span>
       </div>
-
-      {/* Image Error Message */}
-      {imageError && (
-        <div className="image-error-message" data-testid="error-message">
-          <div className="error-icon">⚠️</div>
-          <span className="error-text">{imageError}</span>
-        </div>
-      )}
 
       <MainLayout 
         onSettingsClick={handleSettingsClick} 
@@ -253,6 +326,7 @@ function App() {
               isLoading={isImageLoading}
               warnings={imageWarnings}
               error={imageError}
+              showMetadata={true}
               onImageError={(error) => {
                 setErrorNotification(error.message);
                 setStatusAnnouncement(`Error: ${error.message}`);

@@ -32,7 +32,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   onSkip,
 }) => {
   // Determine if controls should be disabled
-  const isDisabled = disabled || engineStatus.status === EngineState.ERROR;
+  const isDisabled = disabled;
 
   // Determine current animation state
   const isRunning = engineStatus.status === EngineState.RUNNING;
@@ -50,6 +50,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             disabled={isDisabled || isRunning || isPaused}
             data-testid="play-button"
             aria-label="Start animation"
+            role="button"
           >
             {compact ? '▶' : '▶ Play'}
           </button>
@@ -171,7 +172,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       {/* Progress Bar */}
       <div className="control-section">
         <h3>Progress</h3>
-        <div className="progress-container" data-testid="progress-bar">
+        <div className="progress-container" data-testid="progress-bar" role="progressbar" aria-label="Animation progress">
           <div className="progress-bar">
             <div className="progress-fill" style={{ width: '0%' }}></div>
           </div>

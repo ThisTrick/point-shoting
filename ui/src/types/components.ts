@@ -470,3 +470,22 @@ export interface RadioOption<T = string> {
   readonly label: string;
   readonly disabled?: boolean;
 }
+
+// ============================================================================
+// SETTINGS PANEL COMPONENT PROPS
+// ============================================================================
+
+/**
+ * Settings Panel Component Props
+ */
+export interface SettingsPanelProps {
+  readonly isVisible: boolean;
+  readonly uiSettings: UISettings;
+  readonly animationConfig: AnimationConfig;
+  readonly onClose: () => void;
+  readonly onUISettingsChange: (settings: Partial<UISettings>) => void;
+  readonly onAnimationConfigChange: (config: Partial<AnimationConfig>) => void;
+  readonly onReset: (scope?: 'ui' | 'animation' | 'all') => void;
+  readonly onExport: () => void;
+  readonly onImport: (data: string) => void;
+}

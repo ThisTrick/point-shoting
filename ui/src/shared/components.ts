@@ -183,19 +183,19 @@ export interface RecentFilesListProps {
 // ============================================================================
 
 /**
- * Settings Panel Component Props
+ * Settings Panel Component Props - Moved to types/components.ts
  */
-export interface SettingsPanelProps {
-  readonly uiSettings: UISettings;
-  readonly animationConfig: AnimationConfig;
-  readonly isVisible: boolean;
-  readonly onUISettingsChange: CallbackFunction<Partial<UISettings>>;
-  readonly onAnimationConfigChange: CallbackFunction<Partial<AnimationConfig>>;
-  readonly onClose: CallbackFunction<void>;
-  readonly onReset: CallbackFunction<'ui' | 'animation' | 'all'>;
-  readonly onExport: CallbackFunction<void>;
-  readonly onImport: CallbackFunction<string>;
-}
+// export interface SettingsPanelProps {
+//   readonly uiSettings: UISettings;
+//   readonly animationConfig: AnimationConfig;
+//   readonly isVisible: boolean;
+//   readonly onUISettingsChange: (settings: Partial<UISettings>) => void;
+//   readonly onAnimationConfigChange: (config: Partial<AnimationConfig>) => void;
+//   readonly onClose: () => void;
+//   readonly onReset: (scope?: 'ui' | 'animation' | 'all') => void;
+//   readonly onExport: () => void;
+//   readonly onImport: (data: string) => void;
+// }
 
 /**
  * UI Settings Section Component Props
