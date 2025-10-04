@@ -35,7 +35,7 @@ function App() {
   // Error and status state
   const [errorNotification, setErrorNotification] = useState<string | null>(null);
   const [statusAnnouncement, setStatusAnnouncement] = useState<string>('');
-  const [currentFps] = useState(0); // @ts-ignore
+  const [currentFps, setCurrentFps] = useState(0);
 
   // Engine state
   const [engineStatus, setEngineStatus] = useState({
@@ -89,6 +89,10 @@ function App() {
           ...status,
           lastUpdate: Date.now()
         }));
+        // Update FPS if provided
+        if (status.fps !== undefined) {
+          setCurrentFps(status.fps);
+        }
       }
     };
 
