@@ -320,22 +320,19 @@ class ParticleEngine:
             self._update_breathing_physics(dt)
 
     def _update_pre_start_physics(self, dt: float) -> None:
-        """Update physics for PRE_START stage"""
-        # Particles are stationary, maybe small breathing effect
+        """Update physics for PRE_START stage (vectorized)"""
         breathing_offset = (
             self._breathing_oscillator.get_batch_oscillation(
                 self._stage_state.stage_elapsed, len(self._particles.position)
             )
             * 0.01
-        )  # Very small breathing
+        )
 
-        # Apply minimal breathing to positions
-        center = np.array([0.5, 0.5])
-        for i in range(len(self._particles.position)):
-            offset_vec = self._particles.position[i] - center
-            self._particles.position[i] = center + offset_vec * (
-                1.0 + breathing_offset[i]
-            )
+        # Apply minimal breathing to positions (vectorized)
+        center = np.array([0.5, 0.5], dtype=self._particles.position.dtype)
+        offset_vecs = self._particles.position - center
+        scale = 1.0 + breathing_offset.reshape(-1, 1)
+        self._particles.position[:] = center + offset_vecs * scale
 
     def _update_burst_physics(self, dt: float) -> None:
         """Update physics for BURST stage (optimized vectorized version)"""
