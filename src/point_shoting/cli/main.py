@@ -6,7 +6,7 @@ import sys
 import time
 from pathlib import Path
 
-from ..models.settings import ColorMode, Density, Settings, Speed
+from ..models.settings import ColorMode, DensityProfile, Settings, SpeedProfile
 from ..services.hud_renderer import HUDLevel, HUDRenderer
 from ..services.localization_provider import LocalizationProvider
 from ..services.particle_engine import ParticleEngine
@@ -95,13 +95,13 @@ def create_parser() -> argparse.ArgumentParser:
 
 def parse_density(density_str: str) -> Density:
     """Parse density string to enum"""
-    density_map = {"low": Density.LOW, "medium": Density.MEDIUM, "high": Density.HIGH}
+    density_map = {"low": DensityProfile.LOW, "medium": DensityProfile.MEDIUM, "high": DensityProfile.HIGH}
     return density_map[density_str]
 
 
 def parse_speed(speed_str: str) -> Speed:
     """Parse speed string to enum"""
-    speed_map = {"slow": Speed.SLOW, "normal": Speed.NORMAL, "fast": Speed.FAST}
+    speed_map = {"slow": SpeedProfile.SLOW, "normal": SpeedProfile.NORMAL, "fast": SpeedProfile.FAST}
     return speed_map[speed_str]
 
 
@@ -149,20 +149,23 @@ def validate_image_path(image_path: str) -> Path:
 def create_settings(args) -> Settings:
     """Create Settings object from command line arguments"""
     return Settings(
-        density=parse_density(args.density),
-        speed=parse_speed(args.speed),
+        density_profile=parse_density(args.density),
+        speed_profile=parse_speed(args.speed),
         color_mode=parse_color_mode(args.color_mode),
         hud_enabled=args.hud,
     )
 
 
 def run_animation(args, settings: Settings, image_path: Path) -> None:
-    """Run the main animation loop"""
+    """Run the main animation loop with pygame visual rendering"""
+    from .pygame_renderer import PygameRenderer
+
     # Initialize components
     engine = ParticleEngine()
     hud_renderer = HUDRenderer() if args.hud else None
     control = ControlInterface(engine)
     setup_localization(args.locale)
+    renderer = PygameRenderer(width=800, height=800)
 
     # Configure HUD if enabled
     if hud_renderer:
@@ -183,13 +186,24 @@ def run_animation(args, settings: Settings, image_path: Path) -> None:
         # Main loop
         start_time = time.time()
         frame_count = 0
-        target_frame_time = 1.0 / args.max_fps
+        paused = False
 
         # Auto-skip tracking
         auto_skip_triggered = False
 
         while True:
-            frame_start = time.perf_counter()
+            # Handle pygame events (keyboard, window close)
+            actions = renderer.handle_events()
+            if actions["quit"]:
+                break
+            if actions["toggle_pause"]:
+                paused = not paused
+                if paused:
+                    engine.pause()
+                else:
+                    engine.resume()
+            if actions["skip"]:
+                control.skip_to_final()
 
             # Check for auto-skip
             if (
@@ -203,11 +217,22 @@ def run_animation(args, settings: Settings, image_path: Path) -> None:
                     print(f"Auto-skipping to final stage after {args.auto_skip}s")
 
             # Step engine
-            if control.is_running():
+            if control.is_running() and not paused:
                 engine.step()
                 frame_count += 1
 
-            # Update HUD
+            # Render particles to pygame window
+            snapshot = engine.get_particle_snapshot()
+            if snapshot is not None:
+                metrics = engine.get_metrics()
+                renderer.render_frame(
+                    snapshot,
+                    stage_name=metrics.stage.name if metrics.stage else "",
+                    fps=metrics.fps_avg,
+                    recognition=metrics.recognition,
+                )
+
+            # Update HUD (terminal)
             if hud_renderer and hud_renderer.is_enabled():
                 metrics = control.get_metrics()
                 if metrics:
@@ -218,8 +243,7 @@ def run_animation(args, settings: Settings, image_path: Path) -> None:
                     hud_renderer.render_hud(metrics, additional_info)
 
             # Check exit conditions
-            current_time = time.time()
-            runtime = current_time - start_time
+            runtime = time.time() - start_time
 
             # Exit after specified time in final breathing
             if args.exit_after:
@@ -239,22 +263,14 @@ def run_animation(args, settings: Settings, image_path: Path) -> None:
                 if (
                     current_stage
                     and current_stage.name == "FINAL_BREATHING"
-                    and runtime >= 15
-                ):  # Default exit after 15s in final breathing
+                    and runtime >= 30
+                ):
                     if args.verbose:
                         print("Animation complete")
                     break
 
-            # Frame rate limiting
-            frame_time = time.perf_counter() - frame_start
-            sleep_time = target_frame_time - frame_time
-            if sleep_time > 0:
-                time.sleep(sleep_time)
-
-            # Performance warning
-            if args.verbose and frame_time > target_frame_time * 1.5:
-                fps = 1.0 / frame_time
-                print(f"Performance warning: {fps:.1f} FPS (target: {args.max_fps})")
+            # Frame rate limiting via pygame clock
+            renderer.tick(args.max_fps)
 
     except KeyboardInterrupt:
         if args.verbose:
@@ -267,6 +283,7 @@ def run_animation(args, settings: Settings, image_path: Path) -> None:
             traceback.print_exc()
     finally:
         # Cleanup
+        renderer.cleanup()
         control.stop()
         if hud_renderer:
             hud_renderer.clear()

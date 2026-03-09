@@ -86,6 +86,15 @@ class ParticleEngine:
         self._fps_history = []
         self._fps_history_size = 30
         self._manual_stage_override = False  # Flag to prevent auto-transitions
+        self._stage_start_frame = 0  # Frame count when current stage started
+
+        # Minimum frames per stage for smooth visual pacing at 60fps
+        self._min_stage_frames = {
+            Stage.BURST: 120,       # ~2s at 60fps
+            Stage.CHAOS: 240,       # ~4s at 60fps
+            Stage.CONVERGING: 180,  # ~3s at 60fps
+            Stage.FORMATION: 120,   # ~2s at 60fps
+        }
 
         # Target image data
         self._target_image: Image.Image | None = None
@@ -381,6 +390,12 @@ class ParticleEngine:
             # Don't transition away from FINAL_BREATHING if manually set
             return
 
+        # Enforce minimum frames per stage for smooth visual pacing
+        frames_in_stage = self._frame_count - self._stage_start_frame
+        min_frames = self._min_stage_frames.get(self._stage_state.current_stage, 0)
+        if frames_in_stage < min_frames:
+            return
+
         next_stage = self._transition_policy.evaluate(
             current_time=current_time,
             recognition_score=recognition_score,
@@ -404,6 +419,7 @@ class ParticleEngine:
         self._stage_state.stage_start_time = current_time
         self._stage_state.stage_elapsed = 0.0
         self._stage_state.stage_progress = 0.0
+        self._stage_start_frame = self._frame_count
 
         # Update transition policy state
         if self._transition_policy is not None:

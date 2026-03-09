@@ -191,13 +191,12 @@ def vectorized_breathing_physics(
         stage_elapsed, len(particles.position)
     )
 
-    # Apply breathing effect (vectorized)
-    center = np.array([0.5, 0.5], dtype=particles.position.dtype)
-    offset_vectors = particles.position - center
+    # Apply breathing effect around each particle's target position (not global center)
+    offset_vectors = particles.position - particles.target
 
     # Apply breathing oscillation (vectorized)
     breathing_scale = 1.0 + (breathing_offsets.reshape(-1, 1) * 0.02)
-    particles.position[:] = center + offset_vectors * breathing_scale
+    particles.position[:] = particles.target + offset_vectors * breathing_scale
 
     # Ensure positions stay in bounds - preserve dtype
     particles.position[:] = np.clip(particles.position, 0.0, 1.0)
