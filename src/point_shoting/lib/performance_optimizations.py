@@ -99,34 +99,15 @@ def vectorized_chaos_physics(particles, dt: float, physics_params) -> None:
 
 def vectorized_converging_physics(particles, dt: float, physics_params) -> None:
     """
-    Optimized converging physics using vectorized operations.
-
-    Args:
-        particles: ParticleArrays object
-        dt: Time step
-        physics_params: PhysicsParams object
+    Optimized converging physics using spring (Hooke's law) model.
+    Force is proportional to displacement — no normalization needed.
+    Particles far from target get stronger pull, giving natural convergence.
     """
-    # Calculate target directions and distances (vectorized)
-    target_dirs = particles.target - particles.position  # Shape: (N, 2)
-    target_distances = np.linalg.norm(
-        target_dirs, axis=1, keepdims=True
-    )  # Shape: (N, 1)
-
-    # Only attract particles that are not very close (vectorized mask)
-    attraction_mask = target_distances.flatten() > 0.01
-
-    # Normalize directions for particles that need attraction
-    normalized_dirs = np.zeros_like(target_dirs)
-    valid_indices = attraction_mask & (target_distances.flatten() > 1e-8)
-    if np.any(valid_indices):
-        # Fix broadcasting issue - target_distances needs proper indexing
-        valid_distances = target_distances[valid_indices]
-        normalized_dirs[valid_indices] = target_dirs[valid_indices] / valid_distances
-
-    # Apply attraction force (vectorized)
-    attraction_strength = physics_params.attraction_strength * 2.0
-    attraction_forces = normalized_dirs * attraction_strength * dt
-    particles.velocity += attraction_forces
+    # Spring force: F = k * (target - position)
+    # No normalization needed — displacement IS the force direction and magnitude
+    displacement = particles.target - particles.position  # Shape: (N, 2)
+    spring_k = physics_params.attraction_strength * 2.0
+    particles.velocity += displacement * (spring_k * dt)
 
     # Apply damping (vectorized)
     particles.velocity *= physics_params.damping
@@ -140,28 +121,13 @@ def vectorized_converging_physics(particles, dt: float, physics_params) -> None:
 
 def vectorized_formation_physics(particles, dt: float, physics_params) -> None:
     """
-    Optimized formation physics using vectorized operations.
-
-    Args:
-        particles: ParticleArrays object
-        dt: Time step
-        physics_params: PhysicsParams object
+    Optimized formation physics using strong spring model.
+    Higher spring constant + stronger damping for tight convergence.
     """
-    # Calculate target directions and distances (vectorized)
-    target_dirs = particles.target - particles.position
-    target_distances = np.linalg.norm(target_dirs, axis=1, keepdims=True)
-
-    # Strong attraction to targets (vectorized)
-    valid_mask = target_distances.flatten() > 1e-8
-    normalized_dirs = np.zeros_like(target_dirs)
-    if np.any(valid_mask):
-        valid_distances = target_distances[valid_mask]
-        normalized_dirs[valid_mask] = target_dirs[valid_mask] / valid_distances
-
-    # Very strong attraction in formation stage
-    attraction_strength = physics_params.attraction_strength * 5.0
-    attraction_forces = normalized_dirs * attraction_strength * dt
-    particles.velocity += attraction_forces
+    # Strong spring force for final formation snap
+    displacement = particles.target - particles.position
+    spring_k = physics_params.attraction_strength * 5.0
+    particles.velocity += displacement * (spring_k * dt)
 
     # Higher damping for stability
     particles.velocity *= physics_params.damping * 0.9
@@ -191,13 +157,12 @@ def vectorized_breathing_physics(
         stage_elapsed, len(particles.position)
     )
 
-    # Apply breathing effect (vectorized)
-    center = np.array([0.5, 0.5], dtype=particles.position.dtype)
-    offset_vectors = particles.position - center
+    # Apply breathing effect around each particle's target position (not global center)
+    offset_vectors = particles.position - particles.target
 
     # Apply breathing oscillation (vectorized)
     breathing_scale = 1.0 + (breathing_offsets.reshape(-1, 1) * 0.02)
-    particles.position[:] = center + offset_vectors * breathing_scale
+    particles.position[:] = particles.target + offset_vectors * breathing_scale
 
     # Ensure positions stay in bounds - preserve dtype
     particles.position[:] = np.clip(particles.position, 0.0, 1.0)

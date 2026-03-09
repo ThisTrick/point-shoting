@@ -1,6 +1,7 @@
 """Particle engine for point shooting animation system"""
 
 import time
+from collections import deque
 from dataclasses import dataclass
 from typing import Any
 
@@ -83,15 +84,24 @@ class ParticleEngine:
         self._start_time = 0.0
         self._last_step_time = 0.0
         self._frame_count = 0
-        self._fps_history = []
+        self._fps_history: deque[float] = deque(maxlen=30)
         self._fps_history_size = 30
         self._manual_stage_override = False  # Flag to prevent auto-transitions
+        self._stage_start_frame = 0  # Frame count when current stage started
+
+        # Minimum frames per stage for smooth visual pacing at 60fps
+        self._min_stage_frames = {
+            Stage.BURST: 120,       # ~2s at 60fps
+            Stage.CHAOS: 240,       # ~4s at 60fps
+            Stage.CONVERGING: 180,  # ~3s at 60fps
+            Stage.FORMATION: 120,   # ~2s at 60fps
+        }
 
         # Target image data
         self._target_image: Image.Image | None = None
 
         # Performance tracking
-        self._step_times = []
+        self._step_times: deque[float] = deque(maxlen=100)
         self._step_time_history_size = 100
 
         # Cached expensive calculations (for HUD performance)
@@ -196,6 +206,9 @@ class ParticleEngine:
         self._recognition_cache_frame = -1
         self._chaos_cache_frame = -1
 
+        # Assign colors once (targets are static, no need to recalculate per frame)
+        self._update_particle_colors()
+
         # Initialize particles to burst positions
         initialize_burst_positions(self._particles)
 
@@ -239,24 +252,14 @@ class ParticleEngine:
         # Check for stage transitions (every frame)
         self._check_stage_transitions()
 
-        # Update particle colors less frequently (every 5 frames for performance)
-        if self._frame_count % 5 == 0:
-            self._update_particle_colors()
-
         # Performance tracking
         step_time = time.perf_counter() - step_start
         self._step_times.append(step_time)
-        if len(self._step_times) > self._step_time_history_size:
-            self._step_times.pop(0)
 
         # FPS tracking
         self._frame_count += 1
-        if len(self._fps_history) >= self._fps_history_size:
-            self._fps_history.pop(0)
-
         if dt > 0:
-            fps = 1.0 / dt
-            self._fps_history.append(fps)
+            self._fps_history.append(1.0 / dt)
 
     def _update_stage_timing(self, current_time: float) -> None:
         """Update stage timing information"""
@@ -311,22 +314,19 @@ class ParticleEngine:
             self._update_breathing_physics(dt)
 
     def _update_pre_start_physics(self, dt: float) -> None:
-        """Update physics for PRE_START stage"""
-        # Particles are stationary, maybe small breathing effect
+        """Update physics for PRE_START stage (vectorized)"""
         breathing_offset = (
             self._breathing_oscillator.get_batch_oscillation(
                 self._stage_state.stage_elapsed, len(self._particles.position)
             )
             * 0.01
-        )  # Very small breathing
+        )
 
-        # Apply minimal breathing to positions
-        center = np.array([0.5, 0.5])
-        for i in range(len(self._particles.position)):
-            offset_vec = self._particles.position[i] - center
-            self._particles.position[i] = center + offset_vec * (
-                1.0 + breathing_offset[i]
-            )
+        # Apply minimal breathing to positions (vectorized)
+        center = np.array([0.5, 0.5], dtype=self._particles.position.dtype)
+        offset_vecs = self._particles.position - center
+        scale = 1.0 + breathing_offset.reshape(-1, 1)
+        self._particles.position[:] = center + offset_vecs * scale
 
     def _update_burst_physics(self, dt: float) -> None:
         """Update physics for BURST stage (optimized vectorized version)"""
@@ -381,6 +381,12 @@ class ParticleEngine:
             # Don't transition away from FINAL_BREATHING if manually set
             return
 
+        # Enforce minimum frames per stage for smooth visual pacing
+        frames_in_stage = self._frame_count - self._stage_start_frame
+        min_frames = self._min_stage_frames.get(self._stage_state.current_stage, 0)
+        if frames_in_stage < min_frames:
+            return
+
         next_stage = self._transition_policy.evaluate(
             current_time=current_time,
             recognition_score=recognition_score,
@@ -404,6 +410,7 @@ class ParticleEngine:
         self._stage_state.stage_start_time = current_time
         self._stage_state.stage_elapsed = 0.0
         self._stage_state.stage_progress = 0.0
+        self._stage_start_frame = self._frame_count
 
         # Update transition policy state
         if self._transition_policy is not None:

@@ -204,9 +204,20 @@ def map_image_to_targets(
         scale_x = scale_y = 1.0
         offset_x = offset_y = 0.0
 
-    # Generate random pixel coordinates
-    pixel_x = np.random.randint(0, width, N)
-    pixel_y = np.random.randint(0, height, N)
+    # Generate pixel coordinates weighted by luminance (darker areas get more dots)
+    if len(image_array.shape) == 3:
+        gray = np.mean(image_array[:, :, :3].astype(np.float64), axis=2)
+    else:
+        gray = image_array.astype(np.float64)
+    # Invert: darker pixels = higher weight (more particles on dark features)
+    weights = 255.0 - gray + 10.0  # floor of 10 to avoid zero-probability areas
+    flat_weights = weights.flatten()
+    probabilities = flat_weights / flat_weights.sum()
+
+    # Sample pixel indices weighted by importance
+    flat_indices = np.random.choice(len(flat_weights), size=N, p=probabilities)
+    pixel_y = flat_indices // width
+    pixel_x = flat_indices % width
 
     # Convert to normalized coordinates
     norm_x = pixel_x / width

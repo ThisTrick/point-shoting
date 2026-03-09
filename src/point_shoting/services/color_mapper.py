@@ -57,6 +57,9 @@ class ColorMapper:
 
     def _build_stylized_palette(self, image_array: np.ndarray) -> None:
         """Build stylized palette with ≤32 colors"""
+        # Store image for spatial color lookups (needed by _batch_stylized_colors)
+        self._precise_image = image_array
+
         # Quantize image to reduce colors
         # Reshape to list of pixels
         image_array.reshape(-1, 3)
@@ -204,14 +207,14 @@ class ColorMapper:
         # Sample target colors
         target_colors = self._precise_image[y_coords, x_coords]  # Shape: (N, 3)
 
-        # Find closest palette colors for each target
-        for i in range(N):
-            target_rgb = target_colors[i]
-            distances = np.sum(
-                (self._stylized_palette[:, :3] - target_rgb) ** 2, axis=1
-            )
-            closest_idx = np.argmin(distances)
-            colors[i] = self._stylized_palette[closest_idx]
+        # Find closest palette colors for each target (vectorized)
+        palette_rgb = self._stylized_palette[:, :3].astype(np.int16)  # (P, 3)
+        target_int = target_colors.astype(np.int16)  # (N, 3)
+        # Broadcast: (N, 1, 3) - (1, P, 3) -> (N, P, 3) -> sum -> (N, P)
+        diffs = target_int[:, np.newaxis, :] - palette_rgb[np.newaxis, :, :]
+        distances = np.sum(diffs ** 2, axis=2)  # (N, P)
+        closest_indices = np.argmin(distances, axis=1)  # (N,)
+        colors = self._stylized_palette[closest_indices]  # (N, 4)
 
         return colors
 
