@@ -1,6 +1,7 @@
 """Particle engine for point shooting animation system"""
 
 import time
+from collections import deque
 from dataclasses import dataclass
 from typing import Any
 
@@ -83,7 +84,7 @@ class ParticleEngine:
         self._start_time = 0.0
         self._last_step_time = 0.0
         self._frame_count = 0
-        self._fps_history = []
+        self._fps_history: deque[float] = deque(maxlen=30)
         self._fps_history_size = 30
         self._manual_stage_override = False  # Flag to prevent auto-transitions
         self._stage_start_frame = 0  # Frame count when current stage started
@@ -100,7 +101,7 @@ class ParticleEngine:
         self._target_image: Image.Image | None = None
 
         # Performance tracking
-        self._step_times = []
+        self._step_times: deque[float] = deque(maxlen=100)
         self._step_time_history_size = 100
 
         # Cached expensive calculations (for HUD performance)
@@ -205,6 +206,9 @@ class ParticleEngine:
         self._recognition_cache_frame = -1
         self._chaos_cache_frame = -1
 
+        # Assign colors once (targets are static, no need to recalculate per frame)
+        self._update_particle_colors()
+
         # Initialize particles to burst positions
         initialize_burst_positions(self._particles)
 
@@ -248,24 +252,14 @@ class ParticleEngine:
         # Check for stage transitions (every frame)
         self._check_stage_transitions()
 
-        # Update particle colors less frequently (every 5 frames for performance)
-        if self._frame_count % 5 == 0:
-            self._update_particle_colors()
-
         # Performance tracking
         step_time = time.perf_counter() - step_start
         self._step_times.append(step_time)
-        if len(self._step_times) > self._step_time_history_size:
-            self._step_times.pop(0)
 
         # FPS tracking
         self._frame_count += 1
-        if len(self._fps_history) >= self._fps_history_size:
-            self._fps_history.pop(0)
-
         if dt > 0:
-            fps = 1.0 / dt
-            self._fps_history.append(fps)
+            self._fps_history.append(1.0 / dt)
 
     def _update_stage_timing(self, current_time: float) -> None:
         """Update stage timing information"""

@@ -22,12 +22,13 @@ class BreathingParams:
 class BreathingOscillator:
     """Generates breathing effects with RMS amplitude constraints"""
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: Settings | None = None) -> None:
         """Initialize breathing oscillator"""
         self._params = BreathingParams()
         self._time_offset = 0.0
-        self._rms_window = []  # Rolling window for RMS calculation
+        self._rms_window: list[float] = []  # Rolling window for RMS calculation
         self._rms_window_size = 60  # 1 second at 60 FPS
+        self._cached_phase_offsets: np.ndarray | None = None  # Pre-generated per-particle phase offsets
 
     def configure(
         self,
@@ -122,9 +123,11 @@ class BreathingOscillator:
         Returns:
             Array of oscillation values, shape (count,)
         """
-        # Generate slight time variations for each particle to avoid perfect sync
-        time_variations = np.random.uniform(-0.1, 0.1, count)
-        times = time_sec + time_variations
+        # Use pre-generated phase offsets for smooth, deterministic breathing
+        # (avoids random jitter and np.random.uniform cost every frame)
+        if self._cached_phase_offsets is None or len(self._cached_phase_offsets) != count:
+            self._cached_phase_offsets = np.random.uniform(-0.1, 0.1, count)
+        times = time_sec + self._cached_phase_offsets
 
         effective_times = times + self._time_offset
 

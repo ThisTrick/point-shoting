@@ -93,13 +93,13 @@ def create_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def parse_density(density_str: str) -> Density:
+def parse_density(density_str: str) -> DensityProfile:
     """Parse density string to enum"""
     density_map = {"low": DensityProfile.LOW, "medium": DensityProfile.MEDIUM, "high": DensityProfile.HIGH}
     return density_map[density_str]
 
 
-def parse_speed(speed_str: str) -> Speed:
+def parse_speed(speed_str: str) -> SpeedProfile:
     """Parse speed string to enum"""
     speed_map = {"slow": SpeedProfile.SLOW, "normal": SpeedProfile.NORMAL, "fast": SpeedProfile.FAST}
     return speed_map[speed_str]
